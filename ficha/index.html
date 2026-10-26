@@ -137,7 +137,7 @@ function PH(){return{pais:'AR',area:'',num:'',movil:true,otro:''}}
 const STEPS=['Tus lotes','Titular y facturación','Domicilios y avisos','Vehículos','Confirmación'];
 const LAST=4;
 const st={step:0,pickS:null,pickM:null,lots:[],cant:null,cantOtro:'',restoTxt:'',modo:'',via:'plano',zoom:null,admin:false,claimPick:null,info:'',taken:{},noloteTxt:'',
- tipo:'humana',nom:'',fis:{cond:'Consumidor final',tdoc:'DNI',dni:'',pre:'20',mid:'',ver:''},fact:{otro:false,nom:'',pre:'20',mid:'',ver:''},email:'',tel:PH(),wa:true,cotit:[],rep:'titular',
+ tipo:'humana',nom:'',ape:'',nos:'',fis:{cond:'Consumidor final',tdoc:'DNI',dni:'',pre:'20',mid:'',ver:''},fact:{otro:false,nom:'',pre:'20',mid:'',ver:''},email:'',tel:PH(),wa:true,cotit:[],rep:'titular',
  apod:false,apNom:'',apDoc:'',apRel:'',apTel:PH(),apEmail:'',envio:'titular',
  dReal:'',dLoc:'',dProv:'',dCP:'',mismo:true,dEsp:'',
  fNom:'mismo',fDoc:'',iva:'Consumidor final',
@@ -284,7 +284,7 @@ function person(p,i){return`<div class="person"><div class="row"><div class="fie
 function step1(){const cond=lotsEff().some(l=>l.car.startsWith('Condominio'));
  return`<section class="step"><div><h2>Datos del titular</h2><p class="help">Ponelo tal como figura en la escritura o el boleto.</p></div>
  <div class="field"><span class="lbl">El titular es</span><div class="seg"><button type="button" data-tipo="humana" aria-pressed="${st.tipo==='humana'}">Una persona</button><button type="button" data-tipo="juridica" aria-pressed="${st.tipo==='juridica'}">Una empresa o entidad</button></div></div>
- <div class="field"><label for="nom">${st.tipo==='humana'?'Apellido y nombre':'Razón social'}</label><input type="text" id="nom" autocomplete="name" value="${esc(st.nom)}"><div class="err" id="e-nom"></div></div>
+ ${st.tipo==='humana'?`<div class="row"><div class="field"><label for="ape">Apellido(s)</label><input type="text" id="ape" autocomplete="family-name" autocapitalize="words" value="${esc(st.ape)}"><div class="err" id="e-ape"></div></div><div class="field"><label for="nos">Nombre(s)</label><input type="text" id="nos" autocomplete="given-name" autocapitalize="words" value="${esc(st.nos)}"><div class="err" id="e-nos"></div></div></div>`:`<div class="field"><label for="nom">Razón social</label><input type="text" id="nom" autocomplete="organization" value="${esc(st.nom)}"><div class="err" id="e-nom"></div></div>`}
  ${fisHTML()}
  <div class="row"><div class="field"><label for="email">Email</label><input type="email" id="email" autocomplete="email" inputmode="email" autocapitalize="off" spellcheck="false" value="${esc(st.email)}"><div class="err" id="e-email"></div></div>
  </div>${phoneHTML('tel','Celular de contacto')}
@@ -327,13 +327,13 @@ function step4(){return`<section class="step"><div><h2>Vehículos para el contro
 function step5(){const L=lotsEff().map(l=>`${l.id} (${l.partida})${l.reclamo?' — reclamado, en revisión':''}`).join(', ')||'—';
  return`<section class="step summary"><div><h2>Revisá y confirmá</h2></div><dl>
  <dt>Lotes</dt><dd>Declarados: ${st.cant}<br><span class="mono">${st.modo==='no'?'A identificar por la comisión: '+esc(st.noloteTxt):esc(L)}</span>${st.modo==='si'&&st.lots.length<st.cant?'<br>A identificar: '+esc(st.restoTxt):''}</dd>
- <dt>Titular</dt><dd>${esc(st.nom)} · ${esc(fisCheck(st.fis,st.tipo).fmt||'')}</dd>
+ <dt>Titular</dt><dd>${esc(nombreCompleto())} · ${esc(fisCheck(st.fis,st.tipo).fmt||'')}</dd>
  <dt>Contacto</dt><dd>${esc(st.email)} · ${esc(phCheck(st.tel).fmt||'')}${st.wa?' (WhatsApp)':''}</dd>
  ${st.cotit.length?`<dt>Otros titulares</dt><dd>${st.cotit.map(p=>esc(p.nom)+' · '+esc(p.doc)).join('<br>')}</dd>`:''}
  ${st.ca?`<dt>Contacto adicional</dt><dd>${esc(st.caNom)} (${esc(st.caRel)}) · ${esc(phCheck(st.caTel).fmt||'')}</dd>`:''}
  ${st.vehs.length?`<dt>Vehículos</dt><dd class="mono">${st.vehs.map(v=>esc((patCheck(v).fmt||'').split(' · ')[0])+' · '+esc(v.tipo)).join('<br>')}</dd>`:''}
  ${st.apod?`<dt>Apoderado</dt><dd>${esc(st.apNom)} (${esc(st.apRel)}) · ${esc(phCheck(st.apTel).fmt||'')} · ${esc(st.apEmail)}</dd>`:''}
- <dt>Domicilio real</dt><dd>${esc(st.dReal)}, ${esc(st.dLoc)}, ${esc(st.dProv)} ${esc(st.dCP)}</dd>
+ <dt>Domicilio real</dt><dd>${esc(tc(st.dReal))}, ${esc(tc(st.dLoc))}, ${esc(tc(st.dProv))} ${esc(st.dCP.trim().toUpperCase())}</dd>
  <dt>Notificaciones formales</dt><dd>${st.mismo?'En el domicilio real':esc(st.dEsp)}</dd>
  <dt>Avisos por email/WhatsApp</dt><dd>${st.notif?'Aceptado':'No aceptado'}</dd>
  <dt>Facturación</dt><dd>${esc(st.fis.cond)} · ${st.fact.otro?'a nombre de '+esc(st.fact.nom)+' ('+esc(fisCheck({...st.fact,cond:'x'},['30','33','34'].includes(st.fact.pre)?'juridica':'humana').fmt||'')+')':'a nombre del titular'}</dd></dl>
@@ -351,8 +351,12 @@ function render(){
  document.querySelectorAll('.phpv[id^="pv-"]').forEach(el=>phPreview(el.id.slice(3)));if(document.getElementById('fv-fis')&&(st.fis.dni||st.fis.mid))fisPreview('fis');if(document.getElementById('fv-fact')&&st.fact.mid)fisPreview('fact');
  $('#back').disabled=st.step===0; $('#next').textContent=st.step===LAST?'Enviar ficha':'Siguiente';
 }
-function nomFmt(n){if(st.tipo==='juridica')return n.trim().replace(/\s+/g,' ');const low=['de','del','la','las','los','y','da','do','dos','van','von'];return n.trim().replace(/\s+/g,' ').toLowerCase().split(' ').map((w,i)=>i&&low.includes(w)?w:w.split(/([-'])/).map(x=>x.charAt(0).toUpperCase()+x.slice(1)).join('')).join(' ')}
-function nomMsg(){const n=st.nom.trim().replace(/\s+/g,' ');if(st.tipo==='juridica')return n.length<3?'Escribí la razón social.':'';if(n.split(' ').length<2)return'Escribí apellido y nombre (al menos dos palabras).';if(/\d/.test(n))return'El nombre no puede tener números.';return''}
+const PART=['de','del','la','las','los','y','e','da','do','dos','van','von','al'];
+function tc(v){return String(v||'').trim().replace(/\s+/g,' ').toLowerCase().split(' ').map((w,i)=>{if(!w)return w;if(i&&PART.includes(w))return w;if(/\d/.test(w))return w.toUpperCase();return w.split(/([-'.])/).map(x=>x.charAt(0).toUpperCase()+x.slice(1)).join('')}).join(' ')}
+function nombreCompleto(){return st.tipo==='juridica'?st.nom.trim().replace(/\s+/g,' '):(tc(st.ape)+' '+tc(st.nos)).trim()}
+function nomFmt(){return nombreCompleto()}
+function partMsg(v,que){const n=String(v||'').trim();if(!n)return`Falta ${que}.`;if(/\d/.test(n))return`${que.charAt(0).toUpperCase()+que.slice(1)} no puede tener números.`;if(n.replace(/[^A-Za-zÀ-ÿ]/g,'').length<2)return`Escribí ${que} completo.`;return''}
+function nomMsg(){if(st.tipo==='juridica'){const n=st.nom.trim();return n.length<3?'Escribí la razón social.':''}return''}
 function setErr(id,msg){const e=$('#e-'+id),i=$('#'+id);if(e)e.textContent=msg||'';if(i)i.classList.toggle('invalid',!!msg);return!msg}
 function validate(){let ok=true;
  if(st.step===0){const e=$('#e0'),n=st.lots.length;if(!st.cant){e.textContent='Indicá cuántos lotes tenés.';ok=false}else if(!st.modo){e.textContent='Elegí una de las dos opciones.';ok=false}
@@ -360,7 +364,7 @@ function validate(){let ok=true;
   else if(st.modo==='si'&&n>st.cant){e.textContent=`Marcaste ${n} lotes pero indicaste ${st.cant}. Corregí la cantidad o quitá los que sobran.`;ok=false}
   else if(st.modo==='si'&&n<st.cant&&st.restoTxt.trim().length<5){e.textContent=`Indicaste ${st.cant} lotes y marcaste ${n}. Marcá ${pl(st.cant-n,'el que falta o describilo','los que faltan o describilos')} en el cuadro de texto.`;ok=false}
   else if(st.modo==='no'&&st.noloteTxt.trim().length<5){e.textContent='Escribí algún dato que nos ayude a ubicarlos (calle, número de casa, manzana…).';ok=false}}
- if(st.step===1){ok=setErr('nom',nomMsg())&ok;
+ if(st.step===1){if(st.tipo==='juridica')ok=setErr('nom',nomMsg())&ok;else{ok=setErr('ape',partMsg(st.ape,'el apellido'))&ok;ok=setErr('nos',partMsg(st.nos,'el nombre'))&ok}
   {const c=fisPreview('fis');if(!c.ok){const el=document.getElementById('fv-fis');el.className='phpv bad';el.textContent=c.msg;ok=false}}
   if(st.fact.otro){const c=fisPreview('fact');if(!c.ok||!st.fact.nom.trim()){const el=document.getElementById('fv-fact');el.className='phpv bad';el.textContent=!st.fact.nom.trim()?'Falta el nombre para facturar.':c.msg;ok=false}}
   {const c=mailPreview('email');if(!c.ok)ok=false}
@@ -376,10 +380,10 @@ function validate(){let ok=true;
 function payload(){return{creado:new Date().toISOString(),estado:'pendiente_verificacion',
  lotes:lotsEff().map(l=>({lote_id:l.id,partida:l.partida,reclamo:l.reclamo,titularidad:l.car,documento:l.inst,estado:l.estado||null})),
  cantidad_lotes_declarada:st.cant,lote_sin_identificar:st.modo==='no'?st.noloteTxt.trim():(st.lots.length<st.cant&&st.restoTxt.trim()?st.restoTxt.trim():null),
- titular:{tipo:st.tipo,nombre:nomFmt(st.nom),condicion_iva:st.fis.cond,tipo_documento:fisCheck(st.fis,st.tipo).tipo,documento:fisCheck(st.fis,st.tipo).doc,email:st.email.trim().toLowerCase(),celular:phCheck(st.tel).e164||null,whatsapp:st.wa},
+ titular:{tipo:st.tipo,nombre:nombreCompleto(),apellido:st.tipo==='humana'?tc(st.ape):null,nombres:st.tipo==='humana'?tc(st.nos):null,condicion_iva:st.fis.cond,tipo_documento:fisCheck(st.fis,st.tipo).tipo,documento:fisCheck(st.fis,st.tipo).doc,email:st.email.trim().toLowerCase(),celular:phCheck(st.tel).e164||null,whatsapp:st.wa},
  cotitulares:st.cotit.map(p=>({nombre:p.nom.trim(),documento:p.doc.replace(/\D/g,''),celular:phCheck(p.tel).e164||null})),socio_designado:st.cotit.length?st.rep:'titular',
  apoderado:st.apod?{nombre:st.apNom,documento:st.apDoc,relacion:st.apRel,celular:phCheck(st.apTel).e164||null,email:st.apEmail,recibe_liquidaciones:st.envio}:null,
- domicilio_real:{calle:st.dReal,localidad:st.dLoc,provincia:st.dProv,cp:st.dCP},domicilio_notificaciones:st.mismo?'igual_real':st.dEsp,
+ domicilio_real:{calle:tc(st.dReal),localidad:tc(st.dLoc),provincia:tc(st.dProv),cp:st.dCP.trim().toUpperCase()},domicilio_notificaciones:st.mismo?'igual_real':tc(st.dEsp),
  acepta_notificacion_electronica:st.notif,notificacion_electronica_premarcada:true,facturacion:st.fact.otro?{a_nombre:st.fact.nom.trim(),cuit:cuitStr(st.fact)}:{a_nombre:'titular'},
  contacto_adicional:st.ca?{nombre:st.caNom.trim(),relacion:st.caRel.trim(),celular:phCheck(st.caTel).e164||null}:null,vehiculos:st.vehs.map(v=>({patente:patNorm(v.pat),tipo:v.tipo,descripcion:v.desc.trim()||null,extranjera:!!v.ext})),comentarios:st.ocup,
  declaracion_jurada:st.dj,consentimiento_datos:st.datos}}
@@ -421,6 +425,8 @@ document.addEventListener('input',e=>{const t=e.target;
 document.addEventListener('change',e=>{const t=e.target;if(t.dataset.ph||t.dataset.fk||t.dataset.veh!==undefined)return;if(t.tagName==='SELECT'&&t.id in st&&!t.dataset.lf){st[t.id]=t.value;render()}});
 document.addEventListener('focusout',e=>{const t=e.target;if(!t.id)return;if(t.id==='email'||t.id==='apEmail'){if(st[t.id].trim()){st[t.id]=st[t.id].trim().toLowerCase();t.value=st[t.id]}if(t.id==='email'||st.apEmail)mailPreview(t.id)}
  if(t.id==='nom'&&st.nom.trim())setErr('nom',nomMsg());
+ if((t.id==='ape'||t.id==='nos')&&st[t.id].trim()){st[t.id]=tc(st[t.id]);t.value=st[t.id];setErr(t.id,partMsg(st[t.id],t.id==='ape'?'el apellido':'el nombre'))}
+ if(['dReal','dLoc','dProv','dEsp'].includes(t.id)&&st[t.id].trim()){st[t.id]=tc(st[t.id]);t.value=st[t.id]}
  if(t.dataset.fk&&!t.hasAttribute('data-rr')){const c=fisPreview(t.dataset.fk)}});
 document.addEventListener('keydown',e=>{const lt=e.target.closest&&e.target.closest('[data-lot]');if(lt&&(e.key==='Enter'||e.key===' ')){e.preventDefault();const id=lt.dataset.lot;const [s,m,n]=id.split('-');toggleLot(s,m,+n);const el=document.querySelector(`[data-lot="${id}"]`);el&&el.focus()}});
 $('#f').addEventListener('submit',e=>{e.preventDefault();if(!validate())return;
@@ -432,7 +438,7 @@ $('#f').addEventListener('submit',e=>{e.preventDefault();if(!validate())return;
   if(error){btn.disabled=false;btn.textContent='Enviar ficha';e5.textContent='No se pudo enviar: '+(error.message||'error desconocido')+'. Probá de nuevo en un momento.';return}
   $('#prog').innerHTML=STEPS.map(()=>'<span class="on"></span>').join('');$('#stepl').textContent='Ficha enviada';
   const nl=P.lotes.length,pend=P.lote_sin_identificar,enRev=P.lotes.some(l=>l.reclamo);
-  $('#steps').innerHTML=`<section class="step done"><div class="okmark" aria-hidden="true">✓</div><h2>¡Gracias! Recibimos tu ficha</h2>
+  $('#steps').innerHTML=`<section class="step done"><div class="okmark" aria-hidden="true">✓</div><h2>¡Gracias${P.titular.nombres?', '+esc(P.titular.nombres.split(' ')[0]):''}! Recibimos tu ficha</h2>
   <p>Número de trámite <strong class="mono">${esc(nro)}</strong>. Guardalo por si tenés que consultar algo.</p>
   <dl class="summary"><dt>Lotes</dt><dd>${nl?P.lotes.map(l=>esc(l.lote_id)+(l.reclamo?' (en revisión)':'')).join(', '):'A identificar'}${nl&&pend?' + a identificar':''}</dd><dt>Te avisamos a</dt><dd>${esc(P.titular.email)}<br>${esc(phCheck(st.tel).fmt||'')}</dd></dl>
   <div><strong>Qué pasa ahora</strong><ol class="next"><li>La comisión revisa tus datos contra el padrón y la escritura.</li>${pend||enRev?'<li>Te contactamos para confirmar los lotes que quedaron pendientes o en revisión.</li>':''}<li>Cuando esté verificada, empezás a recibir las liquidaciones mensuales por los medios que elegiste.</li></ol></div>
