@@ -93,7 +93,7 @@ const MAPA={"lots":[["S2-A-01",0,0,10,20],["S2-A-02",10,0,10,20],["S2-A-03",20,0
 const sb=window.supabase?window.supabase.createClient(SB_URL,SB_KEY):null;
 const $=s=>document.querySelector(s);
 const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const S={user:null,miembro:null,fichas:[],byLot:{},v:'plano',zoom:null,open:null,f:'todas',q:''};
+const S={user:null,miembro:null,fichas:[],padron:null,pf:'falta',byLot:{},v:'plano',zoom:null,open:null,f:'todas',q:''};
 function tel(e){if(!e)return'—';try{const p=window.libphonenumber.parsePhoneNumberFromString(e);return p?p.formatInternational():e}catch(_){return e}}
 function lotInfo(id){const [s,m,n]=id.split('-');const r=(LOTES[s]&&LOTES[s][m]||[]).find(x=>x[0]===+n);return{s,m,n:+n,partida:r?`K1-${r[1]}-1`:'',sup:r?r[2]:null,nom:`${s==='S1'?'Sector 1':'Sector 2'} · Mz ${m} · Lote ${+n}`}}
 const fdate=d=>new Date(d).toLocaleString('es-AR',{day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'});
@@ -109,14 +109,36 @@ async function loadApp(){const {data:m,error}=await sb.from('miembros').select('
 async function loadData(){$('#main').innerHTML='<div class="empty">Cargando fichas…</div>';
  const {data,error}=await sb.from('fichas').select('id,tramite,creado,estado,es_prueba,titular_nombre,titular_documento,email,celular,cantidad_lotes,lote_sin_identificar,datos,nota_comision,revisado_en,ficha_lotes(lote_id,reclamo)').order('creado',{ascending:false});
  if(error){$('#main').innerHTML=`<div class="card">No se pudieron leer las fichas: ${esc(error.message)}</div>`;return}
- S.fichas=data||[];S.byLot={};for(const f of S.fichas){if(f.estado==='rechazada')continue;for(const fl of f.ficha_lotes||[]){(S.byLot[fl.lote_id]=S.byLot[fl.lote_id]||[]).push(f)}}render()}
+ S.fichas=data||[];
+ const pr=await sb.from('padron_ref').select('id,nombre,documento,email,celular,lotes_cobranza,lotes_padron,lotes_plano,origen').order('nombre');S.padron=pr.error?null:(pr.data||[]);
+ S.byLot={};for(const f of S.fichas){if(f.estado==='rechazada')continue;for(const fl of f.ficha_lotes||[]){(S.byLot[fl.lote_id]=S.byLot[fl.lote_id]||[]).push(f)}}render()}
+const norm=t=>String(t||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().replace(/[^a-z ]/g,' ').split(/\s+/).filter(w=>w.length>1);
+function docKey(d){d=String(d||'').replace(/\D/g,'');if(d.length===11)d=d.slice(2,10);return d.replace(/^0+/,'')}
+function cruce(){if(!S.padron)return null;const act=S.fichas.filter(f=>f.estado!=='rechazada');const byDoc={};act.forEach(f=>{const k=docKey(f.titular_documento);if(k)byDoc[k]=f});
+ return S.padron.map(p=>{const k=docKey(p.documento);let f=k&&byDoc[k],est=f?'cargo':'falta';
+  if(!f){const pt=norm(p.nombre);for(const x of act){const ft=norm(x.titular_nombre);if(pt[0]&&ft[0]===pt[0]&&pt.slice(1).some(w=>ft.includes(w))){f=x;est='posible';break}}}
+  return Object.assign({},p,{est,ficha:f||null})})}
+function waLink(tel){const g=(String(tel||'').match(/\d[\d\s-]{8,}\d/)||[''])[0].replace(/\D/g,'').replace(/^0/,'');if(g.length!==10)return null;
+ const msg='Hola, ¿cómo estás? Te escribimos de la Comisión Directiva de Aguará Guazú Country. Estamos actualizando el padrón de propietarios y todavía no recibimos tu ficha. Se completa en 5 minutos desde el celular: https://aguaraguazu-country.github.io/app/ficha/ ¡Muchas gracias!';
+ return'https://wa.me/549'+g+'?text='+encodeURIComponent(msg)}
 function lotClass(id){const fs=S.byLot[id];if(!fs||!fs.length)return'';if(fs.length>1||fs.some(f=>(f.ficha_lotes||[]).some(x=>x.lote_id===id&&x.reclamo)))return'conf';return fs[0].estado==='verificada'?'ok':'pend'}
 // ---------- vistas ----------
 function vResumen(){const act=S.fichas.filter(f=>f.estado!=='rechazada');const lotes=Object.keys(S.byLot).length;const conf=Object.keys(S.byLot).filter(id=>lotClass(id)==='conf').length;
  return`<div class="kpis"><div class="kpi"><span class="l">Fichas recibidas</span><span class="v">${act.length}</span></div><div class="kpi"><span class="l">Lotes con ficha</span><span class="v">${lotes} <span style="font-size:14px;color:var(--muted);font-weight:500">de 202</span></span></div>
  <div class="kpi"><span class="l">Pendientes de revisar</span><span class="v">${act.filter(f=>f.estado==='pendiente').length}</span></div><div class="kpi"><span class="l">Lotes con conflicto</span><span class="v">${conf}</span></div>
- <div class="kpi"><span class="l">Sin lote identificado</span><span class="v">${act.filter(f=>!(f.ficha_lotes||[]).length).length}</span></div></div>
- <div class="tabs"><button type="button" data-v="plano" aria-pressed="${S.v==='plano'}">Plano</button><button type="button" data-v="lista" aria-pressed="${S.v==='lista'}">Fichas</button><button type="button" class="btn sm" id="reload" style="margin-left:auto">Actualizar</button></div>`}
+ <div class="kpi"><span class="l">Sin lote identificado</span><span class="v">${act.filter(f=>!(f.ficha_lotes||[]).length).length}</span></div>${(()=>{const c=cruce();return c?`<div class="kpi"><span class="l">Del padrón ya cargaron</span><span class="v">${c.filter(x=>x.est==='cargo').length} <span style="font-size:14px;color:var(--muted);font-weight:500">de ${c.length}</span></span></div>`:''})()}</div>
+ <div class="tabs"><button type="button" data-v="plano" aria-pressed="${S.v==='plano'}">Plano</button><button type="button" data-v="lista" aria-pressed="${S.v==='lista'}">Fichas</button><button type="button" data-v="faltan" aria-pressed="${S.v==='faltan'}">Faltan cargar</button><span style="margin-left:auto;display:flex;gap:6px"><button type="button" class="btn sm" id="backup">Descargar copia (Excel)</button><button type="button" class="btn sm" id="reload">Actualizar</button></span></div>`}
+function vFaltan(){const c=cruce();if(!c)return`<div class="card">Para ver quién falta, ejecutá el script <b>04_lanzamiento.sql</b> en Supabase.</div>`;const q=S.q.trim().toLowerCase();
+ let rs=c.filter(x=>S.pf==='todos'||x.est===S.pf);if(q)rs=rs.filter(x=>(x.nombre+' '+(x.documento||'')+' '+(x.lotes_plano||'')).toLowerCase().includes(q));
+ const n=k=>c.filter(x=>x.est===k).length;const F=[['falta',`Faltan (${n('falta')})`],['posible',`Posibles (${n('posible')})`],['cargo',`Ya cargaron (${n('cargo')})`],['todos','Todos']];
+ return`<div class="card"><p class="help">Cruce del padrón de marzo y la planilla de cobranza con las fichas recibidas, por DNI/CUIT. "Posible" = coincide el apellido y algún nombre pero no el documento: revisalo a mano.</p>
+ <div class="tabs"><input type="search" id="q" placeholder="Buscar por nombre, DNI o lote" value="${esc(S.q)}" style="flex:1 1 240px">${F.map(([k,l])=>`<button type="button" data-pf="${k}" aria-pressed="${S.pf===k}">${l}</button>`).join('')}</div>
+ <div class="tablebox"><table><thead><tr><th>Propietario</th><th>Lotes</th><th>Contacto</th><th>Estado</th></tr></thead><tbody>
+ ${rs.length?rs.map(x=>{const w=waLink(x.celular);return`<tr${x.ficha?` data-ficha="${x.ficha.id}"`:''} style="${x.ficha?'':'cursor:default'}"><td>${esc(x.nombre)}<div class="help mono">${esc(x.documento||'sin documento')}</div></td>
+ <td>${x.lotes_cobranza??x.lotes_padron??'—'} <span class="help">${x.lotes_cobranza!=null?'(cobranza)':x.lotes_padron!=null?'(padrón)':''}</span><div class="help mono">${esc(x.lotes_plano||'')}</div></td>
+ <td>${x.celular?`<span class="mono">${esc(x.celular)}</span>${w&&x.est!=='cargo'?` <a class="btn sm" href="${w}" target="_blank" rel="noopener">WhatsApp</a>`:''}`:'<span class="help">sin celular</span>'}<div class="help">${esc(x.email||'')}</div></td>
+ <td><span class="st ${x.est==='cargo'?'verificada':x.est==='posible'?'pendiente':'rechazada'}">${x.est==='cargo'?'Cargó':x.est==='posible'?'Posible':'Falta'}</span>${x.ficha?`<div class="help mono">${esc(x.ficha.tramite)}</div>`:''}</td></tr>`}).join(''):`<tr><td colspan="4" class="empty">No hay propietarios con ese filtro.</td></tr>`}
+ </tbody></table></div><p class="help">El botón WhatsApp abre un mensaje de recordatorio ya escrito; revisalo antes de enviarlo.</p></div>`}
 function vPlano(){if(S.zoom==null)S.zoom=innerWidth<640?2.6:1;
  let g=`<rect x="0" y="145.06" width="145.06" height="145.05" fill="var(--s1)"/><path d="M0 0H290.11V290.11H145.06V145.06H0Z" fill="var(--s2)"/><path d="M0 0H290.11V290.11H0Z" fill="none" stroke="var(--fg)" stroke-width=".8"/><path d="M0 145.06H145.06V290.11" fill="none" stroke="var(--fg)" stroke-width=".5" stroke-dasharray="3 2"/>
  <text class="street" x="145" y="-6" text-anchor="middle">Calle Posadas</text><text class="street" x="145" y="300" text-anchor="middle">Calle Pago Largo</text><text class="street" transform="translate(-6 145) rotate(-90)" text-anchor="middle">Calle 10</text><text class="street" transform="translate(297 145) rotate(90)" text-anchor="middle">Calle 9</text>
@@ -138,7 +160,7 @@ function vLista(){const q=S.q.trim().toLowerCase();let rs=S.fichas.filter(f=>S.f
  <td>${esc(f.email||'—')}<br><span class="mono">${esc(tel(f.celular))}</span></td><td><span class="st ${f.estado}">${f.estado}</span></td></tr>`).join(''):`<tr><td colspan="6" class="empty">Todavía no hay fichas${S.f!=='todas'?' con ese filtro':''}.</td></tr>`}
  </tbody></table></div></div>`}
 function render(){if(!S.miembro)return;const mb=$('#mapbox'),sc=mb?[mb.scrollLeft,mb.scrollTop]:null;
- $('#main').innerHTML=vResumen()+(S.v==='plano'?vPlano():vLista());const nb=$('#mapbox');if(nb&&sc){nb.scrollLeft=sc[0];nb.scrollTop=sc[1]}$('#dr').innerHTML=drawer()}
+ $('#main').innerHTML=vResumen()+(S.v==='plano'?vPlano():S.v==='faltan'?vFaltan():vLista());const nb=$('#mapbox');if(nb&&sc){nb.scrollLeft=sc[0];nb.scrollTop=sc[1]}$('#dr').innerHTML=drawer()}
 // ---------- tarjeta ----------
 function fichaHTML(f){const d=f.datos||{},t=d.titular||{},dom=d.domicilio_real||{};const yes=v=>v?'Sí':'No';
  const lotes=(d.lotes||[]).map(l=>`<div class="mono">${esc(l.lote_id)} · ${esc(l.partida||'')}</div><div class="help">${esc(l.titularidad||'')} · ${esc(l.documento||'')}${l.estado?' · '+esc(l.estado):''}</div>`).join('');
@@ -180,12 +202,18 @@ document.addEventListener('click',async e=>{const t=e.target;
  const f=t.closest('[data-f]');if(f){S.f=f.dataset.f;render();return}
  const z=t.closest('[data-zoom]');if(z){const d=+z.dataset.zoom;S.zoom=d===0?1:Math.min(6,Math.max(1,S.zoom*(d>0?1.5:1/1.5)));render();return}
  if(t.id==='reload'){await loadData();return}
+ const pf=t.closest('[data-pf]');if(pf){S.pf=pf.dataset.pf;render();return}
+ if(t.id==='backup'){backup();return}
  if(t.id==='out'){await sb.auth.signOut();S.miembro=null;S.user=null;S.open=null;vLogin();return}
  const st=t.closest('[data-set]');if(st){const id=+st.dataset.id;st.disabled=true;
   const {error}=await sb.from('fichas').update({estado:st.dataset.set,nota_comision:($('#nota-'+id).value||null),revisado_por:S.user.id,revisado_en:new Date().toISOString()}).eq('id',id);
   if(error){st.disabled=false;$('#ferr-'+id).textContent='No se pudo guardar: '+error.message;return}const keep=S.open;await loadData();S.open=keep;render()}});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&S.open){S.open=null;render()}const lt=e.target.closest&&e.target.closest('[data-lot]');if(lt&&e.key==='Enter'){S.open={lot:lt.dataset.lot};render()}});
 document.addEventListener('input',e=>{if(e.target.id==='q'){S.q=e.target.value;const p=e.target.selectionStart;render();const q=$('#q');q.focus();q.setSelectionRange(p,p)}});
+function backup(){const c=v=>{v=v==null?'':String(v);return/[;"\n\r]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v};
+ const H=['tramite','recibida','estado','es_prueba','titular','documento','email','celular','lotes_declarados','lotes','lote_sin_identificar','domicilio','acepta_avisos','vehiculos','nota_comision','datos_completos_json'];
+ const L=S.fichas.map(f=>{const d=f.datos||{},dm=d.domicilio_real||{};return[f.tramite,new Date(f.creado).toLocaleString('es-AR'),f.estado,f.es_prueba?'sí':'no',f.titular_nombre,f.titular_documento,f.email,f.celular,f.cantidad_lotes,(f.ficha_lotes||[]).map(x=>x.lote_id+(x.reclamo?' (reclamo)':'')).join(', '),f.lote_sin_identificar,[dm.calle,dm.localidad,dm.provincia,dm.cp].filter(Boolean).join(', '),d.acepta_notificacion_electronica?'sí':'no',(d.vehiculos||[]).map(v=>v.patente).join(', '),f.nota_comision,JSON.stringify(d)].map(c).join(';')});
+ const blob=new Blob(['﻿'+[H.join(';')].concat(L).join('\r\n')],{type:'text/csv;charset=utf-8'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='aguara_fichas_'+new Date().toISOString().slice(0,10)+'.csv';document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},500)}
 start();
 </script>
 </body>
