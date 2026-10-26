@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Panel Comisión Aguará Guazú</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Fraunces:opsz,wght@9..144,600&display=swap">
+<style>
+/* Layout: barra superior; login centrado; app = resumen + pestañas (Plano / Fichas) + tarjeta lateral */
+:root{--bg:#f6f7f4;--card:#fff;--fg:#1d2420;--muted:#5d6862;--line:#d9ddd6;--accent:#2f6b4f;--accent-soft:#e3efe8;
+ --lot:#fff;--lotline:#8f9a93;--ok:#2f6b4f;--pend:#9fd0b2;--conf:#f2b28e;--conf-line:#b0532a;--s1:#eef3ec;--s2:#f3f1ea;--green:#dcebd9;--acfill:#e6e8e3;
+ --warn:#9a6400;--warn-bg:#fbf0dc;--crit:#b42318;--crit-bg:#fbe3e1;--good:#2f7d4f;--good-bg:#e4f2e9;
+ --display:'Fraunces',Georgia,serif;--body:'Public Sans',system-ui,sans-serif;--mono:'IBM Plex Mono',ui-monospace,monospace}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#141916;--card:#1c2320;--fg:#e6ebe7;--muted:#9aa59f;--line:#2f3833;--accent:#7cc39f;--accent-soft:#1f3329;--lot:#202825;--lotline:#5b6660;--ok:#7cc39f;--pend:#2f5a43;--conf:#6b3a22;--conf-line:#e08a5e;--s1:#18211d;--s2:#1d1f1a;--green:#203325;--acfill:#262c29;--warn:#e0a54a;--warn-bg:#2f2615;--crit:#f2867b;--crit-bg:#361d1b;--good:#7cc39f;--good-bg:#1d3326;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#141916;--card:#1c2320;--fg:#e6ebe7;--muted:#9aa59f;--line:#2f3833;--accent:#7cc39f;--accent-soft:#1f3329;--lot:#202825;--lotline:#5b6660;--ok:#7cc39f;--pend:#2f5a43;--conf:#6b3a22;--conf-line:#e08a5e;--s1:#18211d;--s2:#1d1f1a;--green:#203325;--acfill:#262c29;--warn:#e0a54a;--warn-bg:#2f2615;--crit:#f2867b;--crit-bg:#361d1b;--good:#7cc39f;--good-bg:#1d3326;color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--body);font-size:14.5px;line-height:1.45}
+.wrap{max-width:1200px;margin:0 auto;padding-block:16px 60px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:grid;gap:14px}
+header{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:end;gap:10px}
+.eyebrow{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600}
+h1{font-family:var(--display);font-weight:600;font-size:clamp(24px,4vw,30px);margin:2px 0 0;line-height:1.15}
+h2{font-size:17px;margin:0}
+.who{font-size:13px;color:var(--muted);display:flex;gap:10px;align-items:center}
+.btn{font:inherit;font-weight:600;border-radius:8px;padding:9px 15px;cursor:pointer;border:1px solid var(--line);background:var(--card);color:var(--fg)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--card)}
+.btn.sm{padding:5px 10px;font-size:13px}
+.btn[disabled]{opacity:.55;cursor:wait}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px;display:grid;gap:12px;min-width:0}
+.login{max-width:380px;margin:40px auto}
+label{font-size:13px;font-weight:600;display:grid;gap:4px}
+input,select,textarea{font:inherit;font-weight:400;padding:9px 10px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--fg);width:100%}
+.err{color:var(--crit);font-size:13px;min-height:1em}
+.help{font-size:13px;color:var(--muted);margin:0}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px;display:grid;gap:2px}
+.kpi .l{font-size:12.5px;color:var(--muted)}.kpi .v{font-size:24px;font-weight:700;font-variant-numeric:tabular-nums}
+.tabs{display:flex;gap:6px;flex-wrap:wrap}
+.tabs button{font:inherit;border:1px solid var(--line);background:var(--card);color:var(--fg);border-radius:999px;padding:7px 14px;cursor:pointer}
+.tabs button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--card)}
+.mapctl{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between}
+.legend{display:flex;flex-wrap:wrap;gap:12px;font-size:12.5px;color:var(--muted)}
+.legend i{display:inline-block;width:14px;height:14px;border-radius:3px;vertical-align:-2px;margin-right:5px;border:1px solid var(--lotline)}
+.zoom{display:flex;gap:6px}.zoom button{font:inherit;min-width:40px;height:34px;border:1px solid var(--line);background:var(--card);color:var(--fg);border-radius:8px;cursor:pointer}
+.mapbox{overflow:auto;border:1px solid var(--line);border-radius:10px;background:var(--bg);max-height:78vh}
+.mapbox svg{display:block;max-width:none;height:auto}
+.lt rect{fill:var(--lot);stroke:var(--lotline);stroke-width:.35;cursor:pointer}
+.lt text{fill:var(--fg);font-family:var(--body);font-size:4.2px;text-anchor:middle;dominant-baseline:central;pointer-events:none}
+.lt.pend rect{fill:var(--pend)}
+.lt.ok rect{fill:var(--ok);stroke:var(--ok)}.lt.ok text{fill:var(--card);font-weight:700}
+.lt.conf rect{fill:var(--conf);stroke:var(--conf-line);stroke-width:.9}
+.lt:hover rect,.lt:focus-visible rect{stroke:var(--fg);stroke-width:1.1}.lt:focus{outline:none}
+.ar{fill:var(--acfill)}.ar.verde{fill:var(--green)}
+.mlab{fill:var(--fg);font-family:var(--body);font-weight:700;font-size:3.6px}
+.slab{fill:var(--muted);font-family:var(--body);font-size:4px;text-transform:uppercase}
+.street{fill:var(--muted);font-family:var(--body);font-size:4.6px;font-style:italic}
+#tip{position:fixed;z-index:30;pointer-events:none;background:var(--card);border:1px solid var(--line);box-shadow:0 6px 20px rgba(0,0,0,.15);border-radius:8px;padding:9px 11px;font-size:13px;max-width:280px;display:grid;gap:2px}
+#tip b{font-size:13.5px}#tip .m{color:var(--muted)}
+.tablebox{overflow-x:auto;border:1px solid var(--line);border-radius:10px;background:var(--card)}
+table{border-collapse:collapse;width:100%;min-width:760px;font-size:13.5px}
+th,td{padding:9px 10px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;font-weight:600}
+tbody tr{cursor:pointer}tbody tr:hover{background:var(--accent-soft)}
+.mono{font-family:var(--mono);font-size:12.5px}
+.st{display:inline-block;font-size:12px;font-weight:600;border-radius:999px;padding:2px 9px;white-space:nowrap}
+.st.pendiente{color:var(--warn);background:var(--warn-bg)}.st.verificada{color:var(--good);background:var(--good-bg)}.st.rechazada{color:var(--crit);background:var(--crit-bg)}
+.chip{font-size:11.5px;border:1px solid var(--conf-line);color:var(--conf-line);border-radius:999px;padding:1px 7px;margin-left:4px}
+.scrim{position:fixed;inset:0;background:rgba(0,0,0,.25);z-index:19}
+.drawer{position:fixed;inset:0 0 0 auto;width:min(560px,100%);background:var(--card);border-left:1px solid var(--line);overflow-y:auto;z-index:20;display:grid;gap:14px;align-content:start;padding:calc(18px + env(safe-area-inset-top,0px)) max(18px,env(safe-area-inset-right,0px)) calc(24px + env(safe-area-inset-bottom,0px)) 18px}
+.dh{display:flex;justify-content:space-between;gap:10px;align-items:start}
+.x{font:inherit;font-size:22px;border:0;background:none;color:var(--fg);cursor:pointer}
+.fcard{border:1px solid var(--line);border-radius:10px;padding:14px;display:grid;gap:10px}
+dl{display:grid;grid-template-columns:minmax(120px,160px) 1fr;gap:5px 12px;margin:0;font-size:13.5px}
+dt{color:var(--muted)}dd{margin:0;min-width:0;overflow-wrap:anywhere}
+.acts{display:flex;flex-wrap:wrap;gap:8px}
+.note{font-size:13px;background:var(--warn-bg);border-radius:8px;padding:8px 10px}
+.empty{padding:24px;text-align:center;color:var(--muted)}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header><div><div class="eyebrow">Asociación Civil Aguará Guazú Country · Comisión Directiva</div><h1>Panel de la comisión</h1></div><div class="who" id="who"></div></header>
+<main id="main"><div class="empty">Cargando…</div></main>
+</div>
+<div id="tip" hidden></div><div id="dr"></div>
+<script src="https://cdn.jsdelivr.net/npm/libphonenumber-js@1.13.14/bundle/libphonenumber-max.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.3/dist/umd/supabase.js"></script>
+<script>
+const SB_URL='https://ejyfijaahbobvbpxtsfj.supabase.co',SB_KEY='sb_publishable_fDK_li5-1Yr9kW-ynu4s7A_Rr652rif';
+const MAPA={"lots":[["S2-A-01",0,0,10,20],["S2-A-02",10,0,10,20],["S2-A-03",20,0,10,20],["S2-A-04",30,0,10,20],["S2-A-05",40,0,10,20],["S2-A-06",50,0,10,20],["S2-A-07",60,0,10,20],["S2-A-08",75.05,0,10,20],["S2-A-09",85.05,0,10,20],["S2-A-10",95.05,0,10,20],["S2-A-11",105.05,0,10,20],["S2-A-12",115.05,0,10,20],["S2-A-13",125.05,0,10,20],["S2-A-14",135.05,0,10,20],["S2-A-15",145.05,0,10,20],["S2-A-16",155.05,0,10,20],["S2-A-17",165.05,0,10,20],["S2-A-18",175.05,0,10,20],["S2-A-19",185.05,0,10,20],["S2-A-20",195.05,0,10,20],["S2-A-21",205.05,0,10,20],["S2-A-22",220.11,0,10,20],["S2-A-23",230.11,0,10,20],["S2-A-24",240.11,0,10,20],["S2-A-25",250.11,0,10,20],["S2-A-26",260.11,0,10,20],["S2-A-27",270.11,0,10,20],["S2-A-28",280.11,0,10,20],["S2-K-01",0,35,20,10],["S2-K-02",0,45,20,10],["S2-K-03",0,55,20,10],["S2-K-04",0,65,20,10],["S2-K-05",0,80.06,20,10],["S2-K-06",0,90.06,20,10],["S2-K-07",0,100.06,20,10],["S2-K-08",0,110.06,20,10],["S2-K-09",0,120.06,20,10],["S2-L-01",35,35,20,10],["S2-L-08",35,45,20,10],["S2-L-07",35,55,20,10],["S2-L-02",55,35,10,30],["S2-L-03",70.05,35,10,30],["S2-L-04",80.05,35,20,10],["S2-L-05",80.05,45,20,10],["S2-L-06",80.05,55,20,10],["S2-J-01",35,80,20,10],["S2-J-02",55,80,10,20],["S2-J-14",35,90,20,10],["S2-J-12",35,110.06,20,10],["S2-J-11",35,120.06,20,10],["S2-J-10",55,110.06,10,20],["S2-J-03",70.05,80,10,20],["S2-J-04",80.05,80,20,10],["S2-J-05",80.05,90,20,10],["S2-J-09",70.05,110.06,10,20],["S2-J-07",80.05,110.06,20,10],["S2-J-08",80.05,120.06,20,10],["S2-J-13",35,100,30,10.06],["S2-J-06",70.05,100,30,10.06],["S2-I-01",115.05,80,10,20],["S2-I-02",125.05,80,10,20],["S2-I-03",135.05,80,10,20],["S2-I-04",145.05,80,10,20],["S2-I-05",155.05,80,10,20],["S2-I-06",165.05,80,10,20],["S2-I-14",115.05,100,30,10.06],["S2-I-07",145.05,100,30,10.06],["S2-I-13",115.05,110.06,10,20],["S2-I-12",125.05,110.06,10,20],["S2-I-11",135.05,110.06,10,20],["S2-I-10",145.05,110.06,10,20],["S2-I-09",155.05,110.06,10,20],["S2-I-08",165.05,110.06,10,20],["S2-M-01",190.05,35,20,10],["S2-M-08",190.05,45,20,10],["S2-M-07",190.05,55,20,10],["S2-M-02",210.05,35,10,30],["S2-M-03",225.11,35,10,30],["S2-M-04",235.11,35,20,10],["S2-M-05",235.11,45,20,10],["S2-M-06",235.11,55,20,10],["S2-H-01",190.05,80,20,10],["S2-H-02",210.05,80,10,20],["S2-H-14",190.05,90,20,10],["S2-H-12",190.05,110.06,20,10],["S2-H-11",190.05,120.06,20,10],["S2-H-10",210.05,110.06,10,20],["S2-H-03",225.11,80,10,20],["S2-H-04",235.11,80,20,10],["S2-H-05",235.11,90,20,10],["S2-H-09",225.11,110.06,10,20],["S2-H-07",235.11,110.06,20,10],["S2-H-08",235.11,120.06,20,10],["S2-H-13",190.05,100,30,10.06],["S2-H-06",225.11,100,30,10.06],["S2-B-01",270.11,35,20,10],["S2-B-02",270.11,45,20,10],["S2-B-03",270.11,55,20,10],["S2-B-04",270.11,65,20,10],["S2-B-05",270.11,80.06,20,10],["S2-B-06",270.11,90.06,20,10],["S2-B-07",270.11,100.06,20,10],["S2-B-08",270.11,110.06,20,10],["S2-B-09",270.11,120.06,20,10],["S2-G-01",145.05,145.06,10,20],["S2-G-02",155.05,145.06,10,20],["S2-G-03",165.05,145.06,10,20],["S2-G-04",175.05,145.06,10,20],["S2-G-05",185.05,145.06,10,20],["S2-G-06",195.05,145.06,10,20],["S2-G-07",205.05,145.06,10,20],["S2-G-08",220.11,145.06,10,20],["S2-G-09",230.11,145.06,10,20],["S2-G-10",240.11,145.06,10,20],["S2-G-11",250.11,145.06,10,20],["S2-G-12",260.11,145.06,10,20],["S2-G-13",270.11,145.06,10,20],["S2-G-14",280.11,145.06,10,20],["S2-E-01",145.05,225.06,10,20],["S2-E-02",155.05,225.06,10,20],["S2-E-03",165.05,225.06,10,20],["S2-E-04",145.05,245.06,30,10.05],["S2-E-07",145.05,255.11,10,20],["S2-E-06",155.05,255.11,10,20],["S2-E-05",165.05,255.11,10,20],["S2-F-01",190.05,180.06,20,10],["S2-F-08",190.05,190.06,20,10],["S2-F-07",190.05,200.06,20,10],["S2-F-02",210.05,180.06,10,30],["S2-F-03",225.11,180.06,10,30],["S2-F-04",235.11,180.06,20,10],["S2-F-05",235.11,190.06,20,10],["S2-F-06",235.11,200.06,20,10],["S2-D-01",190.05,225.06,20,10],["S2-D-02",210.05,225.06,10,20],["S2-D-14",190.05,235.06,20,10],["S2-D-12",190.05,255.11,20,10],["S2-D-11",190.05,265.11,20,10],["S2-D-10",210.05,255.11,10,20],["S2-D-03",225.11,225.06,10,20],["S2-D-04",235.11,225.06,20,10],["S2-D-05",235.11,235.06,20,10],["S2-D-09",225.11,255.11,10,20],["S2-D-07",235.11,255.11,20,10],["S2-D-08",235.11,265.11,20,10],["S2-D-13",190.05,245.06,30,10.05],["S2-D-06",225.11,245.06,30,10.05],["S2-C-01",270.11,180.06,20,10],["S2-C-02",270.11,190.06,20,10],["S2-C-03",270.11,200.06,20,10],["S2-C-04",270.11,270.11,20,10],["S2-C-05",270.11,280.11,20,10],["S1-A-14",0,145.06,10,20],["S1-A-13",10,145.06,10,20],["S1-A-12",20,145.06,10,20],["S1-A-11",30,145.06,10,20],["S1-A-10",40,145.06,10,20],["S1-A-09",50,145.06,10,20],["S1-A-08",60,145.06,10,20],["S1-A-07",75.06,145.06,10,20],["S1-A-06",85.06,145.06,10,20],["S1-A-05",95.06,145.06,10,20],["S1-A-04",105.06,145.06,10,20],["S1-A-03",115.06,145.06,10,20],["S1-A-02",125.06,145.06,10,20],["S1-A-01",135.06,145.06,10,20],["S1-E-01",0,180.06,20,10],["S1-E-02",0,190.06,20,10],["S1-E-03",0,200.06,20,10],["S1-E-04",0,210.06,20,10],["S1-E-05",0,225.12,20,10],["S1-E-06",0,235.12,20,10],["S1-E-07",0,245.12,20,10],["S1-E-08",0,255.12,20,10],["S1-E-09",0,265.12,20,10],["S1-F-06",35,180.06,20,10],["S1-F-07",35,190.06,20,10],["S1-F-08",35,200.06,20,10],["S1-F-05",55,180.06,10,30],["S1-F-04",70.06,180.06,10,30],["S1-F-01",80.06,180.06,20,10],["S1-F-02",80.06,190.06,20,10],["S1-F-03",80.06,200.06,20,10],["S1-D-10",35,225.06,20,10],["S1-D-11",55,225.06,10,20],["S1-D-09",35,235.06,20,10],["S1-D-08",35,255.12,20,10],["S1-D-07",35,265.12,20,10],["S1-D-06",55,255.12,10,20],["S1-D-12",70.06,225.06,10,20],["S1-D-01",80.06,225.06,20,10],["S1-D-02",80.06,235.06,20,10],["S1-D-05",70.06,255.12,10,20],["S1-D-03",80.06,255.12,20,10],["S1-D-04",80.06,265.12,20,10],["S1-C-03",115.06,225.06,10,20],["S1-C-02",125.06,225.06,10,20],["S1-C-01",135.06,225.06,10,20],["S1-C-04",115.06,245.06,30,10.06],["S1-C-07",115.06,255.12,10,20],["S1-C-06",125.06,255.12,10,20],["S1-C-05",135.06,255.12,10,20]],"blocks":[["S2","A",0,0,290.11,20],["S2","K",0,35,20,95.06],["S2","L",35,35,65.05,30],["S2","J",35,80,65.05,50.06],["S2","I",115.05,80,60,50.06],["S2","M",190.05,35,65.06,30],["S2","H",190.05,80,65.06,50.06],["S2","B",270.11,35,20,95.06],["S2","G",145.05,145.06,145.06,20],["S2","E",145.05,225.06,30,50.05],["S2","F",190.05,180.06,65.06,30],["S2","D",190.05,225.06,65.06,50.05],["S2","C",270.11,180.06,20,110.05],["S1","A",0,145.06,145.06,20],["S1","E",0,180.06,20,95.06],["S1","F",35,180.06,65.06,30],["S1","D",35,225.06,65.06,50.06],["S1","C",115.06,225.06,30,50.06]],"areas":[["A.C.",70,0,5.05,20,"ac"],["A.C.",215.05,0,5.06,20,"ac"],["A.C.",0,75,20,5.06,"ac"],["A.C.",65,35,5.05,30,"ac"],["A.C.",65,80,5.05,20,"ac"],["A.C.",65,110.06,5.05,20,"ac"],["A.C.",65,100,5.05,10.06,"ac"],["\u00c1rea recreativa 1",115.05,35,60,30,"verde"],["A.C.",220.05,35,5.06,30,"ac"],["A.C.",220.05,80,5.06,20,"ac"],["A.C.",220.05,110.06,5.06,20,"ac"],["A.C.",220.05,100,5.06,10.06,"ac"],["A.C.",270.11,75,20,5.06,"ac"],["A.C.",215.05,145.06,5.06,20,"ac"],["\u00c1rea recreativa",145.05,180.06,30,30,"verde"],["A.C.",220.05,180.06,5.06,30,"ac"],["A.C.",220.05,225.06,5.06,20,"ac"],["A.C.",220.05,255.11,5.06,20,"ac"],["A.C.",220.05,245.06,5.06,10.05,"ac"],["\u00c1rea recreativa 2",270.11,210.06,20,60.05,"verde"],["A.C.",70,145.06,5.06,20,"ac"],["A.C.",0,220.06,20,5.06,"ac"],["A.C.",65,180.06,5.06,30,"ac"],["Mz B \u00b7 \u00c1rea de recreaci\u00f3n",115.06,180.06,30,30,"verde"],["A.C.",65,225.06,5.06,20,"ac"],["A.C.",65,255.12,5.06,20,"ac"],["Espacio com\u00fan",35,245.06,65.06,10.06,"verde"]]};const LOTES={"S1":{"A":[[1,"7409",200.0],[2,"8463",200.0],[3,"8464",200.0],[4,"8465",200.0],[5,"8466",200.0],[6,"8467",200.0],[7,"8468",200.0],[8,"8469",200.0],[9,"8470",200.0],[10,"8471",200.0],[11,"8472",200.0],[12,"8473",200.0],[13,"8474",200.0],[14,"8475",200.0]],"C":[[1,"8476",200.0],[2,"8477",200.0],[3,"8478",200.0],[4,"8479",301.8],[5,"8480",200.0],[6,"8481",200.0],[7,"8482",200.0]],"D":[[1,"8483",200.0],[2,"8484",200.0],[3,"8485",200.0],[4,"8486",200.0],[5,"8487",200.0],[6,"8488",200.0],[7,"8489",200.0],[8,"8490",200.0],[9,"8491",200.0],[10,"8492",200.0],[11,"8493",200.0],[12,"8494",200.0]],"E":[[1,"8495",200.0],[2,"8496",200.0],[3,"8497",200.0],[4,"8498",200.0],[5,"8499",200.0],[6,"8500",200.0],[7,"8501",200.0],[8,"8502",200.0],[9,"8503",200.0]],"F":[[1,"8504",200.0],[2,"8505",200.0],[3,"8506",200.0],[4,"8507",300.0],[5,"8508",300.0],[6,"8509",200.0],[7,"8510",200.0],[8,"8511",200.0]]},"S2":{"A":[[1,"7407",200.0],[2,"10284",200.0],[3,"10285",200.0],[4,"10286",200.0],[5,"10287",200.0],[6,"10288",200.0],[7,"10289",200.0],[8,"10290",200.0],[9,"10291",200.0],[10,"10292",200.0],[11,"10293",200.0],[12,"10294",200.0],[13,"10295",200.0],[14,"10296",200.0],[15,"10297",200.0],[16,"10298",200.0],[17,"10299",200.0],[18,"10300",200.0],[19,"10301",200.0],[20,"10302",200.0],[21,"10303",200.0],[22,"10304",200.0],[23,"10305",200.0],[24,"10306",200.0],[25,"10307",200.0],[26,"10308",200.0],[27,"10309",200.0],[28,"10310",200.0]],"B":[[1,"10311",200.0],[2,"10312",200.0],[3,"10313",200.0],[4,"10314",200.0],[5,"10315",200.0],[6,"10316",200.0],[7,"10317",200.0],[8,"10433",200.0],[9,"10434",200.0]],"C":[[1,"10318",200.0],[2,"10319",200.0],[3,"10320",200.0],[4,"10321",200.0],[5,"10322",200.0]],"D":[[1,"10323",200.0],[2,"10324",200.0],[3,"10325",200.0],[4,"10326",200.0],[5,"10327",200.0],[6,"10328",301.5],[7,"10329",200.0],[8,"10330",200.0],[9,"10331",200.0],[10,"10332",200.0],[11,"10333",200.0],[12,"10334",200.0],[13,"10335",301.5],[14,"10336",200.0]],"E":[[1,"10337",200.0],[2,"10338",200.0],[3,"10339",200.0],[4,"10340",301.5],[5,"10341",200.0],[6,"10342",200.0],[7,"10343",200.0]],"F":[[1,"10344",200.0],[2,"10345",300.0],[3,"10346",300.0],[4,"10347",200.0],[5,"10348",200.0],[6,"10349",200.0],[7,"10350",200.0],[8,"10351",200.0]],"G":[[1,"10352",200.0],[2,"10353",200.0],[3,"10354",200.0],[4,"10355",200.0],[5,"10356",200.0],[6,"10357",200.0],[7,"10358",200.0],[8,"10359",200.0],[9,"10360",200.0],[10,"10361",200.0],[11,"10362",200.0],[12,"10363",200.0],[13,"10364",200.0],[14,"10365",200.0]],"H":[[1,"10366",200.0],[2,"10367",200.0],[3,"10368",200.0],[4,"10369",200.0],[5,"10370",200.0],[6,"10371",301.8],[7,"10372",200.0],[8,"10373",200.0],[9,"10374",200.0],[10,"10375",200.0],[11,"10376",200.0],[12,"10377",200.0],[13,"10378",301.8],[14,"10379",200.0]],"I":[[1,"10380",200.0],[2,"10381",200.0],[3,"10382",200.0],[4,"10383",200.0],[5,"10384",200.0],[6,"10385",200.0],[7,"10386",301.8],[8,"10387",200.0],[9,"10388",200.0],[10,"10389",200.0],[11,"10390",200.0],[12,"10391",200.0],[13,"10392",200.0],[14,"10393",301.8]],"J":[[1,"10394",200.0],[2,"10395",200.0],[3,"10396",200.0],[4,"10397",200.0],[5,"10398",200.0],[6,"10399",301.8],[7,"10400",200.0],[8,"10401",200.0],[9,"10402",200.0],[10,"10403",200.0],[11,"10404",200.0],[12,"10405",200.0],[13,"10406",301.8],[14,"10407",200.0]],"K":[[1,"10408",200.0],[2,"10409",200.0],[3,"10410",200.0],[4,"10411",200.0],[5,"10412",200.0],[6,"10413",200.0],[7,"10414",200.0],[8,"10415",200.0],[9,"10416",200.0]],"L":[[1,"10417",200.0],[2,"10418",300.0],[3,"10419",300.0],[4,"10420",200.0],[5,"10421",200.0],[6,"10422",200.0],[7,"10423",200.0],[8,"10424",200.0]],"M":[[1,"10425",200.0],[2,"10426",300.0],[3,"10427",300.0],[4,"10428",200.0],[5,"10429",200.0],[6,"10430",200.0],[7,"10431",200.0],[8,"10432",200.0]]}};
+const sb=window.supabase?window.supabase.createClient(SB_URL,SB_KEY):null;
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const S={user:null,miembro:null,fichas:[],byLot:{},v:'plano',zoom:null,open:null,f:'todas',q:''};
+function tel(e){if(!e)return'—';try{const p=window.libphonenumber.parsePhoneNumberFromString(e);return p?p.formatInternational():e}catch(_){return e}}
+function lotInfo(id){const [s,m,n]=id.split('-');const r=(LOTES[s]&&LOTES[s][m]||[]).find(x=>x[0]===+n);return{s,m,n:+n,partida:r?`K1-${r[1]}-1`:'',sup:r?r[2]:null,nom:`${s==='S1'?'Sector 1':'Sector 2'} · Mz ${m} · Lote ${+n}`}}
+const fdate=d=>new Date(d).toLocaleString('es-AR',{day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'});
+// ---------- sesión ----------
+function vLogin(msg){$('#who').innerHTML='';$('#main').innerHTML=`<form class="card login" id="lf"><h2>Ingresar</h2><p class="help">Solo para miembros de la comisión.</p>
+ <label>Email<input type="email" id="le" autocomplete="username" required></label><label>Contraseña<input type="password" id="lp" autocomplete="current-password" required></label>
+ <div class="err" id="lerr">${esc(msg||'')}</div><button class="btn primary" type="submit" id="lb">Ingresar</button></form>`}
+async function start(){if(!sb){$('#main').innerHTML='<div class="card">No se pudo cargar el sistema. Revisá tu conexión y recargá la página.</div>';return}
+ const {data:{session}}=await sb.auth.getSession();if(!session)return vLogin();S.user=session.user;await loadApp()}
+async function loadApp(){const {data:m,error}=await sb.from('miembros').select('nombre,rol').eq('user_id',S.user.id).maybeSingle();
+ if(error||!m||!['admin','comision','tesorero'].includes(m.rol)){await sb.auth.signOut();return vLogin('Tu usuario no tiene acceso al panel. Pedile a la comisión que te habilite.')}
+ S.miembro=m;$('#who').innerHTML=`<span>${esc(m.nombre)} · ${esc(m.rol)}</span><button class="btn sm" id="out">Salir</button>`;await loadData()}
+async function loadData(){$('#main').innerHTML='<div class="empty">Cargando fichas…</div>';
+ const {data,error}=await sb.from('fichas').select('id,tramite,creado,estado,es_prueba,titular_nombre,titular_documento,email,celular,cantidad_lotes,lote_sin_identificar,datos,nota_comision,revisado_en,ficha_lotes(lote_id,reclamo)').order('creado',{ascending:false});
+ if(error){$('#main').innerHTML=`<div class="card">No se pudieron leer las fichas: ${esc(error.message)}</div>`;return}
+ S.fichas=data||[];S.byLot={};for(const f of S.fichas){if(f.estado==='rechazada')continue;for(const fl of f.ficha_lotes||[]){(S.byLot[fl.lote_id]=S.byLot[fl.lote_id]||[]).push(f)}}render()}
+function lotClass(id){const fs=S.byLot[id];if(!fs||!fs.length)return'';if(fs.length>1||fs.some(f=>(f.ficha_lotes||[]).some(x=>x.lote_id===id&&x.reclamo)))return'conf';return fs[0].estado==='verificada'?'ok':'pend'}
+// ---------- vistas ----------
+function vResumen(){const act=S.fichas.filter(f=>f.estado!=='rechazada');const lotes=Object.keys(S.byLot).length;const conf=Object.keys(S.byLot).filter(id=>lotClass(id)==='conf').length;
+ return`<div class="kpis"><div class="kpi"><span class="l">Fichas recibidas</span><span class="v">${act.length}</span></div><div class="kpi"><span class="l">Lotes con ficha</span><span class="v">${lotes} <span style="font-size:14px;color:var(--muted);font-weight:500">de 202</span></span></div>
+ <div class="kpi"><span class="l">Pendientes de revisar</span><span class="v">${act.filter(f=>f.estado==='pendiente').length}</span></div><div class="kpi"><span class="l">Lotes con conflicto</span><span class="v">${conf}</span></div>
+ <div class="kpi"><span class="l">Sin lote identificado</span><span class="v">${act.filter(f=>!(f.ficha_lotes||[]).length).length}</span></div></div>
+ <div class="tabs"><button type="button" data-v="plano" aria-pressed="${S.v==='plano'}">Plano</button><button type="button" data-v="lista" aria-pressed="${S.v==='lista'}">Fichas</button><button type="button" class="btn sm" id="reload" style="margin-left:auto">Actualizar</button></div>`}
+function vPlano(){if(S.zoom==null)S.zoom=innerWidth<640?2.6:1;
+ let g=`<rect x="0" y="145.06" width="145.06" height="145.05" fill="var(--s1)"/><path d="M0 0H290.11V290.11H145.06V145.06H0Z" fill="var(--s2)"/><path d="M0 0H290.11V290.11H0Z" fill="none" stroke="var(--fg)" stroke-width=".8"/><path d="M0 145.06H145.06V290.11" fill="none" stroke="var(--fg)" stroke-width=".5" stroke-dasharray="3 2"/>
+ <text class="street" x="145" y="-6" text-anchor="middle">Calle Posadas</text><text class="street" x="145" y="300" text-anchor="middle">Calle Pago Largo</text><text class="street" transform="translate(-6 145) rotate(-90)" text-anchor="middle">Calle 10</text><text class="street" transform="translate(297 145) rotate(90)" text-anchor="middle">Calle 9</text>
+ <text class="slab" x="72.5" y="284.5" text-anchor="middle">Sector 1</text><text class="slab" x="72.5" y="139.5" text-anchor="middle">Sector 2</text>`;
+ for(const [nm,x,y,w,h,k] of MAPA.areas)g+=`<rect class="ar ${k}" x="${x}" y="${y}" width="${w}" height="${h}"/>`;
+ for(const [sec,mz,x,y] of MAPA.blocks)g+=`<text class="mlab" x="${x}" y="${y-1.6}">Mz ${mz}</text>`;
+ for(const [id,x,y,w,h] of MAPA.lots){const n=+id.split('-')[2];g+=`<g class="lt ${lotClass(id)}" data-lot="${id}" tabindex="0" role="button" aria-label="${esc(lotInfo(id).nom)}"><rect x="${x}" y="${y}" width="${w}" height="${h}"/><text x="${x+w/2}" y="${y+h/2}">${n}</text></g>`}
+ return`<div class="card"><div class="mapctl"><div class="legend"><span><i style="background:var(--lot)"></i>Sin ficha</span><span><i style="background:var(--pend)"></i>Ficha pendiente</span><span><i style="background:var(--ok);border-color:var(--ok)"></i>Verificada</span><span><i style="background:var(--conf);border-color:var(--conf-line)"></i>Conflicto (más de una ficha)</span></div>
+ <div class="zoom"><button type="button" data-zoom="-1" aria-label="Alejar">−</button><button type="button" data-zoom="1" aria-label="Acercar">+</button><button type="button" data-zoom="0">Ver todo</button></div></div>
+ <div class="mapbox" id="mapbox"><svg viewBox="-12 -14 314 320" style="width:${S.zoom*100}%" xmlns="http://www.w3.org/2000/svg">${g}</svg></div>
+ <p class="help">Pasá el mouse por un lote para ver quién lo cargó. Hacé clic para abrir la tarjeta.</p></div>`}
+function vLista(){const q=S.q.trim().toLowerCase();let rs=S.fichas.filter(f=>S.f==='todas'||f.estado===S.f||(S.f==='sinlote'&&!(f.ficha_lotes||[]).length));
+ if(q)rs=rs.filter(f=>(f.titular_nombre+' '+f.titular_documento+' '+f.tramite+' '+(f.ficha_lotes||[]).map(x=>x.lote_id).join(' ')).toLowerCase().includes(q));
+ const F=[['todas','Todas'],['pendiente','Pendientes'],['verificada','Verificadas'],['rechazada','Rechazadas'],['sinlote','Sin lote']];
+ return`<div class="card"><div class="tabs"><input type="search" id="q" placeholder="Buscar por nombre, DNI, trámite o lote" value="${esc(S.q)}" style="flex:1 1 240px">${F.map(([k,l])=>`<button type="button" data-f="${k}" aria-pressed="${S.f===k}">${l}</button>`).join('')}</div>
+ <div class="tablebox"><table><thead><tr><th>Recibida</th><th>Titular</th><th>Documento</th><th>Lotes</th><th>Contacto</th><th>Estado</th></tr></thead><tbody>
+ ${rs.length?rs.map(f=>`<tr data-ficha="${f.id}"><td class="mono">${fdate(f.creado)}<br>${esc(f.tramite)}</td><td>${esc(f.titular_nombre)}${f.es_prueba?' <span class="chip" style="border-color:var(--muted);color:var(--muted)">prueba</span>':''}</td><td class="mono">${esc(f.titular_documento)}</td>
+ <td class="mono">${(f.ficha_lotes||[]).map(x=>esc(x.lote_id)+(x.reclamo?'<span class="chip">reclamo</span>':'')).join('<br>')||'<span class="help">A identificar</span>'} <span class="help">(${f.cantidad_lotes} decl.)</span></td>
+ <td>${esc(f.email||'—')}<br><span class="mono">${esc(tel(f.celular))}</span></td><td><span class="st ${f.estado}">${f.estado}</span></td></tr>`).join(''):`<tr><td colspan="6" class="empty">Todavía no hay fichas${S.f!=='todas'?' con ese filtro':''}.</td></tr>`}
+ </tbody></table></div></div>`}
+function render(){if(!S.miembro)return;const mb=$('#mapbox'),sc=mb?[mb.scrollLeft,mb.scrollTop]:null;
+ $('#main').innerHTML=vResumen()+(S.v==='plano'?vPlano():vLista());const nb=$('#mapbox');if(nb&&sc){nb.scrollLeft=sc[0];nb.scrollTop=sc[1]}$('#dr').innerHTML=drawer()}
+// ---------- tarjeta ----------
+function fichaHTML(f){const d=f.datos||{},t=d.titular||{},dom=d.domicilio_real||{};const yes=v=>v?'Sí':'No';
+ const lotes=(d.lotes||[]).map(l=>`<div class="mono">${esc(l.lote_id)} · ${esc(l.partida||'')}</div><div class="help">${esc(l.titularidad||'')} · ${esc(l.documento||'')}${l.estado?' · '+esc(l.estado):''}</div>`).join('');
+ return`<div class="fcard"><div class="dh"><div><h2>${esc(f.titular_nombre)}</h2><span class="mono help">${esc(f.tramite)} · ${fdate(f.creado)}</span></div><span class="st ${f.estado}">${f.estado}</span></div>
+ ${f.es_prueba?'<div class="note">Ficha cargada durante la prueba con la comisión.</div>':''}
+ <dl><dt>Tipo</dt><dd>${t.tipo==='juridica'?'Empresa / entidad':'Persona'}</dd><dt>${esc(t.tipo_documento||'Documento')}</dt><dd class="mono">${esc(t.documento||f.titular_documento)}</dd><dt>Condición IVA</dt><dd>${esc(t.condicion_iva||'—')}</dd>
+ <dt>Email</dt><dd>${esc(t.email||'—')}</dd><dt>Celular</dt><dd class="mono">${esc(tel(t.celular))}${t.whatsapp?' · WhatsApp':''}</dd>
+ <dt>Domicilio real</dt><dd>${esc([dom.calle,dom.localidad,dom.provincia,dom.cp].filter(Boolean).join(', ')||'—')}</dd><dt>Notificaciones formales</dt><dd>${d.domicilio_notificaciones==='igual_real'?'En el domicilio real':esc(d.domicilio_notificaciones||'—')}</dd>
+ <dt>Acepta avisos por email/WhatsApp</dt><dd>${yes(d.acepta_notificacion_electronica)}${d.notificacion_electronica_premarcada?' <span class="help">(casilla premarcada)</span>':''}</dd>
+ <dt>Lotes declarados</dt><dd>${esc(d.cantidad_lotes_declarada??f.cantidad_lotes)}</dd><dt>Lotes marcados</dt><dd>${lotes||'—'}</dd>${d.lote_sin_identificar?`<dt>A identificar</dt><dd>${esc(d.lote_sin_identificar)}</dd>`:''}
+ ${(d.cotitulares||[]).length?`<dt>Condóminos</dt><dd>${d.cotitulares.map(p=>esc(p.nombre)+' · '+esc(p.documento)+(p.celular?' · '+esc(tel(p.celular)):'')).join('<br>')}</dd><dt>Socio designado</dt><dd>${d.socio_designado==='titular'?'El titular':'Condómino '+(+d.socio_designado+1)}</dd>`:''}
+ ${d.apoderado?`<dt>Apoderado</dt><dd>${esc(d.apoderado.nombre)} (${esc(d.apoderado.relacion)})<br>${esc(tel(d.apoderado.celular))} · ${esc(d.apoderado.email||'')}<br><span class="help">Liquidaciones a: ${esc(d.apoderado.recibe_liquidaciones)}</span></dd>`:''}
+ ${d.contacto_adicional?`<dt>Contacto adicional</dt><dd>${esc(d.contacto_adicional.nombre)} (${esc(d.contacto_adicional.relacion)}) · ${esc(tel(d.contacto_adicional.celular))}</dd>`:''}
+ <dt>Facturación</dt><dd>${d.facturacion&&d.facturacion.a_nombre!=='titular'?esc(d.facturacion.a_nombre)+' · CUIT '+esc(d.facturacion.cuit):'A nombre del titular'}</dd>
+ ${(d.vehiculos||[]).length?`<dt>Vehículos</dt><dd class="mono">${d.vehiculos.map(v=>esc(v.patente)+' · '+esc(v.tipo)+(v.descripcion?' · '+esc(v.descripcion):'')).join('<br>')}</dd>`:''}
+ ${d.comentarios?`<dt>Comentarios</dt><dd>${esc(d.comentarios)}</dd>`:''}<dt>Declaración jurada</dt><dd>${yes(d.declaracion_jurada)} · consentimiento de datos: ${yes(d.consentimiento_datos)}</dd></dl>
+ <label>Nota de la comisión<textarea id="nota-${f.id}" rows="2">${esc(f.nota_comision||'')}</textarea></label>
+ <div class="acts"><button type="button" class="btn primary" data-set="verificada" data-id="${f.id}">Marcar verificada</button><button type="button" class="btn" data-set="pendiente" data-id="${f.id}">Volver a pendiente</button><button type="button" class="btn" data-set="rechazada" data-id="${f.id}" style="color:var(--crit)">Rechazar</button></div><div class="err" id="ferr-${f.id}"></div></div>`}
+function drawer(){if(!S.open)return'';let head='',body='';
+ if(S.open.lot){const i=lotInfo(S.open.lot),fs=S.byLot[S.open.lot]||[];head=`<div><h2>${esc(i.nom)}</h2><span class="mono help">${esc(i.partida)} · ${i.sup!=null?i.sup.toLocaleString('es-AR')+' m²':''}</span></div>`;
+  body=fs.length?(fs.length>1?`<div class="note">Hay ${fs.length} fichas que reclaman este lote. Revisá cuál corresponde y rechazá la otra.</div>`:'')+fs.map(fichaHTML).join(''):'<div class="empty">Ningún propietario cargó todavía este lote.</div>'}
+ else{const f=S.fichas.find(x=>x.id===S.open.ficha);head='<div><h2>Ficha</h2></div>';body=f?fichaHTML(f):''}
+ return`<div class="scrim" data-close></div><aside class="drawer" role="dialog" aria-label="Tarjeta"><div class="dh">${head}<button type="button" class="x" data-close aria-label="Cerrar">×</button></div>${body}</aside>`}
+// ---------- tooltip ----------
+const tip=$('#tip');
+function showTip(id,x,y){const fs=S.byLot[id]||[];const i=lotInfo(id);
+ tip.innerHTML=`<b>${esc(i.nom)}</b>`+(fs.length?fs.map(f=>`<div>${esc(f.titular_nombre)}</div><div class="m mono">${esc(tel(f.celular))}</div><div class="m">${esc(f.email||'')}</div><div class="m">Ficha ${esc(f.estado)} · ${esc(f.tramite)}</div>`).join('<hr style="border:0;border-top:1px solid var(--line);margin:4px 0">'):'<div class="m">Sin ficha cargada</div>');
+ tip.hidden=false;const r=tip.getBoundingClientRect();tip.style.left=Math.min(x+14,innerWidth-r.width-8)+'px';tip.style.top=Math.min(y+14,innerHeight-r.height-8)+'px'}
+document.addEventListener('pointermove',e=>{if(e.pointerType!=='mouse'){return}const lt=e.target.closest&&e.target.closest('[data-lot]');if(lt)showTip(lt.dataset.lot,e.clientX,e.clientY);else tip.hidden=true});
+// ---------- eventos ----------
+document.addEventListener('submit',async e=>{if(e.target.id!=='lf')return;e.preventDefault();const b=$('#lb');b.disabled=true;$('#lerr').textContent='';
+ const {data,error}=await sb.auth.signInWithPassword({email:$('#le').value.trim(),password:$('#lp').value});b.disabled=false;
+ if(error){$('#lerr').textContent=/invalid/i.test(error.message)?'Email o contraseña incorrectos.':error.message;return}S.user=data.user;await loadApp()});
+document.addEventListener('click',async e=>{const t=e.target;
+ const lt=t.closest('[data-lot]');if(lt){tip.hidden=true;S.open={lot:lt.dataset.lot};render();return}
+ const tr=t.closest('[data-ficha]');if(tr){S.open={ficha:+tr.dataset.ficha};render();return}
+ if(t.closest('[data-close]')){S.open=null;render();return}
+ const v=t.closest('[data-v]');if(v){S.v=v.dataset.v;render();return}
+ const f=t.closest('[data-f]');if(f){S.f=f.dataset.f;render();return}
+ const z=t.closest('[data-zoom]');if(z){const d=+z.dataset.zoom;S.zoom=d===0?1:Math.min(6,Math.max(1,S.zoom*(d>0?1.5:1/1.5)));render();return}
+ if(t.id==='reload'){await loadData();return}
+ if(t.id==='out'){await sb.auth.signOut();S.miembro=null;S.user=null;S.open=null;vLogin();return}
+ const st=t.closest('[data-set]');if(st){const id=+st.dataset.id;st.disabled=true;
+  const {error}=await sb.from('fichas').update({estado:st.dataset.set,nota_comision:($('#nota-'+id).value||null),revisado_por:S.user.id,revisado_en:new Date().toISOString()}).eq('id',id);
+  if(error){st.disabled=false;$('#ferr-'+id).textContent='No se pudo guardar: '+error.message;return}const keep=S.open;await loadData();S.open=keep;render()}});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&S.open){S.open=null;render()}const lt=e.target.closest&&e.target.closest('[data-lot]');if(lt&&e.key==='Enter'){S.open={lot:lt.dataset.lot};render()}});
+document.addEventListener('input',e=>{if(e.target.id==='q'){S.q=e.target.value;const p=e.target.selectionStart;render();const q=$('#q');q.focus();q.setSelectionRange(p,p)}});
+start();
+</script>
+</body>
+</html>
