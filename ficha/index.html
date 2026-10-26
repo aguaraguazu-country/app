@@ -1,0 +1,440 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Ficha de Propietario Aguará Guazú</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Fraunces:opsz,wght@9..144,600&display=swap">
+<style>
+/* Layout: una columna angosta tipo ficha, pasos numerados (es un proceso real), barra de progreso arriba */
+:root{
+  --bg:#f6f7f4; --card:#ffffff; --fg:#1d2420; --muted:#5d6862; --line:#d9ddd6;
+  --accent:#2f6b4f; --accent-soft:#e3efe8; --rust:#b0532a; --warn:#a15c00; --warn-soft:#fbf0dc; --err:#b42318;
+  --lot:#ffffff;--lotline:#8f9a93;--sel:#2f6b4f;--taken:#c9cec9;--claim:#b0532a;--s1:#eef3ec;--s2:#f3f1ea;--green:#dcebd9;--acfill:#e6e8e3;
+  --display:'Fraunces',Georgia,serif; --body:'Public Sans',system-ui,sans-serif; --mono:'IBM Plex Mono',ui-monospace,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#141916;--card:#1c2320;--fg:#e6ebe7;--muted:#9aa59f;--line:#2f3833;--accent:#7cc39f;--accent-soft:#1f3329;--rust:#e08a5e;--warn:#e0a54a;--warn-soft:#2f2615;--err:#f2867b;--lot:#202825;--lotline:#5b6660;--sel:#7cc39f;--taken:#3a423e;--claim:#e08a5e;--s1:#18211d;--s2:#1d1f1a;--green:#203325;--acfill:#262c29;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#141916;--card:#1c2320;--fg:#e6ebe7;--muted:#9aa59f;--line:#2f3833;--accent:#7cc39f;--accent-soft:#1f3329;--rust:#e08a5e;--warn:#e0a54a;--warn-soft:#2f2615;--err:#f2867b;--lot:#202825;--lotline:#5b6660;--sel:#7cc39f;--taken:#3a423e;--claim:#e08a5e;--s1:#18211d;--s2:#1d1f1a;--green:#203325;--acfill:#262c29;color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:15px;line-height:1.5}
+.wrap{max-width:720px;margin:0 auto;padding-block:20px 60px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+header.top{display:grid;gap:6px;margin-bottom:18px}
+.eyebrow{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600}
+h1{font-family:var(--display);font-weight:600;font-size:clamp(26px,5vw,34px);line-height:1.15;margin:0;text-wrap:balance}
+.lede{color:var(--muted);margin:0;max-width:62ch}
+.demo{border:1px dashed var(--warn);background:var(--warn-soft);color:var(--fg);border-radius:8px;padding:10px 12px;font-size:13.5px}
+.progress{display:flex;gap:4px;margin:14px 0 6px}
+.progress span{flex:1;height:4px;border-radius:2px;background:var(--line)}
+.progress span.on{background:var(--accent)}
+.steplabel{font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+section.step{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px;display:grid;gap:18px}
+h2{font-size:20px;margin:0;font-weight:700;text-wrap:balance}
+.help{font-size:13.5px;color:var(--muted);margin:0}
+.field{display:grid;gap:6px}
+label,.lbl{font-weight:600;font-size:14px}
+.opt{font-weight:400;color:var(--muted);font-size:12.5px}
+input[type=text],input[type=email],input[type=tel],select,textarea{font:inherit;color:var(--fg);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px 12px;width:100%}
+textarea{min-height:70px;resize:vertical}
+input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.row{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.err{color:var(--err);font-size:13px;min-height:0}
+.invalid{border-color:var(--err)!important}
+.seg{display:flex;flex-wrap:wrap;gap:8px}
+.seg button,.chip{font:inherit;font-size:14px;border:1px solid var(--line);background:var(--card);color:var(--fg);border-radius:999px;padding:7px 14px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--card)}
+.grid-lotes{display:grid;grid-template-columns:repeat(auto-fill,minmax(54px,1fr));gap:6px}
+.grid-lotes button{font:inherit;font-variant-numeric:tabular-nums;border:1px solid var(--line);background:var(--bg);color:var(--fg);border-radius:8px;padding:8px 0;cursor:pointer}
+.grid-lotes button[aria-pressed="true"]{background:var(--accent);color:var(--card);border-color:var(--accent)}
+.mono{font-family:var(--mono);font-size:13px}
+.sel{display:grid;gap:10px}
+.lotecard{border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:8px;padding:12px;display:grid;gap:10px;background:var(--bg)}
+.lotecard .head{display:flex;justify-content:space-between;gap:10px;align-items:baseline;flex-wrap:wrap}
+.lotecard strong{font-size:15px}
+.link{font:inherit;background:none;border:none;color:var(--rust);cursor:pointer;padding:0;text-decoration:underline}
+.empty{border:1px dashed var(--line);border-radius:8px;padding:14px;color:var(--muted);font-size:14px;text-align:center}
+.check{display:grid;grid-template-columns:auto 1fr;gap:10px;align-items:start;font-weight:400}
+.check input{margin-top:4px;width:18px;height:18px;accent-color:var(--accent)}
+.legal{font-size:13px;color:var(--muted);border-top:1px solid var(--line);padding-top:12px;max-width:70ch}
+.nav{display:flex;justify-content:space-between;gap:10px;margin-top:16px}
+.btn{font:inherit;font-weight:600;border-radius:8px;padding:11px 18px;cursor:pointer;border:1px solid var(--line);background:var(--card);color:var(--fg)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--card)}
+.btn[disabled]{opacity:.5;cursor:not-allowed}
+.person{border:1px solid var(--line);border-radius:8px;padding:12px;display:grid;gap:10px}
+.summary dl{display:grid;grid-template-columns:minmax(120px,190px) 1fr;gap:6px 14px;margin:0}
+.summary dt{color:var(--muted);font-size:13.5px}
+.summary dd{margin:0;min-width:0;overflow-wrap:anywhere}
+fieldset.phone{border:1px solid var(--line);border-radius:8px;padding:12px;margin:0;display:grid;gap:10px;min-width:0}
+fieldset.phone legend{padding:0 4px}
+.sub{font-weight:500;font-size:13px;color:var(--muted)}
+.phrow{display:grid;grid-template-columns:minmax(90px,130px) 1fr;gap:10px}
+.phpv{font-size:13.5px;min-height:1.2em;font-variant-numeric:tabular-nums}
+.phpv.ok{color:var(--accent)}.phpv.bad{color:var(--err)}
+.done{gap:14px}.okmark{width:44px;height:44px;border-radius:50%;background:var(--accent);color:var(--card);display:grid;place-items:center;font-size:24px;font-weight:700}
+.next{margin:6px 0 0;padding-left:20px;display:grid;gap:4px}
+.tech{border-top:1px solid var(--line);padding-top:12px;font-size:13.5px;color:var(--muted)}.tech summary{cursor:pointer}.tech pre{margin-top:10px}
+.cuit{display:grid;grid-template-columns:72px auto minmax(0,1fr) auto 64px;gap:6px;align-items:end}
+.cuit .dash{padding-bottom:10px;color:var(--muted)}
+.warnmsg{color:var(--warn);font-size:13px}
+.tabs{display:flex;gap:0;border:1px solid var(--line);border-radius:8px;overflow:hidden;width:max-content;max-width:100%}
+.tabs button{font:inherit;font-size:14px;border:0;background:var(--card);color:var(--fg);padding:8px 16px;cursor:pointer}
+.tabs button[aria-pressed="true"]{background:var(--accent);color:var(--card)}
+.mapwrap{display:grid;gap:8px;min-width:0}
+.mapctl{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between}
+.zoom{display:flex;gap:6px}.zoom button{font:inherit;min-width:40px;height:36px;border:1px solid var(--line);background:var(--card);color:var(--fg);border-radius:8px;cursor:pointer}
+.mapbox{overflow:auto;border:1px solid var(--line);border-radius:10px;background:var(--bg);max-height:72vh;-webkit-overflow-scrolling:touch;touch-action:pan-x pan-y}
+.mapbox svg{display:block;max-width:none;height:auto}
+.lt rect{fill:var(--lot);stroke:var(--lotline);stroke-width:.35;cursor:pointer}
+.lt text{fill:var(--fg);font-family:var(--body);font-size:4.2px;text-anchor:middle;dominant-baseline:central;pointer-events:none;font-variant-numeric:tabular-nums}
+.lt:hover rect,.lt:focus-visible rect{stroke:var(--accent);stroke-width:1}
+.lt:focus{outline:none}
+.lt.sel rect{fill:var(--sel);stroke:var(--sel)}.lt.sel text{fill:var(--card);font-weight:700}
+.lt.taken rect{fill:url(#hatch);cursor:not-allowed}.lt.taken text{fill:var(--muted)}
+.lt.claim rect{fill:var(--card);stroke:var(--claim);stroke-width:1.2;stroke-dasharray:2 1}.lt.claim text{fill:var(--claim);font-weight:700}
+.lt.pick rect{stroke:var(--claim);stroke-width:1.4}
+.admin .lt.taken rect{cursor:pointer}
+.ar{fill:var(--acfill)}.ar.verde{fill:var(--green)}
+.mlab{fill:var(--fg);font-family:var(--body);font-weight:700;font-size:3.6px}
+.slab{fill:var(--muted);font-family:var(--body);font-size:4px;letter-spacing:.3px;text-transform:uppercase}
+.street{fill:var(--muted);font-family:var(--body);font-size:4.6px;font-style:italic}
+.legend{display:flex;flex-wrap:wrap;gap:12px;font-size:12.5px;color:var(--muted)}
+.legend i{display:inline-block;width:14px;height:14px;border-radius:3px;vertical-align:-2px;margin-right:5px;border:1px solid var(--lotline)}
+.info{font-size:13.5px;min-height:1.3em}
+.panel{border:1px solid var(--claim);border-radius:8px;padding:12px;display:grid;gap:10px;background:var(--card)}
+.panel .acts{display:flex;flex-wrap:wrap;gap:8px}
+.chipwarn{font-size:12px;color:var(--claim);border:1px solid var(--claim);border-radius:999px;padding:1px 8px}
+.grid-lotes button.tk{background:var(--taken);color:var(--muted);text-decoration:line-through}
+pre{background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:12px;overflow-x:auto;font-family:var(--mono);font-size:12px;max-height:340px}
+@media (prefers-reduced-motion:no-preference){section.step{animation:in .2s ease-out}@keyframes in{from{transform:translateY(4px)}to{transform:none}}}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+<header class="top">
+  <div class="eyebrow">Asociación Civil Aguará Guazú Country · Chacra 108, Ituzaingó</div>
+  <h1>Ficha de propietario 2026</h1>
+  <p class="lede">Actualizamos el padrón para enviar liquidaciones, avisos y convocatorias a la persona correcta. Lleva unos 5 minutos. Si tenés más de un lote, cargalos todos en la misma ficha.</p>
+  <div class="demo" id="demo"><strong>Prototipo para revisión de la comisión.</strong> Este formulario no guarda ni envía nada: al final muestra lo que se guardaría.</div>
+</header>
+<div class="progress" id="prog"></div>
+<div class="steplabel" id="stepl"></div>
+<form id="f" novalidate>
+<div id="steps"></div>
+<div class="nav"><button type="button" class="btn" id="back">Atrás</button><button type="submit" class="btn primary" id="next">Siguiente</button></div>
+</form>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/libphonenumber-js@1.13.14/bundle/libphonenumber-max.js"></script>
+<script>
+const LOTES={"S1":{"A":[[1,"7409",200.0],[2,"8463",200.0],[3,"8464",200.0],[4,"8465",200.0],[5,"8466",200.0],[6,"8467",200.0],[7,"8468",200.0],[8,"8469",200.0],[9,"8470",200.0],[10,"8471",200.0],[11,"8472",200.0],[12,"8473",200.0],[13,"8474",200.0],[14,"8475",200.0]],"C":[[1,"8476",200.0],[2,"8477",200.0],[3,"8478",200.0],[4,"8479",301.8],[5,"8480",200.0],[6,"8481",200.0],[7,"8482",200.0]],"D":[[1,"8483",200.0],[2,"8484",200.0],[3,"8485",200.0],[4,"8486",200.0],[5,"8487",200.0],[6,"8488",200.0],[7,"8489",200.0],[8,"8490",200.0],[9,"8491",200.0],[10,"8492",200.0],[11,"8493",200.0],[12,"8494",200.0]],"E":[[1,"8495",200.0],[2,"8496",200.0],[3,"8497",200.0],[4,"8498",200.0],[5,"8499",200.0],[6,"8500",200.0],[7,"8501",200.0],[8,"8502",200.0],[9,"8503",200.0]],"F":[[1,"8504",200.0],[2,"8505",200.0],[3,"8506",200.0],[4,"8507",300.0],[5,"8508",300.0],[6,"8509",200.0],[7,"8510",200.0],[8,"8511",200.0]]},"S2":{"A":[[1,"7407",200.0],[2,"10284",200.0],[3,"10285",200.0],[4,"10286",200.0],[5,"10287",200.0],[6,"10288",200.0],[7,"10289",200.0],[8,"10290",200.0],[9,"10291",200.0],[10,"10292",200.0],[11,"10293",200.0],[12,"10294",200.0],[13,"10295",200.0],[14,"10296",200.0],[15,"10297",200.0],[16,"10298",200.0],[17,"10299",200.0],[18,"10300",200.0],[19,"10301",200.0],[20,"10302",200.0],[21,"10303",200.0],[22,"10304",200.0],[23,"10305",200.0],[24,"10306",200.0],[25,"10307",200.0],[26,"10308",200.0],[27,"10309",200.0],[28,"10310",200.0]],"B":[[1,"10311",200.0],[2,"10312",200.0],[3,"10313",200.0],[4,"10314",200.0],[5,"10315",200.0],[6,"10316",200.0],[7,"10317",200.0],[8,"10433",200.0],[9,"10434",200.0]],"C":[[1,"10318",200.0],[2,"10319",200.0],[3,"10320",200.0],[4,"10321",200.0],[5,"10322",200.0]],"D":[[1,"10323",200.0],[2,"10324",200.0],[3,"10325",200.0],[4,"10326",200.0],[5,"10327",200.0],[6,"10328",301.5],[7,"10329",200.0],[8,"10330",200.0],[9,"10331",200.0],[10,"10332",200.0],[11,"10333",200.0],[12,"10334",200.0],[13,"10335",301.5],[14,"10336",200.0]],"E":[[1,"10337",200.0],[2,"10338",200.0],[3,"10339",200.0],[4,"10340",301.5],[5,"10341",200.0],[6,"10342",200.0],[7,"10343",200.0]],"F":[[1,"10344",200.0],[2,"10345",300.0],[3,"10346",300.0],[4,"10347",200.0],[5,"10348",200.0],[6,"10349",200.0],[7,"10350",200.0],[8,"10351",200.0]],"G":[[1,"10352",200.0],[2,"10353",200.0],[3,"10354",200.0],[4,"10355",200.0],[5,"10356",200.0],[6,"10357",200.0],[7,"10358",200.0],[8,"10359",200.0],[9,"10360",200.0],[10,"10361",200.0],[11,"10362",200.0],[12,"10363",200.0],[13,"10364",200.0],[14,"10365",200.0]],"H":[[1,"10366",200.0],[2,"10367",200.0],[3,"10368",200.0],[4,"10369",200.0],[5,"10370",200.0],[6,"10371",301.8],[7,"10372",200.0],[8,"10373",200.0],[9,"10374",200.0],[10,"10375",200.0],[11,"10376",200.0],[12,"10377",200.0],[13,"10378",301.8],[14,"10379",200.0]],"I":[[1,"10380",200.0],[2,"10381",200.0],[3,"10382",200.0],[4,"10383",200.0],[5,"10384",200.0],[6,"10385",200.0],[7,"10386",301.8],[8,"10387",200.0],[9,"10388",200.0],[10,"10389",200.0],[11,"10390",200.0],[12,"10391",200.0],[13,"10392",200.0],[14,"10393",301.8]],"J":[[1,"10394",200.0],[2,"10395",200.0],[3,"10396",200.0],[4,"10397",200.0],[5,"10398",200.0],[6,"10399",301.8],[7,"10400",200.0],[8,"10401",200.0],[9,"10402",200.0],[10,"10403",200.0],[11,"10404",200.0],[12,"10405",200.0],[13,"10406",301.8],[14,"10407",200.0]],"K":[[1,"10408",200.0],[2,"10409",200.0],[3,"10410",200.0],[4,"10411",200.0],[5,"10412",200.0],[6,"10413",200.0],[7,"10414",200.0],[8,"10415",200.0],[9,"10416",200.0]],"L":[[1,"10417",200.0],[2,"10418",300.0],[3,"10419",300.0],[4,"10420",200.0],[5,"10421",200.0],[6,"10422",200.0],[7,"10423",200.0],[8,"10424",200.0]],"M":[[1,"10425",200.0],[2,"10426",300.0],[3,"10427",300.0],[4,"10428",200.0],[5,"10429",200.0],[6,"10430",200.0],[7,"10431",200.0],[8,"10432",200.0]]}};
+const MAPA={"lots":[["S2-A-01",0,0,10,20],["S2-A-02",10,0,10,20],["S2-A-03",20,0,10,20],["S2-A-04",30,0,10,20],["S2-A-05",40,0,10,20],["S2-A-06",50,0,10,20],["S2-A-07",60,0,10,20],["S2-A-08",75.05,0,10,20],["S2-A-09",85.05,0,10,20],["S2-A-10",95.05,0,10,20],["S2-A-11",105.05,0,10,20],["S2-A-12",115.05,0,10,20],["S2-A-13",125.05,0,10,20],["S2-A-14",135.05,0,10,20],["S2-A-15",145.05,0,10,20],["S2-A-16",155.05,0,10,20],["S2-A-17",165.05,0,10,20],["S2-A-18",175.05,0,10,20],["S2-A-19",185.05,0,10,20],["S2-A-20",195.05,0,10,20],["S2-A-21",205.05,0,10,20],["S2-A-22",220.11,0,10,20],["S2-A-23",230.11,0,10,20],["S2-A-24",240.11,0,10,20],["S2-A-25",250.11,0,10,20],["S2-A-26",260.11,0,10,20],["S2-A-27",270.11,0,10,20],["S2-A-28",280.11,0,10,20],["S2-K-01",0,35,20,10],["S2-K-02",0,45,20,10],["S2-K-03",0,55,20,10],["S2-K-04",0,65,20,10],["S2-K-05",0,80.06,20,10],["S2-K-06",0,90.06,20,10],["S2-K-07",0,100.06,20,10],["S2-K-08",0,110.06,20,10],["S2-K-09",0,120.06,20,10],["S2-L-01",35,35,20,10],["S2-L-08",35,45,20,10],["S2-L-07",35,55,20,10],["S2-L-02",55,35,10,30],["S2-L-03",70.05,35,10,30],["S2-L-04",80.05,35,20,10],["S2-L-05",80.05,45,20,10],["S2-L-06",80.05,55,20,10],["S2-J-01",35,80,20,10],["S2-J-02",55,80,10,20],["S2-J-14",35,90,20,10],["S2-J-12",35,110.06,20,10],["S2-J-11",35,120.06,20,10],["S2-J-10",55,110.06,10,20],["S2-J-03",70.05,80,10,20],["S2-J-04",80.05,80,20,10],["S2-J-05",80.05,90,20,10],["S2-J-09",70.05,110.06,10,20],["S2-J-07",80.05,110.06,20,10],["S2-J-08",80.05,120.06,20,10],["S2-J-13",35,100,30,10.06],["S2-J-06",70.05,100,30,10.06],["S2-I-01",115.05,80,10,20],["S2-I-02",125.05,80,10,20],["S2-I-03",135.05,80,10,20],["S2-I-04",145.05,80,10,20],["S2-I-05",155.05,80,10,20],["S2-I-06",165.05,80,10,20],["S2-I-14",115.05,100,30,10.06],["S2-I-07",145.05,100,30,10.06],["S2-I-13",115.05,110.06,10,20],["S2-I-12",125.05,110.06,10,20],["S2-I-11",135.05,110.06,10,20],["S2-I-10",145.05,110.06,10,20],["S2-I-09",155.05,110.06,10,20],["S2-I-08",165.05,110.06,10,20],["S2-M-01",190.05,35,20,10],["S2-M-08",190.05,45,20,10],["S2-M-07",190.05,55,20,10],["S2-M-02",210.05,35,10,30],["S2-M-03",225.11,35,10,30],["S2-M-04",235.11,35,20,10],["S2-M-05",235.11,45,20,10],["S2-M-06",235.11,55,20,10],["S2-H-01",190.05,80,20,10],["S2-H-02",210.05,80,10,20],["S2-H-14",190.05,90,20,10],["S2-H-12",190.05,110.06,20,10],["S2-H-11",190.05,120.06,20,10],["S2-H-10",210.05,110.06,10,20],["S2-H-03",225.11,80,10,20],["S2-H-04",235.11,80,20,10],["S2-H-05",235.11,90,20,10],["S2-H-09",225.11,110.06,10,20],["S2-H-07",235.11,110.06,20,10],["S2-H-08",235.11,120.06,20,10],["S2-H-13",190.05,100,30,10.06],["S2-H-06",225.11,100,30,10.06],["S2-B-01",270.11,35,20,10],["S2-B-02",270.11,45,20,10],["S2-B-03",270.11,55,20,10],["S2-B-04",270.11,65,20,10],["S2-B-05",270.11,80.06,20,10],["S2-B-06",270.11,90.06,20,10],["S2-B-07",270.11,100.06,20,10],["S2-B-08",270.11,110.06,20,10],["S2-B-09",270.11,120.06,20,10],["S2-G-01",145.05,145.06,10,20],["S2-G-02",155.05,145.06,10,20],["S2-G-03",165.05,145.06,10,20],["S2-G-04",175.05,145.06,10,20],["S2-G-05",185.05,145.06,10,20],["S2-G-06",195.05,145.06,10,20],["S2-G-07",205.05,145.06,10,20],["S2-G-08",220.11,145.06,10,20],["S2-G-09",230.11,145.06,10,20],["S2-G-10",240.11,145.06,10,20],["S2-G-11",250.11,145.06,10,20],["S2-G-12",260.11,145.06,10,20],["S2-G-13",270.11,145.06,10,20],["S2-G-14",280.11,145.06,10,20],["S2-E-01",145.05,225.06,10,20],["S2-E-02",155.05,225.06,10,20],["S2-E-03",165.05,225.06,10,20],["S2-E-04",145.05,245.06,30,10.05],["S2-E-07",145.05,255.11,10,20],["S2-E-06",155.05,255.11,10,20],["S2-E-05",165.05,255.11,10,20],["S2-F-01",190.05,180.06,20,10],["S2-F-08",190.05,190.06,20,10],["S2-F-07",190.05,200.06,20,10],["S2-F-02",210.05,180.06,10,30],["S2-F-03",225.11,180.06,10,30],["S2-F-04",235.11,180.06,20,10],["S2-F-05",235.11,190.06,20,10],["S2-F-06",235.11,200.06,20,10],["S2-D-01",190.05,225.06,20,10],["S2-D-02",210.05,225.06,10,20],["S2-D-14",190.05,235.06,20,10],["S2-D-12",190.05,255.11,20,10],["S2-D-11",190.05,265.11,20,10],["S2-D-10",210.05,255.11,10,20],["S2-D-03",225.11,225.06,10,20],["S2-D-04",235.11,225.06,20,10],["S2-D-05",235.11,235.06,20,10],["S2-D-09",225.11,255.11,10,20],["S2-D-07",235.11,255.11,20,10],["S2-D-08",235.11,265.11,20,10],["S2-D-13",190.05,245.06,30,10.05],["S2-D-06",225.11,245.06,30,10.05],["S2-C-01",270.11,180.06,20,10],["S2-C-02",270.11,190.06,20,10],["S2-C-03",270.11,200.06,20,10],["S2-C-04",270.11,270.11,20,10],["S2-C-05",270.11,280.11,20,10],["S1-A-14",0,145.06,10,20],["S1-A-13",10,145.06,10,20],["S1-A-12",20,145.06,10,20],["S1-A-11",30,145.06,10,20],["S1-A-10",40,145.06,10,20],["S1-A-09",50,145.06,10,20],["S1-A-08",60,145.06,10,20],["S1-A-07",75.06,145.06,10,20],["S1-A-06",85.06,145.06,10,20],["S1-A-05",95.06,145.06,10,20],["S1-A-04",105.06,145.06,10,20],["S1-A-03",115.06,145.06,10,20],["S1-A-02",125.06,145.06,10,20],["S1-A-01",135.06,145.06,10,20],["S1-E-01",0,180.06,20,10],["S1-E-02",0,190.06,20,10],["S1-E-03",0,200.06,20,10],["S1-E-04",0,210.06,20,10],["S1-E-05",0,225.12,20,10],["S1-E-06",0,235.12,20,10],["S1-E-07",0,245.12,20,10],["S1-E-08",0,255.12,20,10],["S1-E-09",0,265.12,20,10],["S1-F-06",35,180.06,20,10],["S1-F-07",35,190.06,20,10],["S1-F-08",35,200.06,20,10],["S1-F-05",55,180.06,10,30],["S1-F-04",70.06,180.06,10,30],["S1-F-01",80.06,180.06,20,10],["S1-F-02",80.06,190.06,20,10],["S1-F-03",80.06,200.06,20,10],["S1-D-10",35,225.06,20,10],["S1-D-11",55,225.06,10,20],["S1-D-09",35,235.06,20,10],["S1-D-08",35,255.12,20,10],["S1-D-07",35,265.12,20,10],["S1-D-06",55,255.12,10,20],["S1-D-12",70.06,225.06,10,20],["S1-D-01",80.06,225.06,20,10],["S1-D-02",80.06,235.06,20,10],["S1-D-05",70.06,255.12,10,20],["S1-D-03",80.06,255.12,20,10],["S1-D-04",80.06,265.12,20,10],["S1-C-03",115.06,225.06,10,20],["S1-C-02",125.06,225.06,10,20],["S1-C-01",135.06,225.06,10,20],["S1-C-04",115.06,245.06,30,10.06],["S1-C-07",115.06,255.12,10,20],["S1-C-06",125.06,255.12,10,20],["S1-C-05",135.06,255.12,10,20]],"blocks":[["S2","A",0,0,290.11,20],["S2","K",0,35,20,95.06],["S2","L",35,35,65.05,30],["S2","J",35,80,65.05,50.06],["S2","I",115.05,80,60,50.06],["S2","M",190.05,35,65.06,30],["S2","H",190.05,80,65.06,50.06],["S2","B",270.11,35,20,95.06],["S2","G",145.05,145.06,145.06,20],["S2","E",145.05,225.06,30,50.05],["S2","F",190.05,180.06,65.06,30],["S2","D",190.05,225.06,65.06,50.05],["S2","C",270.11,180.06,20,110.05],["S1","A",0,145.06,145.06,20],["S1","E",0,180.06,20,95.06],["S1","F",35,180.06,65.06,30],["S1","D",35,225.06,65.06,50.06],["S1","C",115.06,225.06,30,50.06]],"areas":[["A.C.",70,0,5.05,20,"ac"],["A.C.",215.05,0,5.06,20,"ac"],["A.C.",0,75,20,5.06,"ac"],["A.C.",65,35,5.05,30,"ac"],["A.C.",65,80,5.05,20,"ac"],["A.C.",65,110.06,5.05,20,"ac"],["A.C.",65,100,5.05,10.06,"ac"],["\u00c1rea recreativa 1",115.05,35,60,30,"verde"],["A.C.",220.05,35,5.06,30,"ac"],["A.C.",220.05,80,5.06,20,"ac"],["A.C.",220.05,110.06,5.06,20,"ac"],["A.C.",220.05,100,5.06,10.06,"ac"],["A.C.",270.11,75,20,5.06,"ac"],["A.C.",215.05,145.06,5.06,20,"ac"],["\u00c1rea recreativa",145.05,180.06,30,30,"verde"],["A.C.",220.05,180.06,5.06,30,"ac"],["A.C.",220.05,225.06,5.06,20,"ac"],["A.C.",220.05,255.11,5.06,20,"ac"],["A.C.",220.05,245.06,5.06,10.05,"ac"],["\u00c1rea recreativa 2",270.11,210.06,20,60.05,"verde"],["A.C.",70,145.06,5.06,20,"ac"],["A.C.",0,220.06,20,5.06,"ac"],["A.C.",65,180.06,5.06,30,"ac"],["Mz B \u00b7 \u00c1rea de recreaci\u00f3n",115.06,180.06,30,30,"verde"],["A.C.",65,225.06,5.06,20,"ac"],["A.C.",65,255.12,5.06,20,"ac"],["Espacio com\u00fan",35,245.06,65.06,10.06,"verde"]]};
+const SECT={S1:'Sector 1 · División parcela D (50 lotes)',S2:'Sector 2 · Mensura 2861-Z (152 lotes)'};
+function PH(){return{pais:'AR',area:'',num:'',movil:true,otro:''}}
+const STEPS=['Tus lotes','Titular y facturación','Domicilios y avisos','Vehículos','Confirmación'];
+const LAST=4;
+const st={step:0,pickS:null,pickM:null,lots:[],cant:null,cantOtro:'',restoTxt:'',modo:'',via:'plano',zoom:null,admin:false,claimPick:null,info:'',taken:{'S2-A-03':1,'S2-G-10':1,'S1-D-04':1},noloteTxt:'',
+ tipo:'humana',nom:'',fis:{cond:'Consumidor final',tdoc:'DNI',dni:'',pre:'20',mid:'',ver:''},fact:{otro:false,nom:'',pre:'20',mid:'',ver:''},email:'',tel:PH(),wa:true,cotit:[],rep:'titular',
+ apod:false,apNom:'',apDoc:'',apRel:'',apTel:PH(),apEmail:'',envio:'titular',
+ dReal:'',dLoc:'',dProv:'',dCP:'',mismo:true,dEsp:'',
+ fNom:'mismo',fDoc:'',iva:'Consumidor final',
+ ocup:'',ca:false,caNom:'',caRel:'',caTel:PH(),vehs:[],
+ dj:false,notif:true,datos:false};
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function cuitOk(c){c=c.replace(/\D/g,'');if(c.length!==11)return false;const w=[5,4,3,2,7,6,5,4,3,2];let s=0;for(let i=0;i<10;i++)s+=+c[i]*w[i];let v=11-s%11;if(v===11)v=0;if(v===10)return false;return v===+c[10]}
+function docOk(d,tipo){const x=d.replace(/\D/g,'');if(tipo==='juridica')return cuitOk(x);return /^\d{7,8}$/.test(x)||cuitOk(x)}
+const DOMS=['gmail.com','hotmail.com','hotmail.com.ar','yahoo.com','yahoo.com.ar','outlook.com','outlook.com.ar','live.com','live.com.ar','icloud.com','arnet.com.ar','fibertel.com.ar','speedy.com.ar','msn.com','protonmail.com'];
+function lev(a,b){const m=a.length,n=b.length;const d=Array.from({length:m+1},(_,i)=>[i]);for(let j=1;j<=n;j++)d[0][j]=j;for(let i=1;i<=m;i++)for(let j=1;j<=n;j++)d[i][j]=Math.min(d[i-1][j]+1,d[i][j-1]+1,d[i-1][j-1]+(a[i-1]===b[j-1]?0:1));return d[m][n]}
+function mailCheck(raw){const e=String(raw||'').trim().toLowerCase();
+ if(!e)return{ok:false,msg:'Falta el email.'};
+ if(/\s/.test(e))return{ok:false,msg:'El email no puede tener espacios.'};
+ const at=e.split('@');if(at.length!==2)return{ok:false,msg:'El email tiene que tener un solo @.'};
+ const [loc,dom]=at;
+ if(!loc||loc.length>64||!/^[a-z0-9.!#$%&'*+/=?^_`{|}~-]+$/.test(loc)||/^\.|\.$|\.\./.test(loc))return{ok:false,msg:'La parte antes del @ no es válida.'};
+ const labels=dom.split('.');
+ if(labels.length<2||labels.some(l=>!/^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?$/.test(l)))return{ok:false,msg:'Después del @ falta el dominio completo (ej.: gmail.com).'};
+ const tld=labels[labels.length-1];
+ if(!/^[a-z]{2,}$/.test(tld))return{ok:false,msg:'La terminación del email no es válida.'};
+ if(['con','cmo','comm','cpm','vom','coom','om'].includes(tld))return{ok:false,msg:`"${'.'+tld}" parece un error de tipeo.`,sug:loc+'@'+labels.slice(0,-1).join('.')+'.com'};
+ if(/^g?m[ai]{1,2}l|^gmai|^gmial|^gnail|^gmal/.test(dom)&&dom!=='gmail.com')return{ok:false,msg:'Las cuentas de Gmail terminan siempre en @gmail.com.',sug:loc+'@gmail.com'};
+ if(!DOMS.includes(dom)){let best=null,bd=9;for(const d of DOMS){const x=lev(dom,d);if(x<bd){bd=x;best=d}}
+  if(bd>0&&bd<=2)return{ok:true,warn:true,msg:`¿Quisiste decir ${loc}@${best}?`,sug:loc+'@'+best,e}}
+ return{ok:true,e}}
+const mailOk=e=>mailCheck(e).ok;
+const PRE_H=['20','23','24','27'],PRE_J=['30','33','34'];
+const dig=v=>String(v||'').replace(/\D/g,'');
+function cuitStr(f){return f.pre+dig(f.mid).padStart(8,'0')+dig(f.ver)}
+function fisCheck(f,tipo){
+ const usaDNI=tipo==='humana'&&f.cond==='Consumidor final'&&f.tdoc==='DNI';
+ if(usaDNI){const d=dig(f.dni);if(!d)return{ok:false,vacio:true,msg:'Falta el DNI.'};if(d.length<7||d.length>8||+d<1000000)return{ok:false,msg:'El DNI tiene 7 u 8 números.'};return{ok:true,tipo:'DNI',doc:d,fmt:'DNI '+(+d).toLocaleString('es-AR')}}
+ const m=dig(f.mid),v=dig(f.ver);if(!m&&!v)return{ok:false,vacio:true,msg:'Falta el CUIT.'};
+ if(m.length<7||m.length>8)return{ok:false,msg:'El número del medio tiene 7 u 8 cifras.'};if(v.length!==1)return{ok:false,msg:'Falta el último número (dígito verificador).'};
+ const c=cuitStr(f);if(!cuitOk(c))return{ok:false,msg:`El CUIT ${f.pre}-${m.padStart(8,'0')}-${v} no es válido: revisá los números. El último dígito lo podés ver en la constancia de ARCA.`};
+ return{ok:true,tipo:'CUIT',doc:c,fmt:`CUIT ${c.slice(0,2)}-${c.slice(2,10)}-${c.slice(10)}`}}
+function cuitHTML(k,f,tipo){const pres=tipo==='juridica'?PRE_J:PRE_H;if(!pres.includes(f.pre))f.pre=pres[0];
+ return`<div class="cuit"><div class="field"><label for="${k}-pre" class="sub">Prefijo</label><select id="${k}-pre" data-fk="${k}" data-ff="pre">${pres.map(p=>`<option ${f.pre===p?'selected':''}>${p}</option>`).join('')}</select></div><span class="dash">–</span>
+ <div class="field"><label for="${k}-mid" class="sub">${tipo==='juridica'?'Número':'Número de DNI'}</label><input type="text" id="${k}-mid" data-fk="${k}" data-ff="mid" data-digits inputmode="numeric" maxlength="8" placeholder="29241681" value="${esc(f.mid)}"></div><span class="dash">–</span>
+ <div class="field"><label for="${k}-ver" class="sub">Último</label><input type="text" id="${k}-ver" data-fk="${k}" data-ff="ver" data-digits inputmode="numeric" maxlength="1" placeholder="5" value="${esc(f.ver)}"></div></div>`}
+function fisHTML(){const f=st.fis,j=st.tipo==='juridica';if(j&&f.cond==='Consumidor final')f.cond='Responsable inscripto';
+ const conds=j?['Responsable inscripto','Monotributista','Exento']:['Consumidor final','Monotributista','Responsable inscripto','Exento'];
+ const usaDNI=!j&&f.cond==='Consumidor final'&&f.tdoc==='DNI';
+ return`<div class="field"><label for="fis-cond">¿Cómo te facturamos?</label><select id="fis-cond" data-fk="fis" data-ff="cond" data-rr>${conds.map(c=>`<option ${f.cond===c?'selected':''}>${c}</option>`).join('')}</select><p class="help">${j?'Las empresas y entidades siempre facturan con CUIT.':'Si no tenés actividad comercial, elegí Consumidor final.'}</p></div>
+ ${!j&&f.cond==='Consumidor final'?`<div class="field"><span class="lbl">Documento</span><div class="seg"><button type="button" data-tdoc="DNI" aria-pressed="${f.tdoc==='DNI'}">DNI</button><button type="button" data-tdoc="CUIT" aria-pressed="${f.tdoc==='CUIT'}">CUIT / CUIL</button></div></div>`:''}
+ ${usaDNI?`<div class="field"><label for="fis-dni">Número de DNI <span class="opt">solo números, sin puntos</span></label><input type="text" id="fis-dni" data-fk="fis" data-ff="dni" data-digits inputmode="numeric" maxlength="8" placeholder="29241681" value="${esc(f.dni)}"></div>`:cuitHTML('fis',f,st.tipo)}
+ <div class="phpv" id="fv-fis" aria-live="polite"></div>
+ <label class="check"><input type="checkbox" id="fact-otro" data-fk="fact" data-ff="otro" data-rr ${st.fact.otro?'checked':''}><span>Las facturas van a nombre de otra persona o empresa</span></label>
+ <div class="person" ${st.fact.otro?'':'hidden'}><div class="field"><label for="fact-nom">Nombre o razón social</label><input type="text" id="fact-nom" data-fk="fact" data-ff="nom" value="${esc(st.fact.nom)}"></div>${cuitHTML('fact',st.fact,st.fact.pre>='30'?'juridica':'humana')}<p class="help">Prefijos 20, 23, 24 y 27 son personas; 30, 33 y 34, empresas.</p><div class="phpv" id="fv-fact" aria-live="polite"></div></div>`}
+function fisPreview(k){const f=k==='fis'?st.fis:st.fact;const tipo=k==='fis'?st.tipo:(['30','33','34'].includes(f.pre)?'juridica':'humana');const c=fisCheck(k==='fis'?f:{...f,cond:'x'},tipo);const el=document.getElementById('fv-'+k);if(el){el.className='phpv '+(c.ok?'ok':c.vacio?'':'bad');el.textContent=c.ok?c.fmt+' ✓':(c.vacio?'':c.msg)}return c}
+function mailPreview(id){const c=mailCheck(st[id]);const el=document.getElementById('e-'+id),i=document.getElementById(id);if(!el)return c;
+ el.innerHTML=c.ok&&!c.warn?'':esc(c.msg)+(c.sug?` <button type="button" class="link" data-sug="${id}" data-v="${esc(c.sug)}">Usar ${esc(c.sug)}</button>`:'');
+ el.className=c.ok?(c.warn?'warnmsg':'err'):'err';i&&i.classList.toggle('invalid',!c.ok);return c}
+const LP=window.libphonenumber;
+const PRIO=['AR','PY','BR','UY','CL','BO'];
+let paisNombre=c=>c;try{const dn=new Intl.DisplayNames(['es'],{type:'region'});paisNombre=c=>dn.of(c)||c}catch(e){}
+const PAISES=(()=>{if(!LP)return PRIO.map(c=>[c,{AR:'54',PY:'595',BR:'55',UY:'598',CL:'56',BO:'591'}[c]]);const all=LP.getCountries().map(c=>[c,LP.getCountryCallingCode(c)]);const p=PRIO.map(c=>all.find(x=>x[0]===c));const r=all.filter(x=>!PRIO.includes(x[0])).sort((a,b)=>paisNombre(a[0]).localeCompare(paisNombre(b[0]),'es'));return[...p,...r]})();
+function getPh(k){return k.startsWith('ct-')?st.cotit[+k.slice(3)].tel:st[k]}
+function phNorm(o){const cc=(PAISES.find(x=>x[0]===o.pais)||['AR','54'])[1];
+ if(o.pais==='AR'){let a=o.area.replace(/\D/g,'').replace(/^0+/,'');let n=o.num.replace(/\D/g,'');
+  if(o.movil&&n.startsWith('15')&&(a+n).length===12)n=n.slice(2);
+  return{e164:'+54'+(o.movil?'9':'')+a+n,a,n,vacio:!a&&!n}}
+ const d=o.otro.replace(/\D/g,'');return{e164:'+'+cc+d,vacio:!d}}
+function phCheck(o){const r=phNorm(o);if(r.vacio)return{ok:false,vacio:true,msg:''};
+ if(o.pais==='AR'){if(r.a.length<2||r.a.length>4)return{ok:false,msg:'El código de área tiene entre 2 y 4 números (sin el 0). Ej.: 376 para Posadas, 11 para Buenos Aires.'};
+  if(r.a.length+r.n.length!==10)return{ok:false,msg:`Código de área + número tienen que sumar 10 cifras; ahora suman ${r.a.length+r.n.length}.${(r.a.length+r.n.length)>10?' No incluyas el 0 del área ni el 15.':''}`}}
+ if(!LP){return{ok:true,fmt:r.e164,e164:r.e164,tipo:''}}
+ const p=LP.parsePhoneNumberFromString(r.e164);if(!p||!p.isValid())return{ok:false,msg:'Ese número no es válido para el país elegido. Revisalo.'};
+ const t=p.getType();return{ok:true,fmt:p.formatInternational(),e164:p.number,tipo:t==='MOBILE'?'celular':t==='FIXED_LINE'?'línea fija':''}}
+function phPreview(k){const c=phCheck(getPh(k));const el=document.getElementById('pv-'+k);if(!el)return c;
+ el.className='phpv '+(c.ok?'ok':c.vacio?'':'bad');el.textContent=c.ok?`Se guarda como ${c.fmt}${c.tipo?' · '+c.tipo:''}`:(c.msg||'');return c}
+function phoneHTML(k,label,opt){const o=getPh(k);
+ const sel=`<select id="pa-${k}" data-ph="${k}" data-pf="pais" aria-label="País">${PAISES.map(([c,cc])=>`<option value="${c}" ${o.pais===c?'selected':''}>${esc(paisNombre(c))} (+${cc})</option>`).join('')}</select>`;
+ const body=o.pais==='AR'
+  ?`<div class="phrow"><div class="field"><label for="ar-${k}" class="sub">Código de área <span class="opt">sin 0</span></label><input type="text" id="ar-${k}" data-ph="${k}" data-pf="area" inputmode="numeric" maxlength="5" placeholder="376" value="${esc(o.area)}"></div>
+   <div class="field"><label for="nu-${k}" class="sub">Número <span class="opt">${o.movil?'sin 15':''}</span></label><input type="text" id="nu-${k}" data-ph="${k}" data-pf="num" inputmode="numeric" maxlength="10" placeholder="4152286" value="${esc(o.num)}"></div></div>
+   <label class="check"><input type="checkbox" id="mv-${k}" data-ph="${k}" data-pf="movil" ${o.movil?'checked':''}><span>Es celular</span></label>`
+  :`<div class="field"><label for="ot-${k}" class="sub">Número con código de área</label><input type="text" id="ot-${k}" data-ph="${k}" data-pf="otro" inputmode="tel" value="${esc(o.otro)}"></div>`;
+ return`<fieldset class="phone"><legend class="lbl">${label}${opt?' <span class="opt">(opcional)</span>':''}</legend><div class="field"><label for="pa-${k}" class="sub">País</label>${sel}</div>${body}<div class="phpv" id="pv-${k}" aria-live="polite"></div></fieldset>`}
+const lotId=(s,m,n)=>`${s}-${m}-${String(n).padStart(2,'0')}`;
+function lotInfo(s,m,n){const r=LOTES[s][m].find(x=>x[0]===n);return{partida:`K1-${r[1]}-1`,sup:r[2]}}
+function byPartida(p){const k=p.replace(/\D/g,'').replace(/^1/,'');for(const s in LOTES)for(const m in LOTES[s])for(const r of LOTES[s][m]){if(String(r[1])===k||String(r[1])===p.replace(/\D/g,''))return{s,m,n:r[0]}}return null}
+const pl=(n,a,b)=>n===1?a:b;
+function lleno(){return st.cant&&st.lots.length>=st.cant}
+const lotsEff=()=>st.modo==='si'?st.lots:[];
+function addLot(id,reclamo){const [s,m,n]=id.split('-');st.lots.push({id,s,m,n:+n,...lotInfo(s,m,+n),car:'Titular único',inst:'Escritura',estado:'',reclamo:!!reclamo})}
+function toggleLot(s,m,n){const id=lotId(s,m,n);const i=st.lots.findIndex(l=>l.id===id);
+ if(i>=0){st.lots.splice(i,1);st.claimPick=null}
+ else if(st.taken[id]&&!st.admin){st.claimPick=id}
+ else if(lleno()){st.claimPick=null;st.info=`Ya marcaste ${st.cant} ${pl(st.cant,'lote','lotes')}, que es lo que indicaste arriba. Quitá uno o cambiá la cantidad.`;render();return}
+ else{addLot(id,false);st.claimPick=st.taken[id]?id:null}
+ const inf=lotInfo(s,m,n);st.info=`${s==='S1'?'Sector 1':'Sector 2'} · Manzana ${m} · Lote ${n} · ${inf.partida} · ${inf.sup.toLocaleString('es-AR')} m²`;render()}
+function mapSVG(){const z=st.zoom;const mine=new Set(st.lots.filter(l=>!l.reclamo).map(l=>l.id)),cl=new Set(st.lots.filter(l=>l.reclamo).map(l=>l.id));
+ let g=`<defs><pattern id="hatch" width="3" height="3" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="3" height="3" fill="var(--taken)"/><line x1="0" y1="0" x2="0" y2="3" stroke="var(--lotline)" stroke-width="1"/></pattern></defs><rect x="0" y="145.06" width="145.06" height="145.05" fill="var(--s1)"/><path d="M0 0H290.11V290.11H145.06V145.06H0Z" fill="var(--s2)"/>`;
+ g+=`<path d="M0 0H290.11V290.11H0Z" fill="none" stroke="var(--fg)" stroke-width=".8"/><path d="M0 145.06H145.06V290.11" fill="none" stroke="var(--fg)" stroke-width=".5" stroke-dasharray="3 2"/>`;
+ g+=`<text class="street" x="145" y="-6" text-anchor="middle">Calle Posadas</text><text class="street" x="145" y="300" text-anchor="middle">Calle Pago Largo</text><text class="street" transform="translate(-6 145) rotate(-90)" text-anchor="middle">Calle 10</text><text class="street" transform="translate(297 145) rotate(90)" text-anchor="middle">Calle 9</text>`;
+ g+=`<text class="slab" x="72.5" y="284.5" text-anchor="middle">Sector 1</text><text class="slab" x="72.5" y="139.5" text-anchor="middle">Sector 2</text>`;
+ for(const [nm,x,y,w,h,k] of MAPA.areas){g+=`<rect class="ar ${k}" x="${x}" y="${y}" width="${w}" height="${h}"><title>${nm}</title></rect>`;if(k==='verde'&&w>=20&&h>=20)g+=`<text class="slab" x="${x+w/2}" y="${y+h/2}" text-anchor="middle" dominant-baseline="central" style="font-size:3px">${w>h?'Recreación':'Recr.'}</text>`}
+ for(const [sec,mz,x,y] of MAPA.blocks){g+=`<text class="mlab" x="${x}" y="${y-1.6}">Mz ${mz}</text>`}
+ for(const [id,x,y,w,h] of MAPA.lots){const n=+id.split('-')[2];const c=mine.has(id)?'sel':cl.has(id)?'claim':st.taken[id]?'taken':'';const pk=st.claimPick===id?' pick':'';
+  g+=`<g class="lt ${c}${pk}" data-lot="${id}" role="button" tabindex="0" aria-pressed="${mine.has(id)||cl.has(id)}" aria-label="${id.startsWith('S1')?'Sector 1':'Sector 2'}, manzana ${id.split('-')[1]}, lote ${n}${st.taken[id]?', ya registrado':''}"><rect x="${x}" y="${y}" width="${w}" height="${h}"/><text x="${x+w/2}" y="${y+h/2}">${n}</text></g>`}
+ return`<div class="mapwrap ${st.admin?'admin':''}"><div class="mapctl"><div class="legend"><span><i style="background:var(--lot)"></i>Disponible</span><span><i style="background:var(--sel);border-color:var(--sel)"></i>Elegido</span><span><i style="background:repeating-linear-gradient(45deg,var(--taken) 0 3px,var(--lotline) 3px 4px)"></i>Ya registrado por otro</span><span><i style="background:var(--card);border:1px dashed var(--claim)"></i>Reclamado</span></div>
+ <div class="zoom"><button type="button" data-zoom="-1" aria-label="Alejar">−</button><button type="button" data-zoom="1" aria-label="Acercar">+</button><button type="button" data-zoom="0">Ver todo</button></div></div>
+ <div class="mapbox" id="mapbox"><svg viewBox="-12 -14 314 320" style="width:${z*100}%" xmlns="http://www.w3.org/2000/svg">${g}</svg></div>
+ <div class="info" aria-live="polite">${st.info?esc(st.info):'Tocá tu lote en el plano. Podés acercar con + y moverte arrastrando.'}</div></div>`}
+function claimPanel(){const id=st.claimPick;if(!id||!st.taken[id])return'';const [s,m,n]=id.split('-');const nm=`${s==='S1'?'Sector 1':'Sector 2'}, manzana ${m}, lote ${+n}`;
+ const inMine=st.lots.some(l=>l.id===id);
+ if(st.admin)return`<div class="panel"><strong>Modo comisión · ${nm}</strong><p class="help">Este lote figura en otra ficha. Podés liberarlo si se registró por error.</p><div class="acts"><button type="button" class="btn" data-free="${id}">Liberar el lote</button><button type="button" class="btn" data-close>Cerrar</button></div></div>`;
+ if(inMine)return'';
+ return`<div class="panel"><strong>${nm} ya figura en otra ficha</strong><p class="help">Si es tuyo o sos cotitular, reclamalo: queda en revisión y la comisión se comunica con las dos partes antes de asignarlo. No vas a ver los datos de la otra ficha.</p><div class="acts"><button type="button" class="btn primary" data-claim="${id}">Reclamar este lote</button><button type="button" class="btn" data-close>Me equivoqué de lote</button></div></div>`}
+function step0(){
+ let h=`<section class="step"><div><h2>Tus lotes en el barrio</h2><p class="help">Si tenés varios, cargalos todos en esta misma ficha.</p></div>
+ <div class="field"><span class="lbl">¿Cuántos lotes o terrenos tenés en el barrio?</span><div class="seg">${[1,2,3,4].map(n=>`<button type="button" data-cant="${n}" aria-pressed="${st.cant===n&&!st.cantOtro}">${n}</button>`).join('')}<button type="button" data-cant="mas" aria-pressed="${!!st.cantOtro}">Más de 4</button></div>
+ ${st.cantOtro?`<div class="row"><div class="field"><label for="cantOtro">¿Cuántos?</label><input type="text" id="cantOtro" data-digits inputmode="numeric" maxlength="2" value="${esc(st.cantOtro==='x'?'':st.cantOtro)}"></div></div>`:''}
+ <p class="help">Contá cada lote por separado, aunque tengas una sola casa construida sobre dos lotes.</p></div>`;
+ if(!st.cant){return h+`<div class="err" id="e0"></div></section>`}
+ const pc=st.cant===1;
+ h+=`<div class="field"><span class="lbl">${pc?'¿Sabés cuál es tu lote?':'¿Sabés cuáles son?'}</span><div class="seg"><button type="button" data-modo="si" aria-pressed="${st.modo==='si'}">${pc?'Sí, sé cuál es':'Sí, los busco'}</button><button type="button" data-modo="no" aria-pressed="${st.modo==='no'}">No sé o no los encuentro</button></div></div>`;
+ if(st.modo==='no'){h+=`<div class="field"><label for="noloteTxt">Contanos lo que sepas de tu lote o tus lotes</label><textarea id="noloteTxt" placeholder="Ej.: lote 14, calle Jazmín y Cardenal, casa N° 99. Si tenés más de un lote, describilos todos acá.">${esc(st.noloteTxt)}</textarea><p class="help">La comisión lo identifica en el plano y te contacta para confirmarlo.${st.lots.length?` Los ${st.lots.length} lote(s) que habías marcado no se van a guardar; si volvés a "Sí, sé cuál es" siguen ahí.`:''}</p></div><div class="err" id="e0"></div></section>`;return h}
+ if(st.modo!=='si'){return h+`<div class="err" id="e0"></div></section>`}
+ h+=`<div class="field"><label for="part">Buscar por partida <span class="opt">(opcional)</span></label><div class="row"><input type="text" id="part" class="mono" placeholder="K1-10291-1" inputmode="numeric"><button type="button" class="btn" id="partBtn">Agregar por partida</button></div><div class="err" id="partErr"></div></div>
+ <div class="field"><span class="lbl">${pc?'Marcá tu lote':`Marcá tus ${st.cant} lotes`}</span><div class="tabs"><button type="button" data-via="plano" aria-pressed="${st.via==='plano'}">En el plano</button><button type="button" data-via="lista" aria-pressed="${st.via==='lista'}">En una lista</button></div></div>
+ <div class="demo"><strong>Solo en esta prueba:</strong> los lotes rayados (Sector 2: Mz A lote 3 y Mz G lote 10; Sector 1: Mz D lote 4) simulan lotes que ya cargó otro propietario. No se pueden elegir: tocá uno para ver qué pasa. En la versión real se rayan solos a medida que llegan las fichas.</div>`;
+ if(st.via==='plano'){if(st.zoom==null)st.zoom=window.innerWidth<640?2.6:1;h+=mapSVG()+claimPanel()}else{h+=`
+ <div class="field"><span class="lbl">Sector</span><div class="seg">${Object.keys(SECT).map(s=>`<button type="button" data-s="${s}" aria-pressed="${st.pickS===s}">${SECT[s]}</button>`).join('')}</div>
+ <p class="help">Las manzanas A, C, D, E y F existen en los dos sectores. Si tenés la partida inmobiliaria (boleta del impuesto inmobiliario o escritura), buscala arriba: es lo más seguro.</p></div>`;
+ if(st.pickS){h+=`<div class="field"><span class="lbl">Manzana</span><div class="seg">${Object.keys(LOTES[st.pickS]).map(m=>`<button type="button" data-m="${m}" aria-pressed="${st.pickM===m}">Mz ${m}</button>`).join('')}</div></div>`}
+ if(st.pickS&&st.pickM){h+=`<div class="field"><span class="lbl">Lote (podés marcar varios)</span><div class="grid-lotes">${LOTES[st.pickS][st.pickM].map(r=>`<button type="button" data-n="${r[0]}" aria-pressed="${st.lots.some(l=>l.id===lotId(st.pickS,st.pickM,r[0]))}" class="${st.taken[lotId(st.pickS,st.pickM,r[0])]&&!st.lots.some(l=>l.id===lotId(st.pickS,st.pickM,r[0]))?'tk':''}" title="Partida K1-${r[1]}-1${st.taken[lotId(st.pickS,st.pickM,r[0])]?' · ya registrado':''}">${r[0]}</button>`).join('')}</div></div>`}
+ h+=claimPanel()}
+ h+=`<div class="field"><span class="lbl">Lotes marcados: ${st.lots.length} de ${st.cant}</span><div class="sel">`;
+ if(!st.lots.length)h+=`<div class="empty">Todavía no agregaste lotes.</div>`;
+ for(const l of st.lots){h+=`<div class="lotecard"><div class="head"><strong>${l.s==='S1'?'Sector 1':'Sector 2'} · Manzana ${l.m} · Lote ${l.n}</strong><span class="mono">${l.partida} · ${l.sup.toLocaleString('es-AR')} m²</span>${l.reclamo?'<span class="chipwarn">Reclamado · en revisión</span>':''}</div>
+ <div class="row"><div class="field"><label for="car-${l.id}">Titularidad</label><select id="car-${l.id}" data-lf="car" data-id="${l.id}">${['Titular único','Condominio (varios titulares)','Heredero / sucesión en trámite','Poseedor con boleto'].map(o=>`<option ${l.car===o?'selected':''}>${o}</option>`).join('')}</select></div>
+ <div class="field"><label for="inst-${l.id}">Documento que lo acredita</label><select id="inst-${l.id}" data-lf="inst" data-id="${l.id}">${['Escritura','Boleto de compraventa','Declaratoria de herederos','Otro'].map(o=>`<option ${l.inst===o?'selected':''}>${o}</option>`).join('')}</select></div>
+ <div class="field"><label for="est-${l.id}">Estado del lote</label><select id="est-${l.id}" data-lf="estado" data-id="${l.id}"><option value="">Elegí…</option>${['Baldío','En construcción','Casa de uso permanente','Casa de fin de semana','Casa que se alquila'].map(o=>`<option ${l.estado===o?'selected':''}>${o}</option>`).join('')}</select></div></div>
+ <div><button type="button" class="link" data-rm="${l.id}">Quitar este lote</button></div></div>`}
+ h+=`</div></div>`;
+ if(st.lots.length&&st.lots.length<st.cant){const f=st.cant-st.lots.length;h+=`<div class="field"><label for="restoTxt">Te ${pl(f,'falta 1 lote','faltan '+f+' lotes')}. Marcalos arriba o, si no los encontrás, describilos acá</label><textarea id="restoTxt" placeholder="Ej.: el otro lote está al lado de mi casa, sobre calle Jazmín">${esc(st.restoTxt)}</textarea></div>`}
+ if(st.lots.length>st.cant)h+=`<div class="err">Marcaste ${st.lots.length} lotes pero indicaste ${st.cant}. Corregí la cantidad o quitá los que sobran.</div>`;
+ h+=`<label class="check"><input type="checkbox" id="admin" ${st.admin?'checked':''}><span><strong>Simular la vista de la comisión</strong> <span class="opt">(solo en esta prueba; en la versión real requiere usuario y contraseña)</span></span></label><div class="err" id="e0"></div></section>`;
+ return h}
+function person(p,i){return`<div class="person"><div class="row"><div class="field"><label for="ct-n-${i}">Apellido y nombre</label><input type="text" id="ct-n-${i}" data-ct="nom" data-i="${i}" value="${esc(p.nom)}"></div><div class="field"><label for="ct-d-${i}">DNI</label><input type="text" id="ct-d-${i}" data-ct="doc" data-i="${i}" data-digits inputmode="numeric" maxlength="8" value="${esc(p.doc)}"></div></div>${phoneHTML('ct-'+i,'Celular',true)}<div><button type="button" class="link" data-ctrm="${i}">Quitar</button></div></div>`}
+function step1(){const cond=lotsEff().some(l=>l.car.startsWith('Condominio'));
+ return`<section class="step"><div><h2>Datos del titular</h2><p class="help">Ponelo tal como figura en la escritura o el boleto.</p></div>
+ <div class="field"><span class="lbl">El titular es</span><div class="seg"><button type="button" data-tipo="humana" aria-pressed="${st.tipo==='humana'}">Una persona</button><button type="button" data-tipo="juridica" aria-pressed="${st.tipo==='juridica'}">Una empresa o entidad</button></div></div>
+ <div class="field"><label for="nom">${st.tipo==='humana'?'Apellido y nombre':'Razón social'}</label><input type="text" id="nom" autocomplete="name" value="${esc(st.nom)}"><div class="err" id="e-nom"></div></div>
+ ${fisHTML()}
+ <div class="row"><div class="field"><label for="email">Email</label><input type="email" id="email" autocomplete="email" inputmode="email" autocapitalize="off" spellcheck="false" value="${esc(st.email)}"><div class="err" id="e-email"></div></div>
+ </div>${phoneHTML('tel','Celular de contacto')}
+ <label class="check"><input type="checkbox" id="wa" ${st.wa?'checked':''}><span>Ese celular tiene WhatsApp</span></label>
+ ${cond?`<div class="field"><span class="lbl">Otros titulares del condominio</span><p class="help">El estatuto (art. 5) pide designar a uno de los condóminos como socio ante la asociación.</p>${st.cotit.map(person).join('')}<div><button type="button" class="btn" id="addct">Agregar otro titular</button></div>
+ <div class="field"><label for="rep">¿Quién es el socio designado?</label><select id="rep"><option value="titular" ${st.rep==='titular'?'selected':''}>Quien completa esta ficha</option>${st.cotit.map((p,i)=>`<option value="${i}" ${String(st.rep)===String(i)?'selected':''}>${esc(p.nom||'Titular '+(i+2))}</option>`).join('')}</select></div></div>`:''}
+ <label class="check"><input type="checkbox" id="ca" ${st.ca?'checked':''}><span>Quiero agregar un contacto adicional (cónyuge, familiar u otra persona a quien también podamos avisar)</span></label>
+ <div class="person" ${st.ca?'':'hidden'}><div class="row"><div class="field"><label for="caNom">Apellido y nombre</label><input type="text" id="caNom" value="${esc(st.caNom)}"></div><div class="field"><label for="caRel">Relación con el titular</label><input type="text" id="caRel" placeholder="Esposa, hijo, hermano…" value="${esc(st.caRel)}"></div></div>${phoneHTML('caTel','Celular del contacto adicional')}<p class="help">Recibe avisos generales. No reemplaza al titular ni lo representa: para eso está el apoderado.</p></div>
+ <label class="check"><input type="checkbox" id="apod" ${st.apod?'checked':''}><span>Hay un apoderado o administrador que se ocupa del lote (familiar, inmobiliaria, etc.)</span></label>
+ <div class="person" ${st.apod?'':'hidden'}><div class="row"><div class="field"><label for="apNom">Apellido y nombre del apoderado</label><input type="text" id="apNom" value="${esc(st.apNom)}"></div><div class="field"><label for="apDoc">DNI</label><input type="text" id="apDoc" data-digits inputmode="numeric" maxlength="8" value="${esc(st.apDoc)}"></div></div>
+ <div class="row"><div class="field"><label for="apRel">Relación con el titular</label><input type="text" id="apRel" placeholder="Hijo, inmobiliaria, administrador…" value="${esc(st.apRel)}"></div><div class="field"><label for="apEmail">Email</label><input type="email" id="apEmail" autocapitalize="off" spellcheck="false" value="${esc(st.apEmail)}"><div class="err" id="e-apEmail"></div></div></div>${phoneHTML('apTel','Celular del apoderado')}
+ <div class="field"><label for="envio">¿A quién mandamos las liquidaciones?</label><select id="envio"><option value="titular" ${st.envio==='titular'?'selected':''}>Al titular</option><option value="apoderado" ${st.envio==='apoderado'?'selected':''}>Al apoderado</option><option value="ambos" ${st.envio==='ambos'?'selected':''}>A los dos</option></select></div></div>
+ <div class="err" id="e1"></div></section>`}
+function step2(){return`<section class="step"><div><h2>Domicilios y avisos</h2><p class="help">Necesitamos un domicilio postal para comunicaciones formales, y tu conformidad si preferís recibir los avisos por email o WhatsApp.</p></div>
+ <div class="field"><label for="dReal">Domicilio real (calle, número, piso, depto.)</label><input type="text" id="dReal" autocomplete="street-address" value="${esc(st.dReal)}"><div class="err" id="e-dReal"></div></div>
+ <div class="row"><div class="field"><label for="dLoc">Localidad</label><input type="text" id="dLoc" value="${esc(st.dLoc)}"><div class="err" id="e-dLoc"></div></div><div class="field"><label for="dProv">Provincia</label><input type="text" id="dProv" value="${esc(st.dProv)}"><div class="err" id="e-dProv"></div></div><div class="field"><label for="dCP">Código postal</label><input type="text" id="dCP" value="${esc(st.dCP)}"></div></div>
+ <label class="check"><input type="checkbox" id="mismo" ${st.mismo?'checked':''}><span>Quiero recibir las notificaciones formales en este mismo domicilio</span></label>
+ <div class="field" ${st.mismo?'hidden':''}><label for="dEsp">Domicilio para notificaciones formales</label><input type="text" id="dEsp" value="${esc(st.dEsp)}"><p class="help">Puede ser, por ejemplo, el de tu casa en el barrio o el de tu apoderado.</p></div>
+ <label class="check"><input type="checkbox" id="notif" ${st.notif?'checked':''}><span>Acepto recibir liquidaciones, avisos de deuda, intimaciones y convocatorias a asamblea en el email y el celular que declaré, y me comprometo a avisar si cambian.</span></label>
+ <p class="help">Si no aceptás, igual te vamos a avisar por esos medios, pero las comunicaciones formales se enviarán por correo postal.</p><div class="err" id="e2"></div></section>`}
+function step3(){return`<section class="step"><div><h2>Facturación</h2><p class="help">Para emitir los comprobantes de las cuotas a nombre correcto.</p></div>
+ <div class="field"><label for="fNom">¿A nombre de quién van los comprobantes?</label><select id="fNom"><option value="mismo" ${st.fNom==='mismo'?'selected':''}>Del titular</option><option value="otro" ${st.fNom==='otro'?'selected':''}>De otra persona o empresa</option></select></div>
+ <div class="field" ${st.fNom==='otro'?'':'hidden'}><label for="fDoc">Nombre y CUIT/DNI para facturar</label><input type="text" id="fDoc" value="${esc(st.fDoc)}"></div>
+ <div class="field"><label for="iva">Condición frente al IVA</label><select id="iva">${['Consumidor final','Monotributista','Responsable inscripto','Exento'].map(o=>`<option ${st.iva===o?'selected':''}>${o}</option>`).join('')}</select><p class="help">Si sos persona y no tenés actividad comercial, dejá "Consumidor final".</p></div></section>`}
+const PAT=[[/^[A-Z]{2}\d{3}[A-Z]{2}$/,'Mercosur (auto)',p=>p.slice(0,2)+' '+p.slice(2,5)+' '+p.slice(5)],[/^[A-Z]{3}\d{3}$/,'formato anterior (auto)',p=>p.slice(0,3)+' '+p.slice(3)],[/^[A-Z]\d{3}[A-Z]{3}$/,'Mercosur (moto)',p=>p.slice(0,1)+' '+p.slice(1,4)+' '+p.slice(4)],[/^\d{3}[A-Z]{3}$/,'formato anterior (moto)',p=>p.slice(0,3)+' '+p.slice(3)]];
+const patNorm=v=>String(v||'').toUpperCase().replace(/[^A-Z0-9]/g,'');
+function patCheck(v){const p=patNorm(v.pat);if(!p)return{ok:false,vacio:true,msg:'Escribí la patente o quitá este vehículo.'};
+ if(v.ext)return/^[A-Z0-9]{4,10}$/.test(p)?{ok:true,p,fmt:p+' · otro país'}:{ok:false,msg:'La patente tiene que tener entre 4 y 10 letras o números.'};
+ for(const [re,nm,f] of PAT)if(re.test(p))return{ok:true,p,fmt:f(p)+' · '+nm};
+ return{ok:false,msg:'No coincide con una patente argentina (AB 123 CD, ABC 123 o, en motos, A 123 BCD / 123 ABC). Si es de otro país, marcalo.'}}
+function vehPreview(i){const c=patCheck(st.vehs[i]);const el=document.getElementById('vp-'+i);if(el){el.className='phpv '+(c.ok?'ok':c.vacio?'':'bad');el.textContent=c.ok?c.fmt:(c.vacio?'':c.msg)}return c}
+function step4(){return`<section class="step"><div><h2>Vehículos para el control de ingreso</h2><p class="help">Opcional. Cargá los vehículos que usan habitualmente vos y tu familia para entrar al barrio. La guardia solo va a ver la patente y el lote al que corresponde.</p></div>
+ ${st.vehs.length?st.vehs.map((v,i)=>`<div class="person"><div class="row"><div class="field"><label for="vpat-${i}">Patente</label><input type="text" id="vpat-${i}" class="mono" data-veh="${i}" data-vf="pat" autocapitalize="characters" spellcheck="false" maxlength="12" placeholder="AB123CD" value="${esc(v.pat)}"></div>
+ <div class="field"><label for="vtipo-${i}">Tipo</label><select id="vtipo-${i}" data-veh="${i}" data-vf="tipo">${['Auto','Camioneta','Moto','Otro'].map(o=>`<option ${v.tipo===o?'selected':''}>${o}</option>`).join('')}</select></div></div>
+ <div class="field"><label for="vdesc-${i}">Marca, modelo y color <span class="opt">(opcional)</span></label><input type="text" id="vdesc-${i}" data-veh="${i}" data-vf="desc" placeholder="Toyota Hilux gris" value="${esc(v.desc)}"></div>
+ <label class="check"><input type="checkbox" id="vext-${i}" data-veh="${i}" data-vf="ext" ${v.ext?'checked':''}><span>Patente de otro país</span></label>
+ <div class="phpv" id="vp-${i}" aria-live="polite"></div><div><button type="button" class="link" data-vrm="${i}">Quitar este vehículo</button></div></div>`).join(''):`<div class="empty">No cargaste vehículos.</div>`}
+ <div><button type="button" class="btn" id="addveh">Agregar vehículo</button></div>
+ <div class="field"><label for="ocup">Comentarios para la comisión <span class="opt">(opcional)</span></label><textarea id="ocup">${esc(st.ocup)}</textarea></div><div class="err" id="e3"></div></section>`}
+function step5(){const L=lotsEff().map(l=>`${l.id} (${l.partida})${l.reclamo?' — reclamado, en revisión':''}`).join(', ')||'—';
+ return`<section class="step summary"><div><h2>Revisá y confirmá</h2></div><dl>
+ <dt>Lotes</dt><dd>Declarados: ${st.cant}<br><span class="mono">${st.modo==='no'?'A identificar por la comisión: '+esc(st.noloteTxt):esc(L)}</span>${st.modo==='si'&&st.lots.length<st.cant?'<br>A identificar: '+esc(st.restoTxt):''}</dd>
+ <dt>Titular</dt><dd>${esc(st.nom)} · ${esc(fisCheck(st.fis,st.tipo).fmt||'')}</dd>
+ <dt>Contacto</dt><dd>${esc(st.email)} · ${esc(phCheck(st.tel).fmt||'')}${st.wa?' (WhatsApp)':''}</dd>
+ ${st.cotit.length?`<dt>Otros titulares</dt><dd>${st.cotit.map(p=>esc(p.nom)+' · '+esc(p.doc)).join('<br>')}</dd>`:''}
+ ${st.ca?`<dt>Contacto adicional</dt><dd>${esc(st.caNom)} (${esc(st.caRel)}) · ${esc(phCheck(st.caTel).fmt||'')}</dd>`:''}
+ ${st.vehs.length?`<dt>Vehículos</dt><dd class="mono">${st.vehs.map(v=>esc((patCheck(v).fmt||'').split(' · ')[0])+' · '+esc(v.tipo)).join('<br>')}</dd>`:''}
+ ${st.apod?`<dt>Apoderado</dt><dd>${esc(st.apNom)} (${esc(st.apRel)}) · ${esc(phCheck(st.apTel).fmt||'')} · ${esc(st.apEmail)}</dd>`:''}
+ <dt>Domicilio real</dt><dd>${esc(st.dReal)}, ${esc(st.dLoc)}, ${esc(st.dProv)} ${esc(st.dCP)}</dd>
+ <dt>Notificaciones formales</dt><dd>${st.mismo?'En el domicilio real':esc(st.dEsp)}</dd>
+ <dt>Avisos por email/WhatsApp</dt><dd>${st.notif?'Aceptado':'No aceptado'}</dd>
+ <dt>Facturación</dt><dd>${esc(st.fis.cond)} · ${st.fact.otro?'a nombre de '+esc(st.fact.nom)+' ('+esc(fisCheck({...st.fact,cond:'x'},['30','33','34'].includes(st.fact.pre)?'juridica':'humana').fmt||'')+')':'a nombre del titular'}</dd></dl>
+ <label class="check"><input type="checkbox" id="dj" ${st.dj?'checked':''}><span>Declaro bajo juramento que los datos son verdaderos y que soy titular, condómino o apoderado de los lotes indicados.</span></label>
+ <label class="check"><input type="checkbox" id="datos" ${st.datos?'checked':''}><span>Leí la información sobre el uso de mis datos y presto mi consentimiento.</span></label>
+ <p class="legal"><strong>Uso de tus datos (Ley 25.326).</strong> Responsable: Asociación Civil Aguará Guazú Country, Ituzaingó, Corrientes. Finalidad: administrar el padrón de asociados, emitir y cobrar cuotas, enviar comunicaciones y convocatorias, y controlar el ingreso de vehículos al barrio. Solo acceden los miembros de la Comisión Directiva y la tesorería; la guardia ve únicamente patente y lote; no se ceden a terceros salvo obligación legal o gestión de cobro. Los datos de contacto y domicilio son necesarios para esas finalidades; el contacto adicional y los vehículos son opcionales. Podés pedir acceso, rectificación o supresión escribiendo a la comisión. La Agencia de Acceso a la Información Pública es el órgano de control.</p>
+ <div class="err" id="e5"></div></section>`}
+function render(){
+ $('#prog').innerHTML=STEPS.map((_,i)=>`<span class="${i<=st.step?'on':''}"></span>`).join('');
+ $('#stepl').textContent=`Paso ${st.step+1} de ${STEPS.length} · ${STEPS[st.step]}`;
+ const _mb=$('#mapbox'),_sc=_mb?[_mb.scrollLeft,_mb.scrollTop]:null;
+ $('#steps').innerHTML=[step0,step1,step2,step4,step5][st.step]();
+ st.vehs.forEach((v,i)=>{if(v.pat)vehPreview(i)});
+ {const nb=$('#mapbox');if(nb&&_sc){nb.scrollLeft=_sc[0];nb.scrollTop=_sc[1]}}
+ document.querySelectorAll('.phpv[id^="pv-"]').forEach(el=>phPreview(el.id.slice(3)));if(document.getElementById('fv-fis')&&(st.fis.dni||st.fis.mid))fisPreview('fis');if(document.getElementById('fv-fact')&&st.fact.mid)fisPreview('fact');
+ $('#back').disabled=st.step===0; $('#next').textContent=st.step===LAST?'Ver lo que se guardaría':'Siguiente';
+}
+function nomFmt(n){if(st.tipo==='juridica')return n.trim().replace(/\s+/g,' ');const low=['de','del','la','las','los','y','da','do','dos','van','von'];return n.trim().replace(/\s+/g,' ').toLowerCase().split(' ').map((w,i)=>i&&low.includes(w)?w:w.split(/([-'])/).map(x=>x.charAt(0).toUpperCase()+x.slice(1)).join('')).join(' ')}
+function nomMsg(){const n=st.nom.trim().replace(/\s+/g,' ');if(st.tipo==='juridica')return n.length<3?'Escribí la razón social.':'';if(n.split(' ').length<2)return'Escribí apellido y nombre (al menos dos palabras).';if(/\d/.test(n))return'El nombre no puede tener números.';return''}
+function setErr(id,msg){const e=$('#e-'+id),i=$('#'+id);if(e)e.textContent=msg||'';if(i)i.classList.toggle('invalid',!!msg);return!msg}
+function validate(){let ok=true;
+ if(st.step===0){const e=$('#e0'),n=st.lots.length;if(!st.cant){e.textContent='Indicá cuántos lotes tenés.';ok=false}else if(!st.modo){e.textContent='Elegí una de las dos opciones.';ok=false}
+  else if(st.modo==='si'&&!n){e.textContent='Marcá al menos un lote, o elegí "No sé o no los encuentro".';ok=false}
+  else if(st.modo==='si'&&n>st.cant){e.textContent=`Marcaste ${n} lotes pero indicaste ${st.cant}. Corregí la cantidad o quitá los que sobran.`;ok=false}
+  else if(st.modo==='si'&&n<st.cant&&st.restoTxt.trim().length<5){e.textContent=`Indicaste ${st.cant} lotes y marcaste ${n}. Marcá ${pl(st.cant-n,'el que falta o describilo','los que faltan o describilos')} en el cuadro de texto.`;ok=false}
+  else if(st.modo==='no'&&st.noloteTxt.trim().length<5){e.textContent='Escribí algún dato que nos ayude a ubicarlos (calle, número de casa, manzana…).';ok=false}}
+ if(st.step===1){ok=setErr('nom',nomMsg())&ok;
+  {const c=fisPreview('fis');if(!c.ok){const el=document.getElementById('fv-fis');el.className='phpv bad';el.textContent=c.msg;ok=false}}
+  if(st.fact.otro){const c=fisPreview('fact');if(!c.ok||!st.fact.nom.trim()){const el=document.getElementById('fv-fact');el.className='phpv bad';el.textContent=!st.fact.nom.trim()?'Falta el nombre para facturar.':c.msg;ok=false}}
+  {const c=mailPreview('email');if(!c.ok)ok=false}
+  {const c=phPreview('tel');if(!c.ok){const el=document.getElementById('pv-tel');el.className='phpv bad';if(c.vacio)el.textContent='Falta el celular.';ok=false}}
+  st.cotit.forEach((p,i)=>{const c=phPreview('ct-'+i);if(!c.ok&&!c.vacio)ok=false});
+  if(st.ca){const c=phPreview('caTel');if(!st.caNom.trim()||!c.ok){$('#e1').textContent='Completá nombre y celular del contacto adicional, o destildá la opción.';ok=false}}
+  if(st.apod&&(!st.apNom.trim()||!(mailOk(st.apEmail)||phCheck(st.apTel).ok))){$('#e1').textContent='Completá nombre del apoderado y al menos un medio de contacto válido.';ok=false}}
+ if(st.step===3){const seen={};st.vehs.forEach((v,i)=>{const c=vehPreview(i);if(!c.ok){const el=document.getElementById('vp-'+i);el.className='phpv bad';el.textContent=c.msg;ok=false}else if(seen[c.p]){const el=document.getElementById('vp-'+i);el.className='phpv bad';el.textContent='Esta patente ya está cargada arriba.';ok=false}else seen[c.p]=1})}
+ if(st.step===2){ok=setErr('dReal',st.dReal.trim().length<5?'Escribí calle y número.':'')&ok;ok=setErr('dLoc',!st.dLoc.trim()?'Falta la localidad.':'')&ok;ok=setErr('dProv',!st.dProv.trim()?'Falta la provincia.':'')&ok;
+  if(!st.mismo&&st.dEsp.trim().length<5){$('#e2').textContent='Escribí el domicilio para notificaciones o marcá que es el mismo.';ok=false}}
+ if(st.step===LAST){if(!st.dj||!st.datos){$('#e5').textContent='Para enviar la ficha tenés que marcar las dos casillas.';ok=false}}
+ return!!ok}
+function payload(){return{creado:new Date().toISOString(),estado:'pendiente_verificacion',
+ lotes:lotsEff().map(l=>({lote_id:l.id,partida:l.partida,reclamo:l.reclamo,titularidad:l.car,documento:l.inst,estado:l.estado||null})),
+ cantidad_lotes_declarada:st.cant,lote_sin_identificar:st.modo==='no'?st.noloteTxt.trim():(st.lots.length<st.cant&&st.restoTxt.trim()?st.restoTxt.trim():null),
+ titular:{tipo:st.tipo,nombre:nomFmt(st.nom),condicion_iva:st.fis.cond,tipo_documento:fisCheck(st.fis,st.tipo).tipo,documento:fisCheck(st.fis,st.tipo).doc,email:st.email.trim().toLowerCase(),celular:phCheck(st.tel).e164||null,whatsapp:st.wa},
+ cotitulares:st.cotit.map(p=>({nombre:p.nom.trim(),documento:p.doc.replace(/\D/g,''),celular:phCheck(p.tel).e164||null})),socio_designado:st.cotit.length?st.rep:'titular',
+ apoderado:st.apod?{nombre:st.apNom,documento:st.apDoc,relacion:st.apRel,celular:phCheck(st.apTel).e164||null,email:st.apEmail,recibe_liquidaciones:st.envio}:null,
+ domicilio_real:{calle:st.dReal,localidad:st.dLoc,provincia:st.dProv,cp:st.dCP},domicilio_notificaciones:st.mismo?'igual_real':st.dEsp,
+ acepta_notificacion_electronica:st.notif,notificacion_electronica_premarcada:true,facturacion:st.fact.otro?{a_nombre:st.fact.nom.trim(),cuit:cuitStr(st.fact)}:{a_nombre:'titular'},
+ contacto_adicional:st.ca?{nombre:st.caNom.trim(),relacion:st.caRel.trim(),celular:phCheck(st.caTel).e164||null}:null,vehiculos:st.vehs.map(v=>({patente:patNorm(v.pat),tipo:v.tipo,descripcion:v.desc.trim()||null,extranjera:!!v.ext})),comentarios:st.ocup,
+ declaracion_jurada:st.dj,consentimiento_datos:st.datos}}
+document.addEventListener('click',e=>{const lt=e.target.closest('[data-lot]');if(lt){const [s,m,n]=lt.dataset.lot.split('-');toggleLot(s,m,+n);return}
+ const t=e.target.closest('button');if(!t)return;
+ if(t.dataset.cant){if(t.dataset.cant==='mas'){st.cantOtro=st.cantOtro||'x';st.cant=null}else{st.cant=+t.dataset.cant;st.cantOtro=''}render();return}
+ if(t.id==='addveh'){st.vehs.push({pat:'',tipo:'Auto',desc:'',ext:false});render();const i=document.getElementById('vpat-'+(st.vehs.length-1));i&&i.focus();return}
+ if(t.dataset.vrm!==undefined){st.vehs.splice(+t.dataset.vrm,1);render();return}
+ if(t.dataset.via){st.via=t.dataset.via;st.claimPick=null;render();return}
+ if(t.dataset.zoom!==undefined){const d=+t.dataset.zoom;const mb=$('#mapbox');const cx=mb?(mb.scrollLeft+mb.clientWidth/2)/mb.scrollWidth:.5,cy=mb?(mb.scrollTop+mb.clientHeight/2)/mb.scrollHeight:.5;st.zoom=d===0?1:Math.min(6,Math.max(1,st.zoom*(d>0?1.5:1/1.5)));render();const nb=$('#mapbox');if(nb){nb.scrollLeft=cx*nb.scrollWidth-nb.clientWidth/2;nb.scrollTop=cy*nb.scrollHeight-nb.clientHeight/2}return}
+ if(t.dataset.claim){if(lleno()){st.claimPick=null;st.info=`Ya marcaste ${st.cant} ${pl(st.cant,'lote','lotes')}. Quitá uno o cambiá la cantidad.`;render();return}addLot(t.dataset.claim,true);st.claimPick=null;render();return}
+ if(t.dataset.free){delete st.taken[t.dataset.free];st.claimPick=null;st.info='Lote liberado: ahora figura como disponible.';render();return}
+ if(t.hasAttribute('data-close')){st.claimPick=null;render();return}
+ if(t.dataset.modo){st.modo=t.dataset.modo;render()}
+ else if(t.dataset.s){st.pickS=t.dataset.s;st.pickM=null;render()}
+ else if(t.dataset.m){st.pickM=t.dataset.m;render()}
+ else if(t.dataset.n){toggleLot(st.pickS,st.pickM,+t.dataset.n)}
+ else if(t.dataset.rm){st.lots=st.lots.filter(l=>l.id!==t.dataset.rm);render()}
+ else if(t.dataset.tdoc){st.fis.tdoc=t.dataset.tdoc;render()}
+ else if(t.dataset.sug){st[t.dataset.sug]=t.dataset.v;document.getElementById(t.dataset.sug).value=t.dataset.v;mailPreview(t.dataset.sug)}
+ else if(t.dataset.tipo){st.tipo=t.dataset.tipo;render()}
+ else if(t.id==='addct'){st.cotit.push({nom:'',doc:'',tel:PH()});render()}
+ else if(t.dataset.ctrm){st.cotit.splice(+t.dataset.ctrm,1);render()}
+ else if(t.id==='partBtn'){const v=$('#part').value;const r=byPartida(v);if(!r){$('#partErr').textContent='No encontramos esa partida en el plano. Revisala o elegí el lote a mano.';return}
+   if(!st.lots.some(l=>l.id===lotId(r.s,r.m,r.n)))toggleLot(r.s,r.m,r.n);st.pickS=r.s;st.pickM=r.m;render()}
+ else if(t.id==='back'){st.step=Math.max(0,st.step-1);render()}
+});
+document.addEventListener('input',e=>{const t=e.target;
+ if(t.hasAttribute&&t.hasAttribute('data-digits')){const p=t.selectionStart,b=t.value.length;t.value=t.value.replace(/\D/g,'');try{t.setSelectionRange(p-(b-t.value.length),p-(b-t.value.length))}catch(_){}}
+ if(t.id==='cantOtro'){st.cantOtro=t.value||'x';const v=+t.value,prev=st.cant;st.cant=v>=5&&v<=40?v:null;if(!!prev!==!!st.cant||prev!==st.cant){render();const i=document.getElementById('cantOtro');i.focus();i.setSelectionRange(9,9)}return}
+ if(t.dataset.veh!==undefined){const v=st.vehs[+t.dataset.veh];if(t.dataset.vf==='pat'){const p=t.selectionStart;t.value=t.value.toUpperCase();try{t.setSelectionRange(p,p)}catch(_){}}v[t.dataset.vf]=t.type==='checkbox'?t.checked:t.value;vehPreview(+t.dataset.veh);return}
+ if(t.dataset.fk){const o=st[t.dataset.fk];o[t.dataset.ff]=t.type==='checkbox'?t.checked:t.value;if(t.hasAttribute('data-rr')||t.dataset.ff==='pre'){render();return}fisPreview(t.dataset.fk);if(t.dataset.ff==='mid'&&t.value.length===8){const v=document.getElementById(t.dataset.fk+'-ver');v&&v.focus()}return}
+ if(t.dataset.ph){const o=getPh(t.dataset.ph);const f=t.dataset.pf;o[f]=t.type==='checkbox'?t.checked:t.value;if(f==='pais'||f==='movil'){render();return}phPreview(t.dataset.ph);return}
+ if(t.dataset.lf){const l=st.lots.find(x=>x.id===t.dataset.id);l[t.dataset.lf]=t.value;if(t.dataset.lf==='car')render();return}
+ if(t.dataset.ct){st.cotit[+t.dataset.i][t.dataset.ct]=t.value;return}
+ if(t.type==='checkbox'){st[t.id]=t.checked;if(t.id==='admin')st.claimPick=null;if(['apod','mismo','admin','ca'].includes(t.id))render();return}
+ if(t.id in st){st[t.id]=t.value;if(['fNom','rep'].includes(t.id))render()}
+});
+document.addEventListener('change',e=>{const t=e.target;if(t.dataset.ph||t.dataset.fk||t.dataset.veh!==undefined)return;if(t.tagName==='SELECT'&&t.id in st&&!t.dataset.lf){st[t.id]=t.value;render()}});
+document.addEventListener('focusout',e=>{const t=e.target;if(!t.id)return;if(t.id==='email'||t.id==='apEmail'){if(st[t.id].trim()){st[t.id]=st[t.id].trim().toLowerCase();t.value=st[t.id]}if(t.id==='email'||st.apEmail)mailPreview(t.id)}
+ if(t.id==='nom'&&st.nom.trim())setErr('nom',nomMsg());
+ if(t.dataset.fk&&!t.hasAttribute('data-rr')){const c=fisPreview(t.dataset.fk)}});
+document.addEventListener('keydown',e=>{const lt=e.target.closest&&e.target.closest('[data-lot]');if(lt&&(e.key==='Enter'||e.key===' ')){e.preventDefault();const id=lt.dataset.lot;const [s,m,n]=id.split('-');toggleLot(s,m,+n);const el=document.querySelector(`[data-lot="${id}"]`);el&&el.focus()}});
+$('#f').addEventListener('submit',e=>{e.preventDefault();if(!validate())return;
+ if(st.step<LAST){st.step++;render();window.scrollTo({top:0});return}
+ const P=payload(),nro='AG-'+new Date().toISOString().slice(2,10).replace(/-/g,'')+'-'+String(Math.floor(Math.random()*9000)+1000);
+ $('#prog').innerHTML=STEPS.map(()=>'<span class="on"></span>').join('');$('#stepl').textContent='Ficha enviada';
+ const nl=P.lotes.length,pend=P.lote_sin_identificar;
+ $('#steps').innerHTML=`<section class="step done"><div class="okmark" aria-hidden="true">✓</div><h2>¡Gracias! Recibimos tu ficha</h2>
+ <p>Número de trámite <strong class="mono">${nro}</strong>. Guardalo por si tenés que consultar algo.</p>
+ <dl class="summary"><dt>Lotes</dt><dd>${nl?P.lotes.map(l=>esc(l.lote_id)+(l.reclamo?' (en revisión)':'')).join(', '):'A identificar'}${nl&&pend?' + uno a identificar':''}</dd><dt>Te avisamos a</dt><dd>${esc(P.titular.email)}<br>${esc(phCheck(st.tel).fmt||'')}</dd></dl>
+ <div><strong>Qué pasa ahora</strong><ol class="next"><li>La comisión revisa tus datos contra el padrón y la escritura.</li>${pend||P.lotes.some(l=>l.reclamo)?'<li>Te contactamos para confirmar los lotes que quedaron pendientes o en revisión.</li>':''}<li>Cuando esté verificada, empezás a recibir las liquidaciones mensuales por los medios que elegiste.</li></ol></div>
+ <p class="help">Si te equivocaste en algo, escribile a la comisión indicando tu número de trámite.</p>
+ <details class="tech"><summary>Solo para la comisión (prueba): ver cómo se guardaría el registro</summary><pre>${esc(JSON.stringify(Object.assign({tramite:nro},P),null,2))}</pre><button type="button" class="btn" id="back2">Volver a editar (prueba)</button></details></section>`;
+ $('#next').hidden=true;$('#back').hidden=true;window.scrollTo({top:0});
+ $('#back2').onclick=()=>{$('#next').hidden=false;$('#back').hidden=false;render()}});
+// Arranca mostrando una manzana abierta para que se entienda el selector
+render();
+</script>
+
+</body>
+</html>
