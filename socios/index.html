@@ -45,12 +45,13 @@ const sb=window.supabase?window.supabase.createClient(SB_URL,SB_KEY,{auth:{persi
 const $=s=>document.querySelector(s);const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const tokGet=()=>{try{return localStorage.getItem(TK)}catch(_){return S.tok}},tokSet=v=>{S.tok=v;try{v?localStorage.setItem(TK,v):localStorage.removeItem(TK)}catch(_){}};
 const S={tok:null,yo:null,show:false,cp:false};
-function vLogin(msg){$('#main').innerHTML=`<form class="card" id="lf"><h2>Ingresar</h2>
+function vLogin(msg){$('#main').innerHTML=`<div class="card"><h2>¿Primera vez?</h2><p class="help">Si todavía no cargaste tu ficha de propietario, empezá acá. Al final elegís tu contraseña.</p><a class="btn" style="display:block;text-align:center;text-decoration:none" href="../ficha/">Completar mi ficha</a></div>
+ <form class="card" id="lf"><h2>Ya tengo cuenta</h2>
  <label>DNI <span class="help" style="font-weight:400">(solo números, sin puntos)</span><input id="dni" inputmode="numeric" autocomplete="username" maxlength="11"></label>
  <label>Contraseña<input id="pw" type="${S.show?'text':'password'}" autocomplete="current-password"></label>
  <label class="check"><input type="checkbox" id="show" ${S.show?'checked':''}>Mostrar lo que escribo</label>
  <div class="err" id="lerr">${esc(msg||'')}</div><button class="btn primary" id="lb" type="submit">Ingresar</button>
- <p class="help">¿Te olvidaste la contraseña o todavía no tenés? Escribile a la comisión y te dan una nueva.</p></form>`}
+ <p class="help">¿Ya cargaste la ficha pero te olvidaste la contraseña? Escribile a la comisión y te dan una nueva.</p></form>`}
 function vHome(){const y=S.yo;$('#main').innerHTML=`${y.provisoria?'<div class="note">Estás usando una contraseña provisoria. Te recomendamos cambiarla por una tuya (abajo).</div>':''}
  <div class="card"><h2>Hola, ${esc(y.nombre)}</h2><p class="help">Ficha ${esc(y.tramite)}</p>
  ${(y.lotes||[]).length?y.lotes.map(l=>`<div class="lot"><span>${l.sector==='S1'?'Sector 1':'Sector 2'} · Mz ${esc(l.manzana)} · Lote ${l.parcela}</span><span class="mono">${esc(l.partida)}</span></div>`).join(''):'<p class="help">Tus lotes todavía no están identificados en el plano.</p>'}</div>

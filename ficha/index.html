@@ -115,6 +115,7 @@ pre{background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:
   <div class="eyebrow">Asociación Civil Aguará Guazú Country · Chacra 108, Ituzaingó</div>
   <h1>Ficha de propietario 2026</h1>
   <p class="lede">Actualizamos el padrón para enviar liquidaciones, avisos y convocatorias a la persona correcta. Lleva unos 5 minutos. Si tenés más de un lote, cargalos todos en la misma ficha.</p>
+  <p class="lede" style="margin-top:6px">¿Ya cargaste tu ficha? <a href="../socios/">Ingresá a la app</a>.</p>
 </header>
 <div class="progress" id="prog"></div>
 <div class="steplabel" id="stepl"></div>
@@ -457,6 +458,7 @@ $('#f').addEventListener('submit',e=>{e.preventDefault();if(!validate())return;
   <p>Número de trámite <strong class="mono">${esc(nro)}</strong>. Guardalo por si tenés que consultar algo.</p>
   <dl class="summary"><dt>Lotes</dt><dd>${nl?P.lotes.map(l=>esc(l.lote_id)+(l.reclamo?' (en revisión)':'')).join(', '):'A identificar'}${nl&&pend?' + a identificar':''}</dd><dt>Te avisamos a</dt><dd>${esc(P.titular.email)}<br>${esc(phCheck(st.tel).fmt||'')}</dd></dl>
   <div><strong>Qué pasa ahora</strong><ol class="next"><li>La comisión revisa tus datos contra el padrón y la escritura.</li>${pend||enRev?'<li>Te contactamos para confirmar los lotes que quedaron pendientes o en revisión.</li>':''}<li>Cuando esté verificada, empezás a recibir las liquidaciones mensuales por los medios que elegiste.</li></ol></div>
+  <p><strong>Para entrar a la app:</strong> <a href="../socios/">aguaraguazu-country.github.io/app/socios</a> con tu DNI y la contraseña que elegiste, cuando la comisión verifique tu ficha. Guardá ese link.</p>
   <p class="help">Si te equivocaste en algo, escribile a la comisión indicando tu número de trámite.</p></section>`;
   btn.hidden=true;$('#back').hidden=true;window.scrollTo({top:0});
  }).catch(()=>{btn.disabled=false;btn.textContent='Enviar ficha';e5.textContent='No se pudo enviar. Revisá tu conexión y probá de nuevo.'});
