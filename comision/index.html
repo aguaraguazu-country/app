@@ -82,7 +82,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 </head>
 <body>
 <div class="wrap">
-<header><div><div class="eyebrow">Asociación Civil Aguará Guazú Country · Comisión Directiva</div><h1>Panel de la comisión<span class="agver" aria-label="Versión del sistema" style="font:500 12px/1.2 system-ui,sans-serif;color:var(--muted,#5d6862);margin-left:10px;white-space:nowrap;vertical-align:middle;letter-spacing:0">v1.16 · 27/10/26 18:10</span></h1></div><div class="who" id="who"></div></header>
+<header><div><div class="eyebrow">Asociación Civil Aguará Guazú Country · Comisión Directiva</div><h1>Panel de la comisión<span class="agver" aria-label="Versión del sistema" style="font:500 12px/1.2 system-ui,sans-serif;color:var(--muted,#5d6862);margin-left:10px;white-space:nowrap;vertical-align:middle;letter-spacing:0">v1.17 · 27/10/26 20:20</span></h1></div><div class="who" id="who"></div></header>
 <main id="main"><div class="empty">Cargando…</div></main>
 </div>
 <div id="tip" hidden></div><div id="dr"></div>
@@ -111,16 +111,18 @@ async function loadData(){$('#main').innerHTML='<div class="empty">Cargando fich
  const {data,error}=await sb.from('fichas').select('id,tramite,creado,estado,es_prueba,titular_nombre,titular_documento,email,celular,cantidad_lotes,lote_sin_identificar,datos,nota_comision,revisado_en,ficha_lotes(lote_id,reclamo)').order('creado',{ascending:false});
  if(error){$('#main').innerHTML=`<div class="card">No se pudieron leer las fichas: ${esc(error.message)}</div>`;return}
  S.fichas=data||[];
- const pr=await sb.from('padron_ref').select('id,nombre,documento,email,celular,lotes_cobranza,lotes_padron,lotes_plano,origen').order('nombre');S.padron=pr.error?null:(pr.data||[]);
+ let pr=await sb.from('padron_ref').select('id,nombre,documento,email,celular,lotes_cobranza,lotes_padron,lotes_plano,origen,cuota_planilla,meses_planilla,deuda_planilla,ultima_factura,obs_planilla,nota,nota_en').order('nombre');S.sin06=false;
+ if(pr.error){S.sin06=true;pr=await sb.from('padron_ref').select('id,nombre,documento,email,celular,lotes_cobranza,lotes_padron,lotes_plano,origen').order('nombre')}
+ S.padron=pr.error?null:(pr.data||[]);
  S.byLot={};for(const f of S.fichas){if(f.estado==='rechazada')continue;for(const fl of f.ficha_lotes||[]){(S.byLot[fl.lote_id]=S.byLot[fl.lote_id]||[]).push(f)}}render()}
 const norm=t=>String(t||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().replace(/[^a-z ]/g,' ').split(/\s+/).filter(w=>w.length>1);
-function docKey(d){d=String(d||'').replace(/\D/g,'');if(d.length===11)d=d.slice(2,10);return d.replace(/^0+/,'')}
+function docKey(d){d=String(d||'').replace(/\D/g,'');if(d.length===11&&/^(20|23|24|27)/.test(d))d=d.slice(2,10);return d.replace(/^0+/,'')}
 function cruce(){if(!S.padron)return null;const act=S.fichas.filter(f=>f.estado!=='rechazada');const byDoc={};act.forEach(f=>{const k=docKey(f.titular_documento);if(k)byDoc[k]=f});
- return S.padron.map(p=>{const k=docKey(p.documento);let f=k&&byDoc[k],est=f?'cargo':'falta';
+ return S.padron.map(p=>{const k=docKey(p.documento);let f=k&&byDoc[k],est=f?(f.estado==='verificada'?'verif':'pend'):'falta';
   if(!f){const pt=norm(p.nombre);for(const x of act){const ft=norm(x.titular_nombre);if(pt[0]&&ft[0]===pt[0]&&pt.slice(1).some(w=>ft.includes(w))){f=x;est='posible';break}}}
   return Object.assign({},p,{est,ficha:f||null})})}
 function waLink(tel){const g=(String(tel||'').match(/\d[\d\s-]{8,}\d/)||[''])[0].replace(/\D/g,'').replace(/^0/,'');if(g.length!==10)return null;
- const msg='Hola, ¿cómo estás? Te escribimos de la Comisión Directiva de Aguará Guazú Country. Estamos actualizando el padrón de propietarios y todavía no recibimos tu ficha. Se completa en 5 minutos desde el celular: https://aguaraguazu-country.github.io/app/ficha/ ¡Muchas gracias!';
+ const msg='Hola, ¿cómo estás? Te escribimos de la Comisión Directiva de Aguará Guazú Country. Estamos actualizando el padrón de propietarios y todavía no recibimos tu ficha. Se completa en 5 minutos desde el celular: https://aguaraguazu-country.github.io/app/ (tocá "Completar mi ficha") ¡Muchas gracias!';
  return'https://wa.me/549'+g+'?text='+encodeURIComponent(msg)}
 function lotClass(id){const fs=S.byLot[id];if(!fs||!fs.length)return'';if(fs.length>1||fs.some(f=>(f.ficha_lotes||[]).some(x=>x.lote_id===id&&x.reclamo)))return'conf';return fs[0].estado==='verificada'?'ok':'pend'}
 // ---------- vistas ----------
@@ -129,19 +131,36 @@ function vResumen(){const act=S.fichas.filter(f=>f.estado!=='rechazada');const l
  const de=n=>` <span style="font-size:14px;color:var(--muted);font-weight:500">de ${n}</span>`;const c=cruce();
  return`<div class="kpis">${K('Fichas recibidas',act.length,'lista|todas',S.v==='lista'&&S.f==='todas')}${K('Lotes con ficha',lotes,'plano',S.v==='plano',de(202))}
  ${K('Pendientes de revisar',act.filter(f=>f.estado==='pendiente').length,'lista|pendiente',S.v==='lista'&&S.f==='pendiente')}${K('Lotes con conflicto',conf,'lista|conflicto',S.v==='lista'&&S.f==='conflicto')}
- ${K('Sin lote identificado',act.filter(f=>!(f.ficha_lotes||[]).length).length,'lista|sinlote',S.v==='lista'&&S.f==='sinlote')}${c?K('Del padrón ya cargaron',c.filter(x=>x.est==='cargo').length,'faltan|cargo',S.v==='faltan'&&S.pf==='cargo',de(c.length)):''}</div>
- <div class="tabs"><button type="button" data-v="plano" aria-pressed="${S.v==='plano'}">Plano</button><button type="button" data-v="lista" aria-pressed="${S.v==='lista'}">Fichas</button><button type="button" data-v="faltan" aria-pressed="${S.v==='faltan'}">Faltan cargar</button><span style="margin-left:auto;display:flex;gap:6px"><button type="button" class="btn sm" id="backup">Descargar copia (Excel)</button><button type="button" class="btn sm" id="reload">Actualizar</button></span></div>`}
-function vFaltan(){const c=cruce();if(!c)return`<div class="card">Para ver quién falta, ejecutá el script <b>04_lanzamiento.sql</b> en Supabase.</div>`;const q=S.q.trim().toLowerCase();
- let rs=c.filter(x=>S.pf==='todos'||x.est===S.pf);if(q)rs=rs.filter(x=>(x.nombre+' '+(x.documento||'')+' '+(x.lotes_plano||'')).toLowerCase().includes(q));
- const n=k=>c.filter(x=>x.est===k).length;const F=[['falta',`Faltan (${n('falta')})`],['posible',`Posibles (${n('posible')})`],['cargo',`Ya cargaron (${n('cargo')})`],['todos','Todos']];
- return`<div class="card"><p class="help">Cruce del padrón de marzo y la planilla de cobranza con las fichas recibidas, por DNI/CUIT. "Posible" = coincide el apellido y algún nombre pero no el documento: revisalo a mano.</p>
- <div class="tabs"><input type="search" id="q" placeholder="Buscar por nombre, DNI o lote" value="${esc(S.q)}" style="flex:1 1 240px">${F.map(([k,l])=>`<button type="button" data-pf="${k}" aria-pressed="${S.pf===k}">${l}</button>`).join('')}</div>
- <div class="tablebox"><table><thead><tr><th>Propietario</th><th>Lotes</th><th>Contacto</th><th>Estado</th></tr></thead><tbody>
- ${rs.length?rs.map(x=>{const w=waLink(x.celular);return`<tr${x.ficha?` data-ficha="${x.ficha.id}"`:''} style="${x.ficha?'':'cursor:default'}"><td>${esc(x.nombre)}<div class="help mono">${esc(x.documento||'sin documento')}</div></td>
+ ${K('Sin lote identificado',act.filter(f=>!(f.ficha_lotes||[]).length).length,'lista|sinlote',S.v==='lista'&&S.f==='sinlote')}${c?K('Del padrón ya cargaron',c.filter(x=>x.est==='verif'||x.est==='pend').length,'faltan|cargo',S.v==='faltan'&&S.pf==='cargo',de(c.length)):''}</div>
+ <div class="tabs"><button type="button" data-v="plano" aria-pressed="${S.v==='plano'}">Plano</button><button type="button" data-v="lista" aria-pressed="${S.v==='lista'}">Fichas</button><button type="button" data-v="faltan" aria-pressed="${S.v==='faltan'}">Padrón</button><span style="margin-left:auto;display:flex;gap:6px"><button type="button" class="btn sm" id="backup">Descargar copia (Excel)</button><button type="button" class="btn sm" id="reload">Actualizar</button></span></div>`}
+const $$=n=>n==null?'—':'$ '+Math.round(n).toLocaleString('es-AR');
+const EST={verif:['verificada','Verificada'],pend:['pendiente','Pendiente'],posible:['pendiente','Posible'],falta:['rechazada','No cargó']};
+function vFaltan(){const c=cruce();if(!c)return`<div class="card">Para ver el padrón, ejecutá el script <b>04_lanzamiento.sql</b> en Supabase.</div>`;const q=S.q.trim().toLowerCase();
+ const deu=x=>+(x.deuda_planilla||0)>0;
+ const pass=x=>S.pf==='todos'||(S.pf==='cargo'?(x.est==='verif'||x.est==='pend'):S.pf==='deuda'?deu(x):x.est===S.pf);
+ let rs=c.filter(pass);if(q)rs=rs.filter(x=>(x.nombre+' '+(x.documento||'')+' '+(x.lotes_plano||'')+' '+(x.nota||'')).toLowerCase().includes(q));
+ if(S.ord==='deuda')rs=rs.slice().sort((a,b)=>(+b.deuda_planilla||0)-(+a.deuda_planilla||0));
+ const n=k=>c.filter(x=>k==='cargo'?(x.est==='verif'||x.est==='pend'):k==='deuda'?deu(x):x.est===k).length;
+ const F=[['todos',`Todos (${c.length})`],['falta',`No cargaron (${n('falta')})`],['posible',`Posibles (${n('posible')})`],['pend',`Pendientes (${n('pend')})`],['verif',`Verificados (${n('verif')})`],...(S.sin06?[]:[['deuda',`Con deuda (${n('deuda')})`]])];
+ const tot=rs.reduce((a,x)=>a+(+x.deuda_planilla||0),0);
+ return`<div class="card"><div class="note">Padrón <b>interno de trabajo</b>, no oficial. Se armó con el padrón de marzo 2026 y la planilla de cobranza. La deuda es la que informa la planilla (meses adeudados × cuota actual), <b>sin verificar</b>.${S.sin06?' Para ver la deuda y las notas, ejecutá el script <b>06_padron_trabajo.sql</b> en Supabase.':''}</div>
+ <div class="tabs"><input type="search" id="q" placeholder="Buscar por nombre, DNI, lote o nota" value="${esc(S.q)}" style="flex:1 1 240px">${F.map(([k,l])=>`<button type="button" data-pf="${k}" aria-pressed="${S.pf===k}">${l}</button>`).join('')}</div>
+ <div class="tabs" style="justify-content:space-between"><span class="help">${rs.length} propietario${rs.length===1?'':'s'}${S.sin06?'':` · deuda en la vista: <b>${$$(tot)}</b>`}</span><span style="display:flex;gap:6px"><button type="button" class="btn sm" data-ord="nombre" aria-pressed="${S.ord!=='deuda'}">Ordenar por nombre</button><button type="button" class="btn sm" data-ord="deuda" aria-pressed="${S.ord==='deuda'}" ${S.sin06?'disabled':''}>Ordenar por deuda</button></span></div>
+ <div class="tablebox"><table><thead><tr><th>Propietario</th><th>Lotes</th><th>Contacto</th>${S.sin06?'':'<th>Deuda (planilla)</th>'}<th>Ficha</th></tr></thead><tbody>
+ ${rs.length?rs.map(x=>{const w=waLink(x.celular);const e=EST[x.est];return`<tr data-pad="${esc(x.id)}"><td>${esc(x.nombre)}<div class="help mono">${esc(x.documento||'sin documento')}</div>${x.nota?`<div class="help">📝 ${esc(x.nota.length>60?x.nota.slice(0,60)+'…':x.nota)}</div>`:''}</td>
  <td>${x.lotes_cobranza??x.lotes_padron??'—'} <span class="help">${x.lotes_cobranza!=null?'(cobranza)':x.lotes_padron!=null?'(padrón)':''}</span><div class="help mono">${esc(x.lotes_plano||'')}</div></td>
- <td>${x.celular?`<span class="mono">${esc(x.celular)}</span>${w&&x.est!=='cargo'?` <a class="btn sm" href="${w}" target="_blank" rel="noopener">WhatsApp</a>`:''}`:'<span class="help">sin celular</span>'}<div class="help">${esc(x.email||'')}</div></td>
- <td><span class="st ${x.est==='cargo'?'verificada':x.est==='posible'?'pendiente':'rechazada'}">${x.est==='cargo'?'Cargó':x.est==='posible'?'Posible':'Falta'}</span>${x.ficha?`<div class="help mono">${esc(x.ficha.tramite)}</div>`:''}</td></tr>`}).join(''):`<tr><td colspan="4" class="empty">No hay propietarios con ese filtro.</td></tr>`}
- </tbody></table></div><p class="help">El botón WhatsApp abre un mensaje de recordatorio ya escrito; revisalo antes de enviarlo.</p></div>`}
+ <td>${x.celular?`<span class="mono">${esc(x.celular)}</span>${w&&x.est==='falta'?` <a class="btn sm" href="${w}" target="_blank" rel="noopener">WhatsApp</a>`:''}`:'<span class="help">sin celular</span>'}<div class="help">${esc(x.email||'')}</div></td>
+ ${S.sin06?'':`<td class="mono">${x.deuda_planilla==null?'<span class="help">sin dato</span>':deu(x)?`<b>${$$(x.deuda_planilla)}</b><div class="help">${x.meses_planilla??'?'} mes${x.meses_planilla===1?'':'es'}</div>`:'<span class="st verificada">al día</span>'}</td>`}
+ <td><span class="st ${e[0]}">${e[1]}</span>${x.ficha?`<div class="help mono">${esc(x.ficha.tramite)}</div>`:''}</td></tr>`}).join(''):`<tr><td colspan="5" class="empty">No hay propietarios con ese filtro.</td></tr>`}
+ </tbody></table></div><p class="help">Tocá una fila para ver el detalle y agregar una nota. El botón WhatsApp abre un recordatorio ya escrito; revisalo antes de enviarlo.</p></div>`}
+function padHTML(x){const e=EST[x.est],w=waLink(x.celular);
+ return`<div class="fcard"><div class="dh"><div><h2>${esc(x.nombre)}</h2><span class="mono help">${esc(x.id)} · ${esc(x.origen||'')}</span></div><span class="st ${e[0]}">${e[1]}</span></div>
+ <dl><dt>Documento</dt><dd class="mono">${esc(x.documento||'—')}</dd><dt>Celular</dt><dd class="mono">${esc(x.celular||'—')}</dd><dt>Email</dt><dd>${esc(x.email||'—')}</dd>
+ <dt>Lotes</dt><dd>${x.lotes_cobranza!=null?esc(x.lotes_cobranza)+' según cobranza':''}${x.lotes_padron!=null?(x.lotes_cobranza!=null?' · ':'')+esc(x.lotes_padron)+' según padrón':''}${x.lotes_plano?`<div class="mono help">${esc(x.lotes_plano)}</div>`:''}</dd>
+ ${S.sin06?'':`<dt>Deuda (planilla)</dt><dd>${x.deuda_planilla==null?'Sin dato':+x.deuda_planilla>0?`<b>${$$(x.deuda_planilla)}</b> · ${x.meses_planilla??'?'} meses × ${$$(x.cuota_planilla)}`:'Al día'}</dd><dt>Última factura</dt><dd>${esc(x.ultima_factura||'—')}</dd>${x.obs_planilla?`<dt>Obs. de la planilla</dt><dd>${esc(x.obs_planilla)}</dd>`:''}`}
+ <dt>Ficha</dt><dd>${x.ficha?`${esc(x.ficha.tramite)} · ${esc(x.ficha.estado)}${x.est==='posible'?' <span class="help">(coincide el nombre, no el documento: revisalo)</span>':''} <button type="button" class="btn sm" data-ficha="${x.ficha.id}">Ver ficha</button>`:'No cargó'}${w&&x.est==='falta'?` <a class="btn sm" href="${w}" target="_blank" rel="noopener">Recordar por WhatsApp</a>`:''}</dd></dl>
+ ${S.sin06?'':`<label>Nota de la comisión<textarea id="pnota" rows="3" maxlength="2000" placeholder="Ej.: vendió el lote en 2025; llamar después del 10; acordó plan de pagos…">${esc(x.nota||'')}</textarea></label>
+ <div class="acts"><button type="button" class="btn primary" data-savepad="${esc(x.id)}">Guardar nota</button><span class="help" id="pmsg" style="align-self:center">${x.nota_en?'Última edición: '+fdate(x.nota_en):''}</span></div>`}</div>`}
 function vPlano(){if(S.zoom==null)S.zoom=innerWidth<640?2.6:1;
  let g=`<rect x="0" y="145.06" width="145.06" height="145.05" fill="var(--s1)"/><path d="M0 0H290.11V290.11H145.06V145.06H0Z" fill="var(--s2)"/><path d="M0 0H290.11V290.11H0Z" fill="none" stroke="var(--fg)" stroke-width=".8"/><path d="M0 145.06H145.06V290.11" fill="none" stroke="var(--fg)" stroke-width=".5" stroke-dasharray="3 2"/>
  <text class="street" x="145" y="-6" text-anchor="middle">Calle Posadas</text><text class="street" x="145" y="300" text-anchor="middle">Calle Pago Largo</text><text class="street" transform="translate(-6 145) rotate(-90)" text-anchor="middle">Calle 10</text><text class="street" transform="translate(297 145) rotate(90)" text-anchor="middle">Calle 9</text>
@@ -186,6 +205,7 @@ function fichaHTML(f){const d=f.datos||{},t=d.titular||{},dom=d.domicilio_real||
 function drawer(){if(!S.open)return'';let head='',body='';
  if(S.open.lot){const i=lotInfo(S.open.lot),fs=S.byLot[S.open.lot]||[];head=`<div><h2>${esc(i.nom)}</h2><span class="mono help">${esc(i.partida)} · ${i.sup!=null?i.sup.toLocaleString('es-AR')+' m²':''}</span></div>`;
   body=fs.length?(fs.length>1?`<div class="note">Hay ${fs.length} fichas que reclaman este lote. Revisá cuál corresponde y rechazá la otra.</div>`:'')+fs.map(fichaHTML).join(''):'<div class="empty">Ningún propietario cargó todavía este lote.</div>'}
+ else if(S.open.pad){const x=(cruce()||[]).find(y=>y.id===S.open.pad);head='<div><h2>Padrón</h2></div>';body=x?padHTML(x):''}
  else{const f=S.fichas.find(x=>x.id===S.open.ficha);head='<div><h2>Ficha</h2></div>';body=f?fichaHTML(f):''}
  return`<div class="scrim" data-close></div><aside class="drawer" role="dialog" aria-label="Tarjeta"><div class="dh">${head}<button type="button" class="x" data-close aria-label="Cerrar">×</button></div>${body}</aside>`}
 // ---------- tooltip ----------
@@ -200,7 +220,12 @@ document.addEventListener('submit',async e=>{if(e.target.id!=='lf')return;e.prev
  if(error){$('#lerr').textContent=/invalid/i.test(error.message)?'Email o contraseña incorrectos.':error.message;return}S.user=data.user;await loadApp()});
 document.addEventListener('click',async e=>{const t=e.target;
  const lt=t.closest('[data-lot]');if(lt){tip.hidden=true;S.open={lot:lt.dataset.lot};render();return}
+ if(t.closest('a[href]'))return;
  const tr=t.closest('[data-ficha]');if(tr){S.open={ficha:+tr.dataset.ficha};render();return}
+ const pr=t.closest('[data-pad]');if(pr){S.open={pad:pr.dataset.pad};render();return}
+ const od=t.closest('[data-ord]');if(od){S.ord=od.dataset.ord;render();return}
+ const sp=t.closest('[data-savepad]');if(sp){const id=sp.dataset.savepad,v=$('#pnota').value;sp.disabled=true;const {error}=await sb.rpc('guardar_nota_padron',{p_id:id,p_nota:v});sp.disabled=false;
+  if(error){$('#pmsg').innerHTML=`<span class="err">No se pudo guardar: ${esc(error.message)}</span>`;return}const x=S.padron.find(y=>y.id===id);if(x){x.nota=v.trim()||null;x.nota_en=new Date().toISOString()}render();return}
  if(t.closest('[data-close]')){S.open=null;render();return}
  const kp=t.closest('[data-kpi]');if(kp){const [v,x]=kp.dataset.kpi.split('|');S.v=v;S.q='';if(v==='lista')S.f=x;if(v==='faltan')S.pf=x;if(v==='plano')S.zoom=null;render();const tb=$('#main .tabs');if(tb)tb.scrollIntoView({behavior:'smooth',block:'start'});return}
  const v=t.closest('[data-v]');if(v){S.v=v.dataset.v;render();return}
