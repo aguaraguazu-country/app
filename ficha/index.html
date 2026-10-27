@@ -110,7 +110,6 @@ pre{background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:
 </style>
 </head>
 <body>
-
 <div class="wrap">
 <header class="top">
   <div class="eyebrow">Asociación Civil Aguará Guazú Country · Chacra 108, Ituzaingó</div>
@@ -141,7 +140,7 @@ const st={step:0,pickS:null,pickM:null,lots:[],cant:null,cantOtro:'',restoTxt:''
  dReal:'',dLoc:'',dProv:'',dCP:'',mismo:true,dEsp:'',
  fNom:'mismo',fDoc:'',iva:'Consumidor final',
  ocup:'',ca:false,caNom:'',caRel:'',caTel:PH(),vehs:[],
- dj:false,notif:true,datos:false};
+ dj:false,notif:true,datos:false,pw1:'',pw2:'',pwShow:false};
 const $=s=>document.querySelector(s);
 const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 function cuitOk(c){c=c.replace(/\D/g,'');if(c.length!==11)return false;const w=[5,4,3,2,7,6,5,4,3,2];let s=0;for(let i=0;i<10;i++)s+=+c[i]*w[i];let v=11-s%11;if(v===11)v=0;if(v===10)return false;return v===+c[10]}
@@ -176,14 +175,14 @@ function fisCheck(f,tipo){
  return{ok:true,tipo:'CUIT',doc:c,fmt:`CUIT ${c.slice(0,2)}-${c.slice(2,10)}-${c.slice(10)}`}}
 function cuitHTML(k,f,tipo){const pres=tipo==='juridica'?PRE_J:PRE_H;if(!pres.includes(f.pre))f.pre=pres[0];
  return`<div class="cuit"><div class="field"><label for="${k}-pre" class="sub">Prefijo</label><select id="${k}-pre" data-fk="${k}" data-ff="pre">${pres.map(p=>`<option ${f.pre===p?'selected':''}>${p}</option>`).join('')}</select></div><span class="dash">–</span>
- <div class="field"><label for="${k}-mid" class="sub">${tipo==='juridica'?'Número':'Número de DNI'}</label><input type="text" id="${k}-mid" data-fk="${k}" data-ff="mid" data-digits inputmode="numeric" maxlength="8" placeholder="29241681" value="${esc(f.mid)}"></div><span class="dash">–</span>
+ <div class="field"><label for="${k}-mid" class="sub">${tipo==='juridica'?'Número':'Número de DNI'}</label><input type="text" id="${k}-mid" data-fk="${k}" data-ff="mid" data-digits inputmode="numeric" maxlength="8" placeholder="30123456" value="${esc(f.mid)}"></div><span class="dash">–</span>
  <div class="field"><label for="${k}-ver" class="sub">Último</label><input type="text" id="${k}-ver" data-fk="${k}" data-ff="ver" data-digits inputmode="numeric" maxlength="1" placeholder="5" value="${esc(f.ver)}"></div></div>`}
 function fisHTML(){const f=st.fis,j=st.tipo==='juridica';if(j&&f.cond==='Consumidor final')f.cond='Responsable inscripto';
  const conds=j?['Responsable inscripto','Monotributista','Exento']:['Consumidor final','Monotributista','Responsable inscripto','Exento'];
  const usaDNI=!j&&f.cond==='Consumidor final'&&f.tdoc==='DNI';
  return`<div class="field"><label for="fis-cond">¿Cómo te facturamos?</label><select id="fis-cond" data-fk="fis" data-ff="cond" data-rr>${conds.map(c=>`<option ${f.cond===c?'selected':''}>${c}</option>`).join('')}</select><p class="help">${j?'Las empresas y entidades siempre facturan con CUIT.':'Si no tenés actividad comercial, elegí Consumidor final.'}</p></div>
  ${!j&&f.cond==='Consumidor final'?`<div class="field"><span class="lbl">Documento</span><div class="seg"><button type="button" data-tdoc="DNI" aria-pressed="${f.tdoc==='DNI'}">DNI</button><button type="button" data-tdoc="CUIT" aria-pressed="${f.tdoc==='CUIT'}">CUIT / CUIL</button></div></div>`:''}
- ${usaDNI?`<div class="field"><label for="fis-dni">Número de DNI <span class="opt">solo números, sin puntos</span></label><input type="text" id="fis-dni" data-fk="fis" data-ff="dni" data-digits inputmode="numeric" maxlength="8" placeholder="29241681" value="${esc(f.dni)}"></div>`:cuitHTML('fis',f,st.tipo)}
+ ${usaDNI?`<div class="field"><label for="fis-dni">Número de DNI <span class="opt">solo números, sin puntos</span></label><input type="text" id="fis-dni" data-fk="fis" data-ff="dni" data-digits inputmode="numeric" maxlength="8" placeholder="30123456" value="${esc(f.dni)}"></div>`:cuitHTML('fis',f,st.tipo)}
  <div class="phpv" id="fv-fis" aria-live="polite"></div>
  <label class="check"><input type="checkbox" id="fact-otro" data-fk="fact" data-ff="otro" data-rr ${st.fact.otro?'checked':''}><span>Las facturas van a nombre de otra persona o empresa</span></label>
  <div class="person" ${st.fact.otro?'':'hidden'}><div class="field"><label for="fact-nom">Nombre o razón social</label><input type="text" id="fact-nom" data-fk="fact" data-ff="nom" value="${esc(st.fact.nom)}"></div>${cuitHTML('fact',st.fact,st.fact.pre>='30'?'juridica':'humana')}<p class="help">Prefijos 20, 23, 24 y 27 son personas; 30, 33 y 34, empresas.</p><div class="phpv" id="fv-fact" aria-live="polite"></div></div>`}
@@ -336,6 +335,14 @@ function step5(){const L=lotsEff().map(l=>`${l.id} (${l.partida})${l.reclamo?' �
  <dt>Notificaciones formales</dt><dd>${st.mismo?'En el domicilio real':esc(st.dEsp)}</dd>
  <dt>Avisos por email/WhatsApp</dt><dd>${st.notif?'Aceptado':'No aceptado'}</dd>
  <dt>Facturación</dt><dd>${esc(st.fis.cond)} · ${st.fact.otro?'a nombre de '+esc(st.fact.nom)+' ('+esc(fisCheck({...st.fact,cond:'x'},['30','33','34'].includes(st.fact.pre)?'juridica':'humana').fmt||'')+')':'a nombre del titular'}</dd></dl>
+ <fieldset class="phone" id="pwbox"><legend class="lbl">Contraseña para la app del barrio</legend>
+ <p class="help">Con tu <b>DNI</b> y esta contraseña vas a entrar a la app de socios (estado de cuenta, visitas, inquilinos). Va a funcionar cuando la comisión verifique tu ficha.</p>
+ <div class="field"><span class="sub">Tu usuario</span><div class="mono" style="font-size:16px">${esc(usuarioApp()||'—')}</div></div>
+ <div class="row"><div class="field"><label for="pw1">Contraseña</label><input type="${st.pwShow?'text':'password'}" id="pw1" autocomplete="new-password" value="${esc(st.pw1)}"></div>
+ <div class="field"><label for="pw2">Repetí la contraseña</label><input type="${st.pwShow?'text':'password'}" id="pw2" autocomplete="new-password" value="${esc(st.pw2)}"></div></div>
+ <label class="check"><input type="checkbox" id="pwShow" ${st.pwShow?'checked':''}><span>Mostrar lo que escribo</span></label>
+ <p class="help">Al menos 6 caracteres. Puede ser solo números. No uses tu DNI, ni 123456, ni el mismo número repetido. Si te la olvidás, la comisión te da una nueva.</p>
+ <div class="phpv" id="pwmsg" aria-live="polite"></div></fieldset>
  <label class="check"><input type="checkbox" id="dj" ${st.dj?'checked':''}><span>Declaro bajo juramento que los datos son verdaderos y que soy titular, condómino o apoderado de los lotes indicados.</span></label>
  <label class="check"><input type="checkbox" id="datos" ${st.datos?'checked':''}><span>Leí la información sobre el uso de mis datos y presto mi consentimiento.</span></label>
  <p class="legal"><strong>Uso de tus datos (Ley 25.326).</strong> Responsable: Asociación Civil Aguará Guazú Country, Ituzaingó, Corrientes. Finalidad: administrar el padrón de asociados, emitir y cobrar cuotas, enviar comunicaciones y convocatorias, y controlar el ingreso de vehículos al barrio. Solo acceden los miembros de la Comisión Directiva y la tesorería; la guardia ve únicamente patente y lote; no se ceden a terceros salvo obligación legal o gestión de cobro. Los datos de contacto y domicilio son necesarios para esas finalidades; el contacto adicional y los vehículos son opcionales. Podés pedir acceso, rectificación o supresión escribiendo a la comisión. La Agencia de Acceso a la Información Pública es el órgano de control.</p>
@@ -355,6 +362,14 @@ function tc(v){return String(v||'').trim().replace(/\s+/g,' ').toLowerCase().spl
 function nombreCompleto(){return st.tipo==='juridica'?st.nom.trim().replace(/\s+/g,' '):(tc(st.ape)+' '+tc(st.nos)).trim()}
 function nomFmt(){return nombreCompleto()}
 function partMsg(v,que){const n=String(v||'').trim();if(!n)return`Falta ${que}.`;if(/\d/.test(n))return`${que.charAt(0).toUpperCase()+que.slice(1)} no puede tener números.`;if(n.replace(/[^A-Za-zÀ-ÿ]/g,'').length<2)return`Escribí ${que} completo.`;return''}
+function usuarioApp(){const c=fisCheck(st.fis,st.tipo);if(!c.ok)return'';const d=c.doc;if(d.length===11&&['20','23','24','27'].includes(d.slice(0,2)))return String(+d.slice(2,10));return d}
+function passMsg(pw,doc){const l=String(pw||'').toLowerCase(),d=String(doc||'').replace(/\D/g,'');
+ if(l.length<6)return'La contraseña tiene que tener al menos 6 caracteres.';if(/^(.)\1+$/.test(l))return'No uses el mismo carácter repetido.';
+ if('01234567890123456789'.includes(l)||'98765432109876543210'.includes(l)||'abcdefghijklmnopqrstuvwxyz'.includes(l)||'qwertyuiop'.includes(l))return'No uses una secuencia (como 123456 o abcdef).';
+ if(d&&(d.includes(l)||l.includes(d)))return'No uses tu DNI o parte de él.';if(/(contrase|password|aguara|guazu|country)/.test(l))return'Elegí una contraseña menos obvia.';return''}
+function pwPreview(force){const el=document.getElementById('pwmsg');if(!el)return'';const c=fisCheck(st.fis,st.tipo);
+ let m=(st.pw1||force)?passMsg(st.pw1,c.doc||''):'';if(!m&&(st.pw2||force)&&st.pw1!==st.pw2)m='Las dos contraseñas no coinciden.';
+ const ok=!m&&st.pw1&&st.pw2;el.className='phpv '+(m?'bad':ok?'ok':'');el.textContent=m||(ok?'Contraseña lista ✓':'');return m}
 function nomMsg(){if(st.tipo==='juridica'){const n=st.nom.trim();return n.length<3?'Escribí la razón social.':''}return''}
 function setErr(id,msg){const e=$('#e-'+id),i=$('#'+id);if(e)e.textContent=msg||'';if(i)i.classList.toggle('invalid',!!msg);return!msg}
 function validate(){let ok=true;
@@ -374,7 +389,7 @@ function validate(){let ok=true;
  if(st.step===3){const seen={};st.vehs.forEach((v,i)=>{const c=vehPreview(i);if(!c.ok){const el=document.getElementById('vp-'+i);el.className='phpv bad';el.textContent=c.msg;ok=false}else if(seen[c.p]){const el=document.getElementById('vp-'+i);el.className='phpv bad';el.textContent='Esta patente ya está cargada arriba.';ok=false}else seen[c.p]=1})}
  if(st.step===2){ok=setErr('dReal',st.dReal.trim().length<5?'Escribí calle y número.':'')&ok;ok=setErr('dLoc',!st.dLoc.trim()?'Falta la localidad.':'')&ok;ok=setErr('dProv',!st.dProv.trim()?'Falta la provincia.':'')&ok;
   if(!st.mismo&&st.dEsp.trim().length<5){$('#e2').textContent='Escribí el domicilio para notificaciones o marcá que es el mismo.';ok=false}}
- if(st.step===LAST){if(!st.dj||!st.datos){$('#e5').textContent='Para enviar la ficha tenés que marcar las dos casillas.';ok=false}}
+ if(st.step===LAST){const pm=pwPreview(true);if(pm){ok=false;$('#pw1').classList.add('invalid')}if(!st.dj||!st.datos){$('#e5').textContent='Para enviar la ficha tenés que marcar las dos casillas.';ok=false}else if(pm){$('#e5').textContent='Revisá la contraseña.'}}
  return!!ok}
 function payload(){return{creado:new Date().toISOString(),estado:'pendiente_verificacion',
  lotes:lotsEff().map(l=>({lote_id:l.id,partida:l.partida,reclamo:l.reclamo,titularidad:l.car,documento:l.inst,estado:l.estado||null})),
@@ -413,12 +428,13 @@ document.addEventListener('click',e=>{const lt=e.target.closest('[data-lot]');if
 document.addEventListener('input',e=>{const t=e.target;
  if(t.hasAttribute&&t.hasAttribute('data-digits')){const p=t.selectionStart,b=t.value.length;t.value=t.value.replace(/\D/g,'');try{t.setSelectionRange(p-(b-t.value.length),p-(b-t.value.length))}catch(_){}}
  if(t.id==='cantOtro'){st.cantOtro=t.value||'x';const v=+t.value,prev=st.cant;st.cant=v>=5&&v<=40?v:null;if(!!prev!==!!st.cant||prev!==st.cant){render();const i=document.getElementById('cantOtro');i.focus();i.setSelectionRange(9,9)}return}
+ if(t.id==='pw1'||t.id==='pw2'){st[t.id]=t.value;pwPreview(false);return}
  if(t.dataset.veh!==undefined){const v=st.vehs[+t.dataset.veh];if(t.dataset.vf==='pat'){const p=t.selectionStart;t.value=t.value.toUpperCase();try{t.setSelectionRange(p,p)}catch(_){}}v[t.dataset.vf]=t.type==='checkbox'?t.checked:t.value;vehPreview(+t.dataset.veh);return}
  if(t.dataset.fk){const o=st[t.dataset.fk];o[t.dataset.ff]=t.type==='checkbox'?t.checked:t.value;if(t.hasAttribute('data-rr')||t.dataset.ff==='pre'){render();return}fisPreview(t.dataset.fk);if(t.dataset.ff==='mid'&&t.value.length===8){const v=document.getElementById(t.dataset.fk+'-ver');v&&v.focus()}return}
  if(t.dataset.ph){const o=getPh(t.dataset.ph);const f=t.dataset.pf;o[f]=t.type==='checkbox'?t.checked:t.value;if(f==='pais'||f==='movil'){render();return}phPreview(t.dataset.ph);return}
  if(t.dataset.lf){const l=st.lots.find(x=>x.id===t.dataset.id);l[t.dataset.lf]=t.value;if(t.dataset.lf==='car')render();return}
  if(t.dataset.ct){st.cotit[+t.dataset.i][t.dataset.ct]=t.value;return}
- if(t.type==='checkbox'){st[t.id]=t.checked;if(t.id==='admin')st.claimPick=null;if(['apod','mismo','admin','ca'].includes(t.id))render();return}
+ if(t.type==='checkbox'){st[t.id]=t.checked;if(t.id==='admin')st.claimPick=null;if(['apod','mismo','admin','ca','pwShow'].includes(t.id))render();return}
  if(t.id in st){st[t.id]=t.value;if(['fNom','rep'].includes(t.id))render()}
 });
 document.addEventListener('change',e=>{const t=e.target;if(t.dataset.ph||t.dataset.fk||t.dataset.veh!==undefined)return;if(t.tagName==='SELECT'&&t.id in st&&!t.dataset.lf){st[t.id]=t.value;render()}});
@@ -433,7 +449,7 @@ $('#f').addEventListener('submit',e=>{e.preventDefault();if(!validate())return;
  const P=payload();const btn=$('#next');const e5=$('#e5');
  if(!sb){e5.textContent='No se pudo conectar con el sistema. Revisá tu conexión a internet y recargá la página.';return}
  btn.disabled=true;btn.textContent='Enviando…';e5.textContent='';
- sb.rpc('enviar_ficha',{p:P}).then(({data:nro,error})=>{
+ sb.rpc('enviar_ficha',{p:P,p_pass:st.pw1}).then(({data:nro,error})=>{
   if(error){btn.disabled=false;btn.textContent='Enviar ficha';e5.textContent='No se pudo enviar: '+(error.message||'error desconocido')+'. Probá de nuevo en un momento.';return}
   $('#prog').innerHTML=STEPS.map(()=>'<span class="on"></span>').join('');$('#stepl').textContent='Ficha enviada';
   const nl=P.lotes.length,pend=P.lote_sin_identificar,enRev=P.lotes.some(l=>l.reclamo);

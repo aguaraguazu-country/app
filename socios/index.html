@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Socios Aguará Guazú</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Fraunces:opsz,wght@9..144,600&display=swap">
+<style>
+/* Layout: columna angosta tipo app de celular; tarjeta de ingreso; después, saludo + mis lotes + cambiar contraseña */
+:root{--bg:#f6f7f4;--card:#fff;--fg:#1d2420;--muted:#5d6862;--line:#d9ddd6;--accent:#2f6b4f;--accent-soft:#e3efe8;--warn-bg:#fbf0dc;--crit:#b42318;--good:#2f7d4f;
+ --display:'Fraunces',Georgia,serif;--body:'Public Sans',system-ui,sans-serif;--mono:'IBM Plex Mono',ui-monospace,monospace}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#141916;--card:#1c2320;--fg:#e6ebe7;--muted:#9aa59f;--line:#2f3833;--accent:#7cc39f;--accent-soft:#1f3329;--warn-bg:#2f2615;--crit:#f2867b;--good:#7cc39f;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#141916;--card:#1c2320;--fg:#e6ebe7;--muted:#9aa59f;--line:#2f3833;--accent:#7cc39f;--accent-soft:#1f3329;--warn-bg:#2f2615;--crit:#f2867b;--good:#7cc39f;color-scheme:dark}
+*{box-sizing:border-box}[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px;line-height:1.45}
+.wrap{max-width:520px;margin:0 auto;padding-block:max(20px,env(safe-area-inset-top,0px)) 40px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:grid;gap:14px}
+.eyebrow{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600}
+h1{font-family:var(--display);font-weight:600;font-size:28px;margin:2px 0 0;line-height:1.15}
+h2{font-size:18px;margin:0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px;display:grid;gap:12px}
+label{font-weight:600;font-size:14px;display:grid;gap:5px}
+input{font:inherit;font-size:17px;padding:12px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--fg);width:100%}
+.check{display:flex;gap:8px;align-items:center;font-weight:400;font-size:14px}.check input{width:18px;height:18px;accent-color:var(--accent)}
+.btn{font:inherit;font-weight:600;border-radius:10px;padding:12px 16px;cursor:pointer;border:1px solid var(--line);background:var(--card);color:var(--fg)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--card)}.btn[disabled]{opacity:.6;cursor:wait}
+.err{color:var(--crit);font-size:14px;min-height:1.2em}.ok{color:var(--good);font-size:14px}
+.help{color:var(--muted);font-size:14px;margin:0}
+.lot{display:flex;justify-content:space-between;gap:10px;border:1px solid var(--line);border-radius:10px;padding:12px;background:var(--bg)}
+.mono{font-family:var(--mono);font-size:14px}
+.note{background:var(--warn-bg);border-radius:10px;padding:12px;font-size:14px}
+.soon{display:grid;gap:6px}.soon div{display:flex;justify-content:space-between;color:var(--muted);font-size:15px;border-bottom:1px dashed var(--line);padding-bottom:6px}
+button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header><div class="eyebrow">Aguará Guazú Country</div><h1>App de socios</h1></header>
+<main id="main"><p class="help">Cargando…</p></main>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.3/dist/umd/supabase.js"></script>
+<script>
+const SB_URL='https://ejyfijaahbobvbpxtsfj.supabase.co',SB_KEY='sb_publishable_fDK_li5-1Yr9kW-ynu4s7A_Rr652rif',TK='ag_socio_token';
+const sb=window.supabase?window.supabase.createClient(SB_URL,SB_KEY,{auth:{persistSession:false}}):null;
+const $=s=>document.querySelector(s);const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const tokGet=()=>{try{return localStorage.getItem(TK)}catch(_){return S.tok}},tokSet=v=>{S.tok=v;try{v?localStorage.setItem(TK,v):localStorage.removeItem(TK)}catch(_){}};
+const S={tok:null,yo:null,show:false,cp:false};
+function vLogin(msg){$('#main').innerHTML=`<form class="card" id="lf"><h2>Ingresar</h2>
+ <label>DNI <span class="help" style="font-weight:400">(solo números, sin puntos)</span><input id="dni" inputmode="numeric" autocomplete="username" maxlength="11"></label>
+ <label>Contraseña<input id="pw" type="${S.show?'text':'password'}" autocomplete="current-password"></label>
+ <label class="check"><input type="checkbox" id="show" ${S.show?'checked':''}>Mostrar lo que escribo</label>
+ <div class="err" id="lerr">${esc(msg||'')}</div><button class="btn primary" id="lb" type="submit">Ingresar</button>
+ <p class="help">¿Te olvidaste la contraseña o todavía no tenés? Escribile a la comisión y te dan una nueva.</p></form>`}
+function vHome(){const y=S.yo;$('#main').innerHTML=`${y.provisoria?'<div class="note">Estás usando una contraseña provisoria. Te recomendamos cambiarla por una tuya (abajo).</div>':''}
+ <div class="card"><h2>Hola, ${esc(y.nombre)}</h2><p class="help">Ficha ${esc(y.tramite)}</p>
+ ${(y.lotes||[]).length?y.lotes.map(l=>`<div class="lot"><span>${l.sector==='S1'?'Sector 1':'Sector 2'} · Mz ${esc(l.manzana)} · Lote ${l.parcela}</span><span class="mono">${esc(l.partida)}</span></div>`).join(''):'<p class="help">Tus lotes todavía no están identificados en el plano.</p>'}</div>
+ <div class="card"><h2>Muy pronto en esta app</h2><div class="soon"><div><span>Estado de cuenta</span><span>en preparación</span></div><div><span>Autorizar visitas</span><span>en preparación</span></div><div><span>Inquilinos</span><span>en preparación</span></div></div></div>
+ <div class="card"><button type="button" class="btn" id="tcp">${S.cp||y.provisoria?'Cambiar contraseña':'Cambiar contraseña…'}</button>
+ <form id="cpf" ${S.cp||y.provisoria?'':'hidden'} style="display:grid;gap:10px"><label>Contraseña actual<input id="pa" type="password" autocomplete="current-password"></label>
+ <label>Nueva contraseña<input id="pn" type="password" autocomplete="new-password"></label><label>Repetí la nueva<input id="pn2" type="password" autocomplete="new-password"></label>
+ <p class="help">Al menos 6 caracteres. No uses tu DNI, ni 123456, ni el mismo número repetido.</p><div class="err" id="cperr"></div><button class="btn primary" type="submit" id="cpb">Guardar contraseña nueva</button></form></div>
+ <button class="btn" id="out" type="button">Salir</button>`}
+async function cargar(){const {data,error}=await sb.rpc('socio_yo',{p_token:S.tok});if(error){tokSet(null);return vLogin(/venci/i.test(error.message)?'Tu sesión venció. Volvé a ingresar.':'')}S.yo=data;vHome()}
+async function start(){if(!sb){$('#main').innerHTML='<div class="card">No se pudo cargar la app. Revisá tu conexión y recargá.</div>';return}S.tok=tokGet();if(S.tok)return cargar();vLogin()}
+document.addEventListener('input',e=>{if(e.target.id==='dni')e.target.value=e.target.value.replace(/\D/g,'')});
+document.addEventListener('change',e=>{if(e.target.id==='show'){S.show=e.target.checked;$('#pw').type=S.show?'text':'password'}});
+document.addEventListener('click',e=>{if(e.target.id==='out'){tokSet(null);S.yo=null;vLogin()}if(e.target.id==='tcp'){S.cp=!S.cp;vHome()}});
+document.addEventListener('submit',async e=>{e.preventDefault();
+ if(e.target.id==='lf'){const b=$('#lb'),err=$('#lerr');err.textContent='';const dni=$('#dni').value,pw=$('#pw').value;if(!dni||!pw){err.textContent='Escribí tu DNI y tu contraseña.';return}
+  b.disabled=true;const {data,error}=await sb.rpc('login_socio',{p_doc:dni,p_pass:pw});b.disabled=false;
+  if(error){err.textContent='No se pudo ingresar. Revisá tu conexión.';return}if(data.error){err.textContent=data.error;return}tokSet(data.token);await cargar()}
+ if(e.target.id==='cpf'){const err=$('#cperr'),pn=$('#pn').value;err.textContent='';if(pn!==$('#pn2').value){err.textContent='Las dos contraseñas nuevas no coinciden.';return}
+  const b=$('#cpb');b.disabled=true;const {error}=await sb.rpc('cambiar_pass_socio',{p_token:S.tok,p_actual:$('#pa').value,p_nueva:pn});b.disabled=false;
+  if(error){err.textContent=error.message;return}S.cp=false;S.yo.provisoria=false;vHome();$('#main').insertAdjacentHTML('afterbegin','<div class="card ok">Listo, guardamos tu contraseña nueva.</div>')}});
+start();
+</script>
+</body>
+</html>

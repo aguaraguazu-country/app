@@ -165,7 +165,7 @@ function render(){if(!S.miembro)return;const mb=$('#mapbox'),sc=mb?[mb.scrollLef
 function fichaHTML(f){const d=f.datos||{},t=d.titular||{},dom=d.domicilio_real||{};const yes=v=>v?'Sí':'No';
  const lotes=(d.lotes||[]).map(l=>`<div class="mono">${esc(l.lote_id)} · ${esc(l.partida||'')}</div><div class="help">${esc(l.titularidad||'')} · ${esc(l.documento||'')}${l.estado?' · '+esc(l.estado):''}</div>`).join('');
  return`<div class="fcard"><div class="dh"><div><h2>${esc(f.titular_nombre)}</h2><span class="mono help">${esc(f.tramite)} · ${fdate(f.creado)}</span></div><span class="st ${f.estado}">${f.estado}</span></div>
- ${f.es_prueba?'<div class="note">Ficha cargada durante la prueba con la comisión.</div>':''}
+ ${f.es_prueba?'<div class="note">Ficha cargada durante la prueba con la comisión.</div>':''}${(()=>{const k=docKey(f.titular_documento);const o=S.fichas.filter(x=>x.id!==f.id&&x.estado==='verificada'&&docKey(x.titular_documento)===k);return o.length?`<div class="note" style="background:var(--crit-bg)">Ojo: ya hay otra ficha <b>verificada</b> con este mismo documento (${o.map(x=>esc(x.tramite)+' · '+esc(x.titular_nombre)).join(', ')}). Si verificás esta, la contraseña de la app pasa a ser la de esta ficha. Confirmá que es la misma persona.</div>`:''})()}
  <dl><dt>Tipo</dt><dd>${t.tipo==='juridica'?'Empresa / entidad':'Persona'}</dd><dt>${esc(t.tipo_documento||'Documento')}</dt><dd class="mono">${esc(t.documento||f.titular_documento)}</dd><dt>Condición IVA</dt><dd>${esc(t.condicion_iva||'—')}</dd>
  <dt>Email</dt><dd>${esc(t.email||'—')}</dd><dt>Celular</dt><dd class="mono">${esc(tel(t.celular))}${t.whatsapp?' · WhatsApp':''}</dd>
  <dt>Domicilio real</dt><dd>${esc([dom.calle,dom.localidad,dom.provincia,dom.cp].filter(Boolean).join(', ')||'—')}</dd><dt>Notificaciones formales</dt><dd>${d.domicilio_notificaciones==='igual_real'?'En el domicilio real':esc(d.domicilio_notificaciones||'—')}</dd>
@@ -178,6 +178,7 @@ function fichaHTML(f){const d=f.datos||{},t=d.titular||{},dom=d.domicilio_real||
  ${(d.vehiculos||[]).length?`<dt>Vehículos</dt><dd class="mono">${d.vehiculos.map(v=>esc(v.patente)+' · '+esc(v.tipo)+(v.descripcion?' · '+esc(v.descripcion):'')).join('<br>')}</dd>`:''}
  ${d.comentarios?`<dt>Comentarios</dt><dd>${esc(d.comentarios)}</dd>`:''}<dt>Declaración jurada</dt><dd>${yes(d.declaracion_jurada)} · consentimiento de datos: ${yes(d.consentimiento_datos)}</dd></dl>
  <label>Nota de la comisión<textarea id="nota-${f.id}" rows="2">${esc(f.nota_comision||'')}</textarea></label>
+ <div class="acts" style="border-top:1px solid var(--line);padding-top:10px"><button type="button" class="btn sm" data-reset="${f.id}">Resetear contraseña de la app</button><span class="help" style="align-self:center">Usuario: <span class="mono">${esc(docKey(f.titular_documento))}</span></span></div><div id="rst-${f.id}"></div>
  <div class="acts"><button type="button" class="btn primary" data-set="verificada" data-id="${f.id}">Marcar verificada</button><button type="button" class="btn" data-set="pendiente" data-id="${f.id}">Volver a pendiente</button><button type="button" class="btn" data-set="rechazada" data-id="${f.id}" style="color:var(--crit)">Rechazar</button></div><div class="err" id="ferr-${f.id}"></div></div>`}
 function drawer(){if(!S.open)return'';let head='',body='';
  if(S.open.lot){const i=lotInfo(S.open.lot),fs=S.byLot[S.open.lot]||[];head=`<div><h2>${esc(i.nom)}</h2><span class="mono help">${esc(i.partida)} · ${i.sup!=null?i.sup.toLocaleString('es-AR')+' m²':''}</span></div>`;
@@ -205,6 +206,13 @@ document.addEventListener('click',async e=>{const t=e.target;
  const pf=t.closest('[data-pf]');if(pf){S.pf=pf.dataset.pf;render();return}
  if(t.id==='backup'){backup();return}
  if(t.id==='out'){await sb.auth.signOut();S.miembro=null;S.user=null;S.open=null;vLogin();return}
+ const rs=t.closest('[data-reset]');if(rs){const id=+rs.dataset.reset,f=S.fichas.find(x=>x.id===id),box=$('#rst-'+id);
+  if(rs.dataset.confirm!=='1'){rs.dataset.confirm='1';rs.textContent='Confirmar: generar contraseña nueva';box.innerHTML='<p class="help">La contraseña actual deja de funcionar y se cierran sus sesiones abiertas.</p>';return}
+  rs.disabled=true;const {data:pw,error}=await sb.rpc('resetear_pass_socio',{p_ficha_id:id});rs.disabled=false;rs.dataset.confirm='';rs.textContent='Resetear contraseña de la app';
+  if(error){box.innerHTML=`<div class="err">No se pudo resetear: ${esc(error.message)}</div>`;return}
+  const msg=`Hola, te escribimos de la Comisión de Aguará Guazú Country. Para entrar a la app del barrio tu usuario es tu DNI (${docKey(f.titular_documento)}) y tu contraseña provisoria es ${pw}. Al entrar podés cambiarla por una tuya.`;
+  const g=String(f.celular||'').replace(/\D/g,'');const wa=g.length>=12?'https://wa.me/'+g+'?text='+encodeURIComponent(msg):null;
+  box.innerHTML=`<div class="note" style="display:grid;gap:6px"><div>Contraseña provisoria: <b class="mono" style="font-size:18px">${esc(pw)}</b></div><div class="help">Se muestra una sola vez. Pasásela al socio${f.estado!=='verificada'?' (va a poder entrar cuando la ficha esté verificada)':''}.</div>${wa?`<div><a class="btn sm primary" href="${wa}" target="_blank" rel="noopener">Enviar por WhatsApp</a></div>`:'<div class="help">La ficha no tiene celular: pasásela por otro medio.</div>'}</div>`;return}
  const st=t.closest('[data-set]');if(st){const id=+st.dataset.id;st.disabled=true;
   const {error}=await sb.from('fichas').update({estado:st.dataset.set,nota_comision:($('#nota-'+id).value||null),revisado_por:S.user.id,revisado_en:new Date().toISOString()}).eq('id',id);
   if(error){st.disabled=false;$('#ferr-'+id).textContent='No se pudo guardar: '+error.message;return}const keep=S.open;await loadData();S.open=keep;render()}});
