@@ -71,6 +71,7 @@ tbody tr{cursor:pointer}tbody tr:hover{background:var(--accent-soft)}
 .drawer{position:fixed;inset:0 0 0 auto;width:min(560px,100%);background:var(--card);border-left:1px solid var(--line);overflow-y:auto;z-index:20;display:grid;gap:14px;align-content:start;padding:calc(18px + env(safe-area-inset-top,0px)) max(18px,env(safe-area-inset-right,0px)) calc(24px + env(safe-area-inset-bottom,0px)) 18px}
 .dh{display:flex;justify-content:space-between;gap:10px;align-items:start}
 .x{font:inherit;font-size:22px;border:0;background:none;color:var(--fg);cursor:pointer}
+.sortb{all:unset;cursor:pointer;font:inherit;text-transform:inherit;letter-spacing:inherit;color:inherit;white-space:nowrap}.sortb:hover{color:var(--accent)}.sortb:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}.sortb[aria-sort=ascending],.sortb[aria-sort=descending]{color:var(--accent)}
 .fcard{border:1px solid var(--line);border-radius:10px;padding:14px;display:grid;gap:10px}
 dl{display:grid;grid-template-columns:minmax(120px,160px) 1fr;gap:5px 12px;margin:0;font-size:13.5px}
 dt{color:var(--muted)}dd{margin:0;min-width:0;overflow-wrap:anywhere}
@@ -82,7 +83,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 </head>
 <body>
 <div class="wrap">
-<header><div><div class="eyebrow">Asociación Civil Aguará Guazú Country · Comisión Directiva</div><h1>Panel de la comisión<span class="agver" aria-label="Versión del sistema" style="font:500 12px/1.2 system-ui,sans-serif;color:var(--muted,#5d6862);margin-left:10px;white-space:nowrap;vertical-align:middle;letter-spacing:0">v1.17 · 27/10/26 20:20</span></h1></div><div class="who" id="who"></div></header>
+<header><div><div class="eyebrow">Asociación Civil Aguará Guazú Country · Comisión Directiva</div><h1>Panel de la comisión<span class="agver" aria-label="Versión del sistema" style="font:500 12px/1.2 system-ui,sans-serif;color:var(--muted,#5d6862);margin-left:10px;white-space:nowrap;vertical-align:middle;letter-spacing:0">v1.18 · 27/10/26 20:33</span></h1></div><div class="who" id="who"></div></header>
 <main id="main"><div class="empty">Cargando…</div></main>
 </div>
 <div id="tip" hidden></div><div id="dr"></div>
@@ -139,14 +140,17 @@ function vFaltan(){const c=cruce();if(!c)return`<div class="card">Para ver el pa
  const deu=x=>+(x.deuda_planilla||0)>0;
  const pass=x=>S.pf==='todos'||(S.pf==='cargo'?(x.est==='verif'||x.est==='pend'):S.pf==='deuda'?deu(x):x.est===S.pf);
  let rs=c.filter(pass);if(q)rs=rs.filter(x=>(x.nombre+' '+(x.documento||'')+' '+(x.lotes_plano||'')+' '+(x.nota||'')).toLowerCase().includes(q));
- if(S.ord==='deuda')rs=rs.slice().sort((a,b)=>(+b.deuda_planilla||0)-(+a.deuda_planilla||0));
+ const O=S.ord&&S.ord.k?S.ord:{k:'nombre',d:1};const ORD={falta:0,posible:1,pend:2,verif:3};
+ const val={nombre:x=>norm(x.nombre).join(' '),lotes:x=>+(x.lotes_cobranza??x.lotes_padron??0),contacto:x=>(x.celular?0:1)+(x.email?0:1),deuda:x=>x.deuda_planilla==null?-1:+x.deuda_planilla,ficha:x=>ORD[x.est]}[O.k];
+ rs=rs.slice().sort((a,b)=>{const A=val(a),B=val(b);const r=typeof A==='string'?A.localeCompare(B,'es'):A-B;return r*O.d||norm(a.nombre).join(' ').localeCompare(norm(b.nombre).join(' '),'es')});
+ const th=(k,l)=>`<th><button type="button" class="sortb" data-sort="${k}" aria-sort="${O.k===k?(O.d>0?'ascending':'descending'):'none'}">${l} <span aria-hidden="true">${O.k===k?(O.d>0?'▲':'▼'):'↕'}</span></button></th>`;
  const n=k=>c.filter(x=>k==='cargo'?(x.est==='verif'||x.est==='pend'):k==='deuda'?deu(x):x.est===k).length;
  const F=[['todos',`Todos (${c.length})`],['falta',`No cargaron (${n('falta')})`],['posible',`Posibles (${n('posible')})`],['pend',`Pendientes (${n('pend')})`],['verif',`Verificados (${n('verif')})`],...(S.sin06?[]:[['deuda',`Con deuda (${n('deuda')})`]])];
  const tot=rs.reduce((a,x)=>a+(+x.deuda_planilla||0),0);
  return`<div class="card"><div class="note">Padrón <b>interno de trabajo</b>, no oficial. Se armó con el padrón de marzo 2026 y la planilla de cobranza. La deuda es la que informa la planilla (meses adeudados × cuota actual), <b>sin verificar</b>.${S.sin06?' Para ver la deuda y las notas, ejecutá el script <b>06_padron_trabajo.sql</b> en Supabase.':''}</div>
  <div class="tabs"><input type="search" id="q" placeholder="Buscar por nombre, DNI, lote o nota" value="${esc(S.q)}" style="flex:1 1 240px">${F.map(([k,l])=>`<button type="button" data-pf="${k}" aria-pressed="${S.pf===k}">${l}</button>`).join('')}</div>
- <div class="tabs" style="justify-content:space-between"><span class="help">${rs.length} propietario${rs.length===1?'':'s'}${S.sin06?'':` · deuda en la vista: <b>${$$(tot)}</b>`}</span><span style="display:flex;gap:6px"><button type="button" class="btn sm" data-ord="nombre" aria-pressed="${S.ord!=='deuda'}">Ordenar por nombre</button><button type="button" class="btn sm" data-ord="deuda" aria-pressed="${S.ord==='deuda'}" ${S.sin06?'disabled':''}>Ordenar por deuda</button></span></div>
- <div class="tablebox"><table><thead><tr><th>Propietario</th><th>Lotes</th><th>Contacto</th>${S.sin06?'':'<th>Deuda (planilla)</th>'}<th>Ficha</th></tr></thead><tbody>
+ <div class="tabs" style="justify-content:space-between"><span class="help">${rs.length} propietario${rs.length===1?'':'s'}${S.sin06?'':` · deuda en la vista: <b>${$$(tot)}</b>`}</span><span class="help">Tocá el título de una columna para ordenar.</span></div>
+ <div class="tablebox"><table><thead><tr>${th('nombre','Propietario')}${th('lotes','Lotes')}${th('contacto','Contacto')}${S.sin06?'':th('deuda','Deuda (planilla)')}${th('ficha','Ficha')}</tr></thead><tbody>
  ${rs.length?rs.map(x=>{const w=waLink(x.celular);const e=EST[x.est];return`<tr data-pad="${esc(x.id)}"><td>${esc(x.nombre)}<div class="help mono">${esc(x.documento||'sin documento')}</div>${x.nota?`<div class="help">📝 ${esc(x.nota.length>60?x.nota.slice(0,60)+'…':x.nota)}</div>`:''}</td>
  <td>${x.lotes_cobranza??x.lotes_padron??'—'} <span class="help">${x.lotes_cobranza!=null?'(cobranza)':x.lotes_padron!=null?'(padrón)':''}</span><div class="help mono">${esc(x.lotes_plano||'')}</div></td>
  <td>${x.celular?`<span class="mono">${esc(x.celular)}</span>${w&&x.est==='falta'?` <a class="btn sm" href="${w}" target="_blank" rel="noopener">WhatsApp</a>`:''}`:'<span class="help">sin celular</span>'}<div class="help">${esc(x.email||'')}</div></td>
@@ -223,7 +227,7 @@ document.addEventListener('click',async e=>{const t=e.target;
  if(t.closest('a[href]'))return;
  const tr=t.closest('[data-ficha]');if(tr){S.open={ficha:+tr.dataset.ficha};render();return}
  const pr=t.closest('[data-pad]');if(pr){S.open={pad:pr.dataset.pad};render();return}
- const od=t.closest('[data-ord]');if(od){S.ord=od.dataset.ord;render();return}
+ const so=t.closest('[data-sort]');if(so){const k=so.dataset.sort,o=S.ord||{};S.ord={k,d:o.k===k?-o.d:(k==='deuda'?-1:1)};render();return}
  const sp=t.closest('[data-savepad]');if(sp){const id=sp.dataset.savepad,v=$('#pnota').value;sp.disabled=true;const {error}=await sb.rpc('guardar_nota_padron',{p_id:id,p_nota:v});sp.disabled=false;
   if(error){$('#pmsg').innerHTML=`<span class="err">No se pudo guardar: ${esc(error.message)}</span>`;return}const x=S.padron.find(y=>y.id===id);if(x){x.nota=v.trim()||null;x.nota_en=new Date().toISOString()}render();return}
  if(t.closest('[data-close]')){S.open=null;render();return}
