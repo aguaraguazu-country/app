@@ -116,7 +116,7 @@ pre{background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:
 <div class="wrap">
 <header class="top">
   <div class="eyebrow">Asociación Civil Aguará Guazú Country · Chacra 108, Ituzaingó</div>
-  <h1>Ficha de propietario 2026<span class="agver" aria-label="Versión del sistema" style="font:500 12px/1.2 system-ui,sans-serif;color:var(--muted,#5d6862);margin-left:10px;white-space:nowrap;vertical-align:middle;letter-spacing:0">v1.12 · 27/10/26 09:16</span></h1>
+  <h1>Ficha de propietario 2026<span class="agver" aria-label="Versión del sistema" style="font:500 12px/1.2 system-ui,sans-serif;color:var(--muted,#5d6862);margin-left:10px;white-space:nowrap;vertical-align:middle;letter-spacing:0">v1.13 · 27/10/26 10:59</span></h1>
   <p class="lede">Actualizamos el padrón para enviar liquidaciones, avisos y convocatorias a la persona correcta. Lleva unos 5 minutos. Si tenés más de un lote, cargalos todos en la misma ficha.</p>
   <p class="lede" style="margin-top:6px">¿Ya cargaste tu ficha? <a href="../socios/">Ingresá a la app</a>.</p>
 </header>
@@ -138,7 +138,7 @@ const SECT={S1:'Sector 1 · División parcela D (50 lotes)',S2:'Sector 2 · Mens
 function PH(){return{pais:'AR',area:'',num:'',movil:true,otro:''}}
 const STEPS=['Tus lotes','Titular y facturación','Domicilio y avisos','Vehículos','Confirmación'];
 const LAST=4;
-const st={step:0,pickS:null,pickM:null,lots:[],cant:null,cantOtro:'',restoTxt:'',modo:'',via:'plano',zoom:null,admin:false,claimPick:null,info:'',taken:{},noloteTxt:'',
+const st={step:0,pickS:null,pickM:null,lots:[],cant:null,cantOtro:'',restoTxt:'',modo:'si',via:'plano',zoom:null,admin:false,claimPick:null,info:'',taken:{},noloteTxt:'',
  tipo:'humana',nom:'',ape:'',nos:'',fis:{cond:'Consumidor final',tdoc:'DNI',dni:'',pre:'20',mid:'',ver:''},fact:{otro:false,nom:'',pre:'20',mid:'',ver:''},email:'',tel:PH(),wa:true,cotit:[],rep:'titular',
  apod:false,apNom:'',apDoc:'',apRel:'',apTel:PH(),apEmail:'',envio:'titular',
  dReal:'',dLoc:'',dProv:'',dCP:'',mismo:true,dEsp:'',
@@ -222,7 +222,8 @@ function phoneHTML(k,label,opt){const o=getPh(k);
  return`<fieldset class="phone"><legend class="lbl">${label}${opt?' <span class="opt">(opcional)</span>':''}</legend><div class="field"><label for="pa-${k}" class="sub">País</label>${sel}</div>${body}<div class="phpv" id="pv-${k}" aria-live="polite"></div></fieldset>`}
 const lotId=(s,m,n)=>`${s}-${m}-${String(n).padStart(2,'0')}`;
 function lotInfo(s,m,n){const r=LOTES[s][m].find(x=>x[0]===n);return{partida:`K1-${r[1]}-1`,sup:r[2]}}
-function byPartida(p){const k=p.replace(/\D/g,'').replace(/^1/,'');for(const s in LOTES)for(const m in LOTES[s])for(const r of LOTES[s][m]){if(String(r[1])===k||String(r[1])===p.replace(/\D/g,''))return{s,m,n:r[0]}}return null}
+function byPartida(p){const c=new Set();for(const g of String(p).match(/\d+/g)||[]){if(g.length<4)continue;for(const x of [g,g.replace(/^1/,''),g.replace(/1$/,''),g.replace(/^1/,'').replace(/1$/,'')])c.add(x)}
+ for(const s in LOTES)for(const m in LOTES[s])for(const r of LOTES[s][m]){if(c.has(String(r[1])))return{s,m,n:r[0]}}return null}
 const pl=(n,a,b)=>n===1?a:b;
 function lleno(){return st.cant&&st.lots.length>=st.cant}
 const lotsEff=()=>st.modo==='si'?st.lots:[];
@@ -258,10 +259,7 @@ function step0(){
  <p class="help">Contá cada lote por separado, aunque tengas una sola casa construida sobre dos lotes.</p></div>`;
  if(!st.cant){return h+`<div class="err" id="e0"></div></section>`}
  const pc=st.cant===1;
- h+=`<div class="field"><span class="lbl">${pc?'¿Sabés cuál es tu lote?':'¿Sabés cuáles son?'}</span><div class="seg"><button type="button" data-modo="si" aria-pressed="${st.modo==='si'}">${pc?'Sí, sé cuál es':'Sí, los busco'}</button><button type="button" data-modo="no" aria-pressed="${st.modo==='no'}">No sé o no los encuentro</button></div></div>`;
- if(st.modo==='no'){h+=`<div class="field"><label for="noloteTxt">Contanos lo que sepas de tu lote o tus lotes</label><textarea id="noloteTxt" placeholder="Ej.: lote 14, calle Jazmín y Cardenal, casa N° 99. Si tenés más de un lote, describilos todos acá.">${esc(st.noloteTxt)}</textarea><p class="help">La comisión lo identifica en el plano y te contacta para confirmarlo.${st.lots.length?` Los ${st.lots.length} lote(s) que habías marcado no se van a guardar; si volvés a "Sí, sé cuál es" siguen ahí.`:''}</p></div><div class="err" id="e0"></div></section>`;return h}
- if(st.modo!=='si'){return h+`<div class="err" id="e0"></div></section>`}
- h+=`<div class="field"><label for="part">Buscar por partida <span class="opt">(opcional)</span></label><div class="row"><input type="text" id="part" class="mono" placeholder="K1-10291-1" inputmode="numeric"><button type="button" class="btn" id="partBtn">Agregar por partida</button></div><div class="err" id="partErr"></div></div>
+ h+=`<div class="field"><label for="part">¿Tenés la partida? Buscá tu lote acá <span class="opt">(opcional)</span></label><div class="row"><input type="text" id="part" class="mono" placeholder="K1-10369-1" inputmode="numeric"><button type="button" class="btn" id="partBtn">Buscar</button></div><p class="help">Está en la boleta del impuesto inmobiliario o en la escritura. Ej.: K1-10369-1 o solo 10369.</p><div class="err" id="partErr"></div></div>
  <div class="field"><span class="lbl">${pc?'Marcá tu lote':`Marcá tus ${st.cant} lotes`}</span><div class="tabs"><button type="button" data-via="plano" aria-pressed="${st.via==='plano'}">En el plano</button><button type="button" data-via="lista" aria-pressed="${st.via==='lista'}">En una lista</button></div></div>
  <p class="help">Los lotes rayados ya figuran en la ficha de otro propietario. Si alguno es tuyo, tocalo y reclamalo.</p>`;
  if(st.via==='plano'){if(st.zoom==null)st.zoom=window.innerWidth<640?2.6:1;h+=mapSVG()+claimPanel()}else{h+=`
@@ -270,7 +268,7 @@ function step0(){
  if(st.pickS){h+=`<div class="field"><span class="lbl">Manzana</span><div class="seg">${Object.keys(LOTES[st.pickS]).map(m=>`<button type="button" data-m="${m}" aria-pressed="${st.pickM===m}">Mz ${m}</button>`).join('')}</div></div>`}
  if(st.pickS&&st.pickM){h+=`<div class="field"><span class="lbl">Lote (podés marcar varios)</span><div class="grid-lotes">${LOTES[st.pickS][st.pickM].map(r=>`<button type="button" data-n="${r[0]}" aria-pressed="${st.lots.some(l=>l.id===lotId(st.pickS,st.pickM,r[0]))}" class="${st.taken[lotId(st.pickS,st.pickM,r[0])]&&!st.lots.some(l=>l.id===lotId(st.pickS,st.pickM,r[0]))?'tk':''}" title="Partida K1-${r[1]}-1${st.taken[lotId(st.pickS,st.pickM,r[0])]?' · ya registrado':''}">${r[0]}</button>`).join('')}</div></div>`}
  h+=claimPanel()}
- h+=`<div class="field"><span class="lbl">Lotes marcados: ${st.lots.length} de ${st.cant}</span><div class="sel">`;
+ h+=`<div class="field"><span class="lbl">Lotes marcados: ${st.lots.length} de ${st.cant}</span>${st.lots.length?'<p class="help">Revisá que la partida de cada lote coincida con tu escritura o la boleta del inmobiliario.</p>':''}<div class="sel">`;
  if(!st.lots.length)h+=`<div class="empty">Todavía no agregaste lotes.</div>`;
  for(const l of st.lots){h+=`<div class="lotecard"><div class="head"><strong>${l.s==='S1'?'Sector 1':'Sector 2'} · Manzana ${l.m} · Lote ${l.n}</strong><span class="mono">${l.partida} · ${l.sup.toLocaleString('es-AR')} m²</span>${l.reclamo?'<span class="chipwarn">Reclamado · en revisión</span>':''}</div>
  <div class="row"><div class="field"><label for="car-${l.id}">Titularidad</label><select id="car-${l.id}" data-lf="car" data-id="${l.id}">${['Titular único','Condominio (varios titulares)','Heredero / sucesión en trámite','Poseedor con boleto'].map(o=>`<option ${l.car===o?'selected':''}>${o}</option>`).join('')}</select></div>
@@ -278,7 +276,6 @@ function step0(){
  <div class="field"><label for="est-${l.id}">Estado del lote</label><select id="est-${l.id}" data-lf="estado" data-id="${l.id}"><option value="">Elegí…</option>${['Baldío','En construcción','Casa de uso permanente','Casa de fin de semana','Casa que se alquila'].map(o=>`<option ${l.estado===o?'selected':''}>${o}</option>`).join('')}</select></div></div>
  <div><button type="button" class="link" data-rm="${l.id}">Quitar este lote</button></div></div>`}
  h+=`</div></div>`;
- if(st.lots.length&&st.lots.length<st.cant){const f=st.cant-st.lots.length;h+=`<div class="field"><label for="restoTxt">Te ${pl(f,'falta 1 lote','faltan '+f+' lotes')}. Marcalos arriba o, si no los encontrás, describilos acá</label><textarea id="restoTxt" placeholder="Ej.: el otro lote está al lado de mi casa, sobre calle Jazmín">${esc(st.restoTxt)}</textarea></div>`}
  if(st.lots.length>st.cant)h+=`<div class="err">Marcaste ${st.lots.length} lotes pero indicaste ${st.cant}. Corregí la cantidad o quitá los que sobran.</div>`;
  h+=`<div class="err" id="e0"></div></section>`;
  return h}
@@ -329,7 +326,7 @@ function step4(){return`<section class="step"><div><h2>Vehículos para el contro
  <div class="field"><label for="ocup">Comentarios para la comisión <span class="opt">(opcional)</span></label><textarea id="ocup">${esc(st.ocup)}</textarea></div><div class="err" id="e3"></div></section>`}
 function step5(){const L=lotsEff().map(l=>`${l.id} (${l.partida})${l.reclamo?' — reclamado, en revisión':''}`).join(', ')||'—';
  return`<section class="step summary"><div><h2>Revisá y confirmá</h2></div><dl>
- <dt>Lotes</dt><dd>Declarados: ${st.cant}<br><span class="mono">${st.modo==='no'?'A identificar por la comisión: '+esc(st.noloteTxt):esc(L)}</span>${st.modo==='si'&&st.lots.length<st.cant?'<br>A identificar: '+esc(st.restoTxt):''}</dd>
+ <dt>Lotes</dt><dd>Declarados: ${st.cant}<br><span class="mono">${esc(L)}</span></dd>
  <dt>Titular</dt><dd>${esc(nombreCompleto())} · ${esc(fisCheck(st.fis,st.tipo).fmt||'')}</dd>
  <dt>Contacto</dt><dd>${esc(st.email)} · ${esc(phCheck(st.tel).fmt||'')}${st.wa?' (WhatsApp)':''}</dd>
  ${st.cotit.length?`<dt>Otros titulares</dt><dd>${st.cotit.map(p=>esc(p.nom)+' · '+esc(p.doc)).join('<br>')}</dd>`:''}
@@ -379,10 +376,9 @@ function nomMsg(){if(st.tipo==='juridica'){const n=st.nom.trim();return n.length
 function setErr(id,msg){const e=$('#e-'+id),i=$('#'+id);if(e)e.textContent=msg||'';if(i)i.classList.toggle('invalid',!!msg);return!msg}
 function validate(){let ok=true;
  if(st.step===0){const e=$('#e0'),n=st.lots.length;if(!st.cant){e.textContent='Indicá cuántos lotes tenés.';ok=false}else if(!st.modo){e.textContent='Elegí una de las dos opciones.';ok=false}
-  else if(st.modo==='si'&&!n){e.textContent='Marcá al menos un lote, o elegí "No sé o no los encuentro".';ok=false}
-  else if(st.modo==='si'&&n>st.cant){e.textContent=`Marcaste ${n} lotes pero indicaste ${st.cant}. Corregí la cantidad o quitá los que sobran.`;ok=false}
-  else if(st.modo==='si'&&n<st.cant&&st.restoTxt.trim().length<5){e.textContent=`Indicaste ${st.cant} lotes y marcaste ${n}. Marcá ${pl(st.cant-n,'el que falta o describilo','los que faltan o describilos')} en el cuadro de texto.`;ok=false}
-  else if(st.modo==='no'&&st.noloteTxt.trim().length<5){e.textContent='Escribí algún dato que nos ayude a ubicarlos (calle, número de casa, manzana…).';ok=false}}
+  else if(!n){e.textContent=st.cant===1?'Marcá tu lote en el plano. Si no lo ubicás, buscalo por partida o usá "En una lista".':'Marcá tus lotes en el plano. Si no los ubicás, buscalos por partida o usá "En una lista".';ok=false}
+  else if(n>st.cant){e.textContent=`Marcaste ${n} lotes pero indicaste ${st.cant}. Corregí la cantidad o quitá los que sobran.`;ok=false}
+  else if(n<st.cant){e.textContent=`Indicaste ${st.cant} lotes y marcaste ${n}. Marcá ${pl(st.cant-n,'el que falta','los que faltan')}. Si no ${pl(st.cant-n,'lo','los')} ubicás, buscá por partida o usá "En una lista".`;ok=false}}
  if(st.step===1){if(st.tipo==='juridica')ok=setErr('nom',nomMsg())&ok;else{ok=setErr('ape',partMsg(st.ape,'el apellido'))&ok;ok=setErr('nos',partMsg(st.nos,'el nombre'))&ok}
   {const c=fisPreview('fis');if(!c.ok){const el=document.getElementById('fv-fis');el.className='phpv bad';el.textContent=c.msg;ok=false}}
   if(st.fact.otro){const c=fisPreview('fact');if(!c.ok||!st.fact.nom.trim()){const el=document.getElementById('fv-fact');el.className='phpv bad';el.textContent=!st.fact.nom.trim()?'Falta el nombre para facturar.':c.msg;ok=false}}
@@ -398,7 +394,7 @@ function validate(){let ok=true;
  return!!ok}
 function payload(){return{creado:new Date().toISOString(),estado:'pendiente_verificacion',
  lotes:lotsEff().map(l=>({lote_id:l.id,partida:l.partida,reclamo:l.reclamo,titularidad:l.car,documento:l.inst,estado:l.estado||null})),
- cantidad_lotes_declarada:st.cant,lote_sin_identificar:st.modo==='no'?st.noloteTxt.trim():(st.lots.length<st.cant&&st.restoTxt.trim()?st.restoTxt.trim():null),
+ cantidad_lotes_declarada:st.cant,lote_sin_identificar:null,
  titular:{tipo:st.tipo,nombre:nombreCompleto(),apellido:st.tipo==='humana'?tc(st.ape):null,nombres:st.tipo==='humana'?tc(st.nos):null,condicion_iva:st.fis.cond,tipo_documento:fisCheck(st.fis,st.tipo).tipo,documento:fisCheck(st.fis,st.tipo).doc,email:st.email.trim().toLowerCase(),celular:phCheck(st.tel).e164||null,whatsapp:st.wa},
  cotitulares:st.cotit.map(p=>({nombre:p.nom.trim(),documento:p.doc.replace(/\D/g,''),celular:phCheck(p.tel).e164||null})),socio_designado:st.cotit.length?st.rep:'titular',
  apoderado:st.apod?{nombre:st.apNom,documento:st.apDoc,relacion:st.apRel,celular:phCheck(st.apTel).e164||null,email:st.apEmail,recibe_liquidaciones:st.envio}:null,
@@ -427,7 +423,7 @@ document.addEventListener('click',e=>{const lt=e.target.closest('[data-lot]');if
  else if(t.id==='addct'){st.cotit.push({nom:'',doc:'',tel:PH()});render()}
  else if(t.dataset.ctrm){st.cotit.splice(+t.dataset.ctrm,1);render()}
  else if(t.id==='partBtn'){const v=$('#part').value;const r=byPartida(v);if(!r){$('#partErr').textContent='No encontramos esa partida en el plano. Revisala o elegí el lote a mano.';return}
-   if(!st.lots.some(l=>l.id===lotId(r.s,r.m,r.n)))toggleLot(r.s,r.m,r.n);st.pickS=r.s;st.pickM=r.m;render()}
+   $('#partErr').textContent='';if(!st.lots.some(l=>l.id===lotId(r.s,r.m,r.n)))toggleLot(r.s,r.m,r.n);st.pickS=r.s;st.pickM=r.m;render();const el=document.querySelector(`[data-lot="${lotId(r.s,r.m,r.n)}"]`);if(el)el.scrollIntoView({block:'center',inline:'center'})}
  else if(t.id==='back'){st.step=Math.max(0,st.step-1);render()}
 });
 document.addEventListener('input',e=>{const t=e.target;
@@ -448,7 +444,7 @@ document.addEventListener('focusout',e=>{const t=e.target;if(!t.id)return;if(t.i
  if((t.id==='ape'||t.id==='nos')&&st[t.id].trim()){st[t.id]=tc(st[t.id]);t.value=st[t.id];setErr(t.id,partMsg(st[t.id],t.id==='ape'?'el apellido':'el nombre'))}
  if(['dReal','dLoc','dProv','dEsp'].includes(t.id)&&st[t.id].trim()){st[t.id]=tc(st[t.id]);t.value=st[t.id]}
  if(t.dataset.fk&&!t.hasAttribute('data-rr')){const c=fisPreview(t.dataset.fk)}});
-document.addEventListener('keydown',e=>{const lt=e.target.closest&&e.target.closest('[data-lot]');if(lt&&(e.key==='Enter'||e.key===' ')){e.preventDefault();const id=lt.dataset.lot;const [s,m,n]=id.split('-');toggleLot(s,m,+n);const el=document.querySelector(`[data-lot="${id}"]`);el&&el.focus()}});
+document.addEventListener('keydown',e=>{if(e.target.id==='part'&&e.key==='Enter'){e.preventDefault();$('#partBtn').click();return}const lt=e.target.closest&&e.target.closest('[data-lot]');if(lt&&(e.key==='Enter'||e.key===' ')){e.preventDefault();const id=lt.dataset.lot;const [s,m,n]=id.split('-');toggleLot(s,m,+n);const el=document.querySelector(`[data-lot="${id}"]`);el&&el.focus()}});
 $('#f').addEventListener('submit',e=>{e.preventDefault();if(!validate())return;
  if(st.step<LAST){st.step++;render();window.scrollTo({top:0});return}
  const P=payload();const btn=$('#next');const e5=$('#e5');
