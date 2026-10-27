@@ -35,7 +35,7 @@ h2{font-size:20px;margin:0;font-weight:700;text-wrap:balance}
 .field{display:grid;gap:6px}
 label,.lbl{font-weight:600;font-size:14px}
 .opt{font-weight:400;color:var(--muted);font-size:12.5px}
-input[type=text],input[type=email],input[type=tel],select,textarea{font:inherit;color:var(--fg);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px 12px;width:100%}
+input[type=text],input[type=email],input[type=tel],input[type=password],select,textarea{font:inherit;color:var(--fg);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px 12px;width:100%}
 textarea{min-height:70px;resize:vertical}
 input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .row{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
@@ -67,6 +67,9 @@ input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-vis
 .summary dd{margin:0;min-width:0;overflow-wrap:anywhere}
 fieldset.phone{border:1px solid var(--line);border-radius:8px;padding:12px;margin:0;display:grid;gap:10px;min-width:0}
 fieldset.phone legend{padding:0 4px}
+#pwbox{border:2px solid var(--accent);background:var(--green)}
+#pwbox legend{font-weight:700;color:var(--accent)}
+#pwbox input{background:var(--card);border-color:var(--lotline)}
 .sub{font-weight:500;font-size:13px;color:var(--muted)}
 .phrow{display:grid;grid-template-columns:minmax(90px,130px) 1fr;gap:10px}
 .phpv{font-size:13.5px;min-height:1.2em;font-variant-numeric:tabular-nums}
