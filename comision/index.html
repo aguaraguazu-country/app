@@ -81,13 +81,33 @@ tbody tr{cursor:pointer}tbody tr:hover{background:var(--accent-soft)}
 .pct{font-weight:700;font-size:13px;border-radius:999px;padding:3px 10px}.pct.ok{color:var(--good);background:var(--good-bg)}.pct.mid{color:var(--warn);background:var(--warn-bg)}.pct.bad{color:var(--crit);background:var(--crit-bg)}
 .drawer{grid-template-columns:minmax(0,1fr)}.fcard,.cruce{min-width:0}
 .ct{width:100%;min-width:0;font-size:13px;border-collapse:collapse;table-layout:fixed}.ct th:nth-child(1){width:20px}.ct th:nth-child(2){width:28%}.ct th{text-align:left;font-weight:600;color:var(--muted);font-size:11.5px;padding:4px 6px}.ct td{padding:5px 6px;border-top:1px solid var(--line);vertical-align:top;word-break:break-word}.ct td:first-child{font-weight:800;width:18px}.ct tr.ok td:first-child{color:var(--good)}.ct tr.mid td:first-child{color:var(--warn)}.ct tr.no td:first-child{color:var(--crit)}.ct tr.nd td{color:var(--muted)}
-.modal{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);width:min(1040px,94vw);max-height:90vh;overflow-y:auto;background:var(--card);border:1px solid var(--line);border-radius:14px;z-index:20;padding:22px;display:grid;gap:14px;box-shadow:0 20px 60px rgba(0,0,0,.25)}
-.ph{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap}.ph h2{margin:2px 0}.pa{display:flex;gap:8px;align-items:center}
-.pg{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:12px}.ps{border:1px solid var(--line);border-radius:10px;padding:12px;display:grid;gap:6px;align-content:start;min-width:0}.ps h3{margin:0;font-size:14px}
-.ps dl{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;margin:0}.ps dt{color:var(--muted);font-size:13px}.ps dd{margin:0;word-break:break-word}.pl{padding:4px 0;border-top:1px dashed var(--line)}.pl:first-of-type{border-top:0}
-.hist{list-style:none;margin:0;padding:0;display:grid;gap:8px}.hist li{border-left:3px solid var(--accent);padding-left:10px}
-.edit{display:grid;gap:10px}.edit h3{margin:6px 0 0;font-size:14px}.g2{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}.vrow{display:grid;grid-template-columns:130px 140px 1fr auto;gap:8px}.chk{display:flex;gap:8px;align-items:center;font-weight:400}.chk input{width:auto}
-@media (max-width:640px){.vrow{grid-template-columns:1fr 1fr}.modal{top:auto;bottom:0;transform:translateX(-50%);max-height:92vh;border-radius:14px 14px 0 0}}
+.modal{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);width:min(1080px,94vw);max-height:90vh;overflow-y:auto;background:var(--card);border-radius:16px;z-index:20;box-shadow:0 24px 70px rgba(0,0,0,.28);display:flex;flex-direction:column}
+.pf-head{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;padding:24px 28px 14px;background:linear-gradient(180deg,var(--accent-soft,#e6efe9),transparent)}
+.pf-head h2{font-family:var(--display);font-weight:600;font-size:clamp(24px,3vw,32px);line-height:1.1;margin:4px 0 6px;letter-spacing:-.01em}
+.pf-sub{color:var(--muted);font-size:13.5px}.pf-sub .mono{color:var(--fg)}.pa{display:flex;gap:8px;align-items:center;flex:none}
+.pf-facts{display:flex;flex-wrap:wrap;gap:8px;padding:0 28px 16px;border-bottom:1px solid var(--line)}
+.pf-fact{display:inline-flex;align-items:center;gap:7px;font-size:13px;font-weight:600;padding:6px 11px;border-radius:999px;background:var(--bg);border:1px solid var(--line)}
+.pf-fact i{width:8px;height:8px;border-radius:50%;background:var(--muted)}.pf-fact.ok i{background:var(--good)}.pf-fact.mid i{background:#e0a21b}.pf-fact.bad i{background:var(--crit)}.pf-fact.plain{font-weight:500;color:var(--muted)}
+.pf-body{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(0,1fr)}
+.pf-main,.pf-side{padding:20px 28px;display:grid;gap:22px;align-content:start}.pf-side{background:var(--bg);border-left:1px solid var(--line)}
+.pf-body h3{font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700;margin:0 0 10px}
+.plates{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px}
+.plate{border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:10px;padding:10px 12px;background:var(--card);display:grid;gap:4px}
+.plate-id span{display:block;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}.plate-id b{font-size:17px}
+.plate-meta{display:flex;gap:10px;font-size:12.5px;color:var(--muted)}.plate-sub{font-size:12.5px}
+.veh{display:flex;align-items:center;gap:12px;padding:6px 0}.veh+.veh{border-top:1px dashed var(--line)}
+.patente{font-family:var(--mono);font-weight:600;font-size:14px;letter-spacing:.12em;padding:3px 9px;border:2px solid var(--fg);border-radius:5px;background:#fff;color:#111;box-shadow:inset 0 5px 0 #1f4fa3;padding-top:7px;min-width:96px;text-align:center}
+.kv{display:grid;gap:2px;padding:7px 0;border-top:1px solid var(--line)}.kv:first-of-type{border-top:0;padding-top:0}.kv>span{font-size:12px;color:var(--muted)}.kv a{color:var(--accent)}
+.pf-act{display:flex;gap:6px;margin-top:6px}
+.pf-cruce summary{cursor:pointer;color:var(--accent);font-weight:600;font-size:14px}.pf-cruce .cruce{margin-top:10px}
+.pf-act a.btn,.pf-btns a.btn{text-decoration:none}
+.pf-foot{position:sticky;bottom:0;background:var(--card);border-top:1px solid var(--line);padding:14px 28px 16px;display:grid;gap:8px}
+.pf-nota{display:grid;gap:4px;font-size:13px;font-weight:600}.pf-nota textarea{min-height:38px}
+.pf-btns{display:flex;flex-wrap:wrap;gap:8px;align-items:center}.pf-btns .sp{flex:1}.btn.danger{color:var(--crit);border-color:var(--crit-bg)}
+.hist{list-style:none;margin:0;padding:0;display:grid;gap:10px}.hist li{border-left:3px solid var(--accent);padding-left:10px;display:grid;gap:2px}
+.edit{display:grid;gap:10px;padding:18px 28px 24px}.edit h3{margin:8px 0 0;font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}.g2{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}.vrow{display:grid;grid-template-columns:130px 140px 1fr auto;gap:8px}.chk{display:flex;gap:8px;align-items:center;font-weight:400}.chk input{width:auto}
+@media (max-width:760px){.pf-foot{position:static}.pf-head{flex-direction:column;position:relative}.pa{width:100%}.pa .x{position:absolute;top:14px;right:12px}.pf-body{grid-template-columns:1fr}.pf-side{border-left:0;border-top:1px solid var(--line)}.pf-head,.pf-facts,.pf-main,.pf-side,.pf-foot,.edit{padding-left:16px;padding-right:16px}.vrow{grid-template-columns:1fr 1fr}.modal{top:auto;bottom:0;transform:translateX(-50%);width:100vw;max-height:94vh;border-radius:16px 16px 0 0}}
+@media (prefers-reduced-motion:no-preference){.modal{animation:pfin .18s ease-out}@keyframes pfin{from{opacity:0;transform:translate(-50%,-48%)}}}
 .fcard{border:1px solid var(--line);border-radius:10px;padding:14px;display:grid;gap:10px}
 dl{display:grid;grid-template-columns:minmax(120px,160px) 1fr;gap:5px 12px;margin:0;font-size:13.5px}
 dt{color:var(--muted)}dd{margin:0;min-width:0;overflow-wrap:anywhere}
@@ -99,7 +119,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 </head>
 <body>
 <div class="wrap">
-<header><div><div class="eyebrow">Asociación Civil Aguará Guazú Country · Comisión Directiva</div><h1>Panel de la comisión<span class="agver" aria-label="Versión del sistema" style="font:500 12px/1.2 system-ui,sans-serif;color:var(--muted,#5d6862);margin-left:10px;white-space:nowrap;vertical-align:middle;letter-spacing:0">v1.23 · 28/10/26 15:17</span></h1></div><div class="who" id="who"></div></header>
+<header><div><div class="eyebrow">Asociación Civil Aguará Guazú Country · Comisión Directiva</div><h1>Panel de la comisión<span class="agver" aria-label="Versión del sistema" style="font:500 12px/1.2 system-ui,sans-serif;color:var(--muted,#5d6862);margin-left:10px;white-space:nowrap;vertical-align:middle;letter-spacing:0">v1.24 · 28/10/26 15:30</span></h1></div><div class="who" id="who"></div></header>
 <main id="main"><div class="empty">Cargando…</div></main>
 </div>
 <div id="tip" hidden></div><div id="dr"></div>
@@ -318,28 +338,35 @@ function editHTML(f){const e=S.edit;return`<div class="edit"><h3>Editar datos de
 function readEdit(){const e=S.edit;if(!e)return;const v=id=>{const el=$('#ed-'+id);return el?el.value:e[id]};
  Object.assign(e,{email:v('email'),celular:v('celular'),calle:v('calle'),localidad:v('localidad'),provincia:v('provincia'),cp:v('cp'),caNom:v('caNom'),caRel:v('caRel'),caTel:v('caTel')});const w=$('#ed-whatsapp');if(w)e.whatsapp=w.checked;
  document.querySelectorAll('[data-ev]').forEach(el=>{e.vehs[+el.dataset.ev][el.dataset.k]=el.value})}
-function propHTML(f){const d=f.datos||{},t=d.titular||{},dm=d.domicilio_real||{},m=matchPad(f),p=m&&m.p;
- const sec=(tit,body)=>`<section class="ps"><h3>${tit}</h3>${body}</section>`;const row=(k,v)=>`<dt>${k}</dt><dd>${v}</dd>`;
+function fmtDoc(d){d=String(d||'').replace(/\D/g,'');if(d.length===11)return d.slice(0,2)+'-'+d.slice(2,10)+'-'+d.slice(10);return d.length>=7?d.replace(/\B(?=(\d{3})+(?!\d))/g,'.'):d}
+function propHTML(f){const d=f.datos||{},t=d.titular||{},dm=d.domicilio_real||{},m=matchPad(f),p=m&&m.p,ca=d.contacto_adicional;
  const LL=(d.lotes&&d.lotes.length?d.lotes:(f.ficha_lotes||[]).map(x=>({lote_id:x.lote_id,partida:lotInfo(x.lote_id).partida,reclamo:x.reclamo})));
- const lotes=LL.map(l=>`<div class="pl"><b class="mono">${esc(l.lote_id)}</b> <span class="mono help">${esc(l.partida||'')}</span><div class="help">${esc(l.titularidad||'')} · ${esc(l.documento||'')}${l.estado?' · '+esc(l.estado):''}${l.reclamo?' · <span class="chip">reclamo</span>':''}</div></div>`).join('')||'<p class="help">Sin lotes marcados.</p>';
- const vehs=(d.vehiculos||[]).map(v=>`<div><b class="mono">${esc(v.patente)}</b> · ${esc(v.tipo||'')}${v.descripcion?' · '+esc(v.descripcion):''}${v.extranjera?' · otro país':''}</div>`).join('')||'<p class="help">Sin vehículos.</p>';
- const ca=d.contacto_adicional;
- return`<div class="ph"><div><div class="eyebrow">Ficha del propietario</div><h2>${esc(f.titular_nombre)}</h2><span class="mono help">${esc(f.tramite)} · cargada ${fdate(f.creado)}${f.revisado_en?' · verificada '+fdate(f.revisado_en):''}</span></div>
- <div class="pa"><span class="st ${f.estado}">${f.estado}</span>${S.edit?'':`<button type="button" class="btn primary" data-edit="${f.id}">Editar datos</button>`}<button type="button" class="x" data-close aria-label="Cerrar">×</button></div></div>
- ${S.edit?editHTML(f):`<div class="pg">
- ${sec('Titular',`<dl>${row('Tipo',t.tipo==='juridica'?'Empresa / entidad':'Persona')}${row(esc(t.tipo_documento||'Documento'),`<span class="mono">${esc(t.documento||f.titular_documento)}</span>`)}${row('Condición IVA',esc(t.condicion_iva||'—'))}${row('Facturación',d.facturacion&&d.facturacion.a_nombre!=='titular'?esc(d.facturacion.a_nombre+' · '+(d.facturacion.cuit||'')):'A nombre del titular')}${row('Usuario de la app',`<span class="mono">${esc(docKey(f.titular_documento))}</span>`)}</dl>`)}
- ${sec('Contacto',`<dl>${row('Email',esc(f.email||'—'))}${row('Celular',`<span class="mono">${esc(tel(f.celular))}</span>${t.whatsapp?' · WhatsApp':''}`)}${row('Contacto adicional',ca?esc(fmtVal('contacto_adicional',ca)):'—')}${row('Acepta avisos',d.acepta_notificacion_electronica?'Sí':'No')}</dl>`)}
- ${sec('Lotes',lotes+((d.cotitulares||[]).length?`<p class="help">Condóminos: ${d.cotitulares.map(x=>esc(x.nombre)).join(', ')}</p>`:''))}
- ${sec('Domicilio',`<dl>${row('Real',esc([dm.calle,dm.localidad,dm.provincia,dm.cp].filter(Boolean).join(', ')||'—'))}${row('Notificaciones',d.domicilio_notificaciones==='igual_real'?'En el domicilio real':esc(d.domicilio_notificaciones||'—'))}</dl>`)}
- ${sec('Vehículos',vehs)}
- ${sec('Deuda (según planilla)',p?(p.deuda_planilla==null?'<p class="help">Sin dato.</p>':+p.deuda_planilla>0?`<p><b>${$$(p.deuda_planilla)}</b> · ${p.meses_planilla??'?'} meses</p><p class="help">Última factura: ${esc(p.ultima_factura||'—')}</p>`:'<p><span class="st verificada">al día</span></p>')+`<p class="help">Padrón: ${esc(p.nombre)} (${esc(p.id)}) · <button type="button" class="link" data-pad="${esc(p.id)}">ver en el padrón</button></p>`:'<p class="help">No figura en el padrón.</p>')}
- ${d.apoderado?sec('Apoderado',`<p>${esc(d.apoderado.nombre)} (${esc(d.apoderado.relacion)})<br><span class="mono">${esc(tel(d.apoderado.celular))}</span> · ${esc(d.apoderado.email||'')}</p>`):''}
- ${d.comentarios?sec('Comentarios del propietario',`<p>${esc(d.comentarios)}</p>`):''}
- </div>
- <details class="ps"><summary><b>Cruce con el padrón</b> ${m&&m.pct!=null?`<span class="pct ${m.pct>=80?'ok':m.pct>=50?'mid':'bad'}">${m.pct}%</span>`:''}</summary>${cruceHTML(f)}</details>
- <section class="ps"><h3>Historial de cambios</h3>${histHTML(f)}</section>
- <section class="ps"><label>Nota de la comisión<textarea id="nota-${f.id}" rows="2">${esc(f.nota_comision||'')}</textarea></label>
- <div class="acts"><button type="button" class="btn sm" data-reset="${f.id}">Resetear contraseña de la app</button><button type="button" class="btn sm" data-set="verificada" data-id="${f.id}">Guardar nota</button><button type="button" class="btn sm" data-set="pendiente" data-id="${f.id}">Volver a pendiente</button><button type="button" class="btn sm" data-set="rechazada" data-id="${f.id}" style="color:var(--crit)">Rechazar</button></div><div id="rst-${f.id}"></div><div class="err" id="ferr-${f.id}"></div></section>`}`}
+ const vehs=d.vehiculos||[];const wa=String(f.celular||'').replace(/\D/g,'');
+ const deu=!p||p.deuda_planilla==null?{c:'nd',t:'Sin dato de deuda'}:+p.deuda_planilla>0?{c:+p.meses_planilla>=7?'bad':'mid',t:`Debe ${$$(p.deuda_planilla)} · ${p.meses_planilla??'?'} meses`}:{c:'ok',t:'Al día según planilla'};
+ const pct=m&&m.pct!=null?m.pct:null;
+ const facts=`<div class="pf-facts"><span class="pf-fact ${deu.c}"><i></i>${esc(deu.t)}</span>${pct!=null?`<span class="pf-fact ${pct>=80?'ok':pct>=50?'mid':'bad'}"><i></i>Coincide ${pct}% con el padrón</span>`:'<span class="pf-fact nd"><i></i>No figura en el padrón</span>'}<span class="pf-fact plain">${LL.length} lote${LL.length===1?'':'s'}</span><span class="pf-fact plain">${vehs.length} vehículo${vehs.length===1?'':'s'}</span></div>`;
+ const lotPlate=l=>{const i=lotInfo(l.lote_id);return`<div class="plate"><div class="plate-id"><span>${i.s==='S1'?'Sector 1':'Sector 2'}</span><b>Mz ${esc(i.m)} · Lote ${i.n}</b></div><div class="plate-meta"><span class="mono">${esc(l.partida||i.partida)}</span>${i.sup!=null?`<span>${i.sup.toLocaleString('es-AR')} m²</span>`:''}</div><div class="plate-sub">${[l.titularidad,l.documento,l.estado].filter(Boolean).map(esc).join(' · ')}${l.reclamo?' · <span class="chip">reclamo</span>':''}</div></div>`};
+ const pat=v=>`<div class="veh"><span class="patente">${esc(v.patente)}</span><span>${esc(v.tipo||'')}${v.descripcion?` · ${esc(v.descripcion)}`:''}${v.extranjera?' · otro país':''}</span></div>`;
+ const kv=(k,v)=>`<div class="kv"><span>${k}</span><div>${v}</div></div>`;
+ const head=`<header class="pf-head"><div class="pf-id"><div class="eyebrow">Ficha del propietario · <span class="mono">${esc(f.tramite)}</span></div><h2>${esc(f.titular_nombre)}</h2>
+ <div class="pf-sub">${esc(t.tipo_documento||'Documento')} <span class="mono">${esc(fmtDoc(t.documento||f.titular_documento))}</span> · ${esc(t.condicion_iva||'Condición IVA sin dato')} · usuario de la app <span class="mono">${esc(docKey(f.titular_documento))}</span></div><div class="pf-sub">Cargada ${fdate(f.creado)}${f.revisado_en?' · verificada '+fdate(f.revisado_en):''}</div></div>
+ <div class="pa"><span class="st ${f.estado}">${f.estado}</span>${S.edit?'':`<button type="button" class="btn primary" data-edit="${f.id}">Editar datos</button>`}<button type="button" class="x" data-close aria-label="Cerrar">×</button></div></header>`;
+ if(S.edit)return head+editHTML(f);
+ return head+facts+`<div class="pf-body"><div class="pf-main">
+  <section><h3>Lotes</h3><div class="plates">${LL.map(lotPlate).join('')||'<p class="help">Sin lotes marcados.</p>'}</div>${(d.cotitulares||[]).length?`<p class="help">Condóminos: ${d.cotitulares.map(x=>esc(x.nombre)+(x.documento?' ('+esc(fmtDoc(x.documento))+')':'')).join(', ')}${d.socio_designado&&d.socio_designado!=='titular'?' · socio designado: condómino '+(+d.socio_designado+1):''}</p>`:''}</section>
+  <section><h3>Vehículos habilitados</h3>${vehs.map(pat).join('')||'<p class="help">No cargó vehículos.</p>'}</section>
+  <section><h3>Historial de cambios</h3>${histHTML(f)}</section>
+  <details class="pf-cruce"><summary>Ver el cruce con el padrón dato por dato</summary>${cruceHTML(f)}</details>
+ </div><aside class="pf-side">
+  <section><h3>Contacto</h3>${kv('Celular',`<span class="mono">${esc(tel(f.celular))}</span>${t.whatsapp?' <span class="help">WhatsApp</span>':''}${wa?`<div class="pf-act"><a class="btn sm" href="tel:+${wa}">Llamar</a>${t.whatsapp?`<a class="btn sm" href="https://wa.me/${wa}" target="_blank" rel="noopener">WhatsApp</a>`:''}</div>`:''}`)}${kv('Email',f.email?`<a href="mailto:${esc(f.email)}">${esc(f.email)}</a>`:'—')}${kv('Avisos por email/WhatsApp',d.acepta_notificacion_electronica?'Acepta':'No acepta')}${ca?kv('Contacto adicional',`${esc(ca.nombre)}${ca.relacion?` <span class="help">(${esc(ca.relacion)})</span>`:''}${ca.celular?`<div class="mono">${esc(tel(ca.celular))}</div>`:''}`):''}</section>
+  <section><h3>Domicilio</h3>${kv('Real',esc([dm.calle,dm.localidad,dm.provincia,dm.cp].filter(Boolean).join(', ')||'—'))}${kv('Notificaciones formales',d.domicilio_notificaciones==='igual_real'?'En el domicilio real':esc(d.domicilio_notificaciones||'—'))}</section>
+  <section><h3>Cuenta</h3>${p?`${kv('Según planilla',p.deuda_planilla==null?'Sin dato':+p.deuda_planilla>0?`<b>${$$(p.deuda_planilla)}</b> · ${p.meses_planilla??'?'} meses × ${$$(p.cuota_planilla)}`:'Al día')}${kv('Última factura',esc(p.ultima_factura||'—'))}${kv('Facturación',d.facturacion&&d.facturacion.a_nombre!=='titular'?esc(d.facturacion.a_nombre+' · '+(d.facturacion.cuit||'')):'A nombre del titular')}<button type="button" class="link" data-pad="${esc(p.id)}">Ver en el padrón (${esc(p.id)})</button>`:'<p class="help">No figura en el padrón ni en la planilla de cobranza.</p>'}</section>
+  ${d.apoderado?`<section><h3>Apoderado</h3>${kv(esc(d.apoderado.relacion||'Apoderado'),`${esc(d.apoderado.nombre)}<div class="mono">${esc(tel(d.apoderado.celular))}</div>${esc(d.apoderado.email||'')}`)}</section>`:''}
+  ${d.comentarios?`<section><h3>Comentario del propietario</h3><p>${esc(d.comentarios)}</p></section>`:''}
+ </aside></div>
+ <footer class="pf-foot"><label class="pf-nota">Nota de la comisión<textarea id="nota-${f.id}" rows="1" placeholder="Visible solo para la comisión">${esc(f.nota_comision||'')}</textarea></label>
+ <div class="pf-btns"><button type="button" class="btn sm" data-set="verificada" data-id="${f.id}">Guardar nota</button><button type="button" class="btn sm" data-reset="${f.id}">Resetear contraseña</button><span class="sp"></span><button type="button" class="btn sm" data-set="pendiente" data-id="${f.id}">Volver a pendiente</button><button type="button" class="btn sm danger" data-set="rechazada" data-id="${f.id}">Rechazar</button></div>
+ <div id="rst-${f.id}"></div><div class="err" id="ferr-${f.id}"></div></footer>`}
 function drawer(){if(!S.open)return'';let head='',body='';
  {const fv=S.open.ficha&&S.fichas.find(x=>x.id===S.open.ficha);if(fv&&fv.estado==='verificada')return`<div class="scrim" data-close></div><div class="modal" role="dialog" aria-label="Ficha del propietario">${propHTML(fv)}</div>`}
  if(S.open.lot){const i=lotInfo(S.open.lot),fs=S.byLot[S.open.lot]||[];head=`<div><h2>${esc(i.nom)}</h2><span class="mono help">${esc(i.partida)} · ${i.sup!=null?i.sup.toLocaleString('es-AR')+' m²':''}</span></div>`;
