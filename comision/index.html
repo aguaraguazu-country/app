@@ -49,6 +49,10 @@ button.kpi{font:inherit;color:inherit;text-align:left;cursor:pointer;width:100%}
 .lt rect{fill:var(--lot);stroke:var(--lotline);stroke-width:.35;cursor:pointer}
 .lt text{fill:var(--fg);font-family:var(--body);font-size:4.2px;text-anchor:middle;dominant-baseline:central;pointer-events:none}
 .lt.pend rect{fill:var(--pend)}
+.lt.d-ok rect,.sw.d-ok{fill:#3f8f5f;background:#3f8f5f}.lt.d-ok text{fill:#fff;font-weight:700}.lt.d-m1 rect,.sw.d-m1{fill:#f2cf4a;background:#f2cf4a}.lt.d-m5 rect,.sw.d-m5{fill:#f08a36;background:#f08a36}.lt.d-m7 rect,.sw.d-m7{fill:#d43f3f;background:#d43f3f}.lt.d-m7 text{fill:#fff;font-weight:700}.lt.d-nd rect,.sw.d-nd{fill:#b9bfba;background:#b9bfba}.sw.d-libre{background:var(--lot)}
+.lt.dud rect{stroke:var(--fg);stroke-width:.7;stroke-dasharray:1.4 .9}.lt.fade{opacity:.13}
+.dleg{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:8px}.link{all:unset;cursor:pointer;color:var(--accent);text-decoration:underline}
+.dchip{display:flex;gap:10px;align-items:flex-start;text-align:left;font:inherit;color:inherit;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:9px 10px;cursor:pointer}.dchip span{display:grid;gap:2px}.dchip[aria-pressed=false]{opacity:.45}.dchip:hover{border-color:var(--accent)}.sw{width:18px;height:18px;border-radius:4px;border:1px solid var(--lotline);flex:none;margin-top:2px}
 .lt.ok rect{fill:var(--ok);stroke:var(--ok)}.lt.ok text{fill:var(--card);font-weight:700}
 .lt.conf rect{fill:var(--conf);stroke:var(--conf-line);stroke-width:.9}
 .lt:hover rect,.lt:focus-visible rect{stroke:var(--fg);stroke-width:1.1}.lt:focus{outline:none}
@@ -87,7 +91,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 </head>
 <body>
 <div class="wrap">
-<header><div><div class="eyebrow">Asociación Civil Aguará Guazú Country · Comisión Directiva</div><h1>Panel de la comisión<span class="agver" aria-label="Versión del sistema" style="font:500 12px/1.2 system-ui,sans-serif;color:var(--muted,#5d6862);margin-left:10px;white-space:nowrap;vertical-align:middle;letter-spacing:0">v1.20 · 27/10/26 22:00</span></h1></div><div class="who" id="who"></div></header>
+<header><div><div class="eyebrow">Asociación Civil Aguará Guazú Country · Comisión Directiva</div><h1>Panel de la comisión<span class="agver" aria-label="Versión del sistema" style="font:500 12px/1.2 system-ui,sans-serif;color:var(--muted,#5d6862);margin-left:10px;white-space:nowrap;vertical-align:middle;letter-spacing:0">v1.21 · 28/10/26 06:41</span></h1></div><div class="who" id="who"></div></header>
 <main id="main"><div class="empty">Cargando…</div></main>
 </div>
 <div id="tip" hidden></div><div id="dr"></div>
@@ -137,7 +141,7 @@ function vResumen(){const act=S.fichas.filter(f=>f.estado!=='rechazada');const l
  return`<div class="kpis">${K('Fichas recibidas',act.length,'lista|todas',S.v==='lista'&&S.f==='todas')}${K('Lotes con ficha',lotes,'plano',S.v==='plano',de(202))}
  ${K('Pendientes de revisar',act.filter(f=>f.estado==='pendiente').length,'lista|pendiente',S.v==='lista'&&S.f==='pendiente')}${K('Lotes con conflicto',conf,'lista|conflicto',S.v==='lista'&&S.f==='conflicto')}
  ${K('Sin lote identificado',act.filter(f=>!(f.ficha_lotes||[]).length).length,'lista|sinlote',S.v==='lista'&&S.f==='sinlote')}${c?K('Del padrón ya cargaron',c.filter(x=>x.est==='verif'||x.est==='pend').length,'faltan|cargo',S.v==='faltan'&&S.pf==='cargo',de(c.length)):''}</div>
- <div class="tabs"><button type="button" data-v="plano" aria-pressed="${S.v==='plano'}">Plano</button><button type="button" data-v="lista" aria-pressed="${S.v==='lista'}">Fichas</button><button type="button" data-v="faltan" aria-pressed="${S.v==='faltan'}">Padrón</button><span style="margin-left:auto;display:flex;gap:6px"><button type="button" class="btn sm" id="backup">Descargar copia (Excel)</button><button type="button" class="btn sm" id="reload">Actualizar</button></span></div>`}
+ <div class="tabs"><button type="button" data-v="plano" aria-pressed="${S.v==='plano'}">Plano</button><button type="button" data-v="lista" aria-pressed="${S.v==='lista'}">Fichas</button><button type="button" data-v="faltan" aria-pressed="${S.v==='faltan'}">Padrón</button><button type="button" data-v="deuda" aria-pressed="${S.v==='deuda'}">Deuda</button><span style="margin-left:auto;display:flex;gap:6px"><button type="button" class="btn sm" id="backup">Descargar copia (Excel)</button><button type="button" class="btn sm" id="reload">Actualizar</button></span></div>`}
 const $$=n=>n==null?'—':'$ '+Math.round(n).toLocaleString('es-AR');
 const EST={verif:['verificada','Verificada'],pend:['pendiente','Pendiente'],posible:['pendiente','Posible'],falta:['rechazada','No cargó']};
 function vFaltan(){const c=cruce();if(!c)return`<div class="card">Para ver el padrón, ejecutá el script <b>04_lanzamiento.sql</b> en Supabase.</div>`;const q=S.q.trim().toLowerCase();
@@ -169,17 +173,42 @@ function padHTML(x){const e=EST[x.est],w=waLink(x.celular);
  <dt>Ficha</dt><dd>${x.ficha?`${esc(x.ficha.tramite)} · ${esc(x.ficha.estado)}${x.est==='posible'?' <span class="help">(coincide el nombre, no el documento: revisalo)</span>':''} <button type="button" class="btn sm" data-ficha="${x.ficha.id}">Ver ficha</button>`:'No cargó'}${w&&x.est==='falta'?` <a class="btn sm" href="${w}" target="_blank" rel="noopener">Recordar por WhatsApp</a>`:''}</dd></dl>
  ${S.sin06?'':`<label>Nota de la comisión<textarea id="pnota" rows="3" maxlength="2000" placeholder="Ej.: vendió el lote en 2025; llamar después del 10; acordó plan de pagos…">${esc(x.nota||'')}</textarea></label>
  <div class="acts"><button type="button" class="btn primary" data-savepad="${esc(x.id)}">Guardar nota</button><span class="help" id="pmsg" style="align-self:center">${x.nota_en?'Última edición: '+fdate(x.nota_en):''}</span></div>`}</div>`}
-function vPlano(){if(S.zoom==null)S.zoom=innerWidth<640?2.6:1;
- let g=`<rect x="0" y="145.06" width="145.06" height="145.05" fill="var(--s1)"/><path d="M0 0H290.11V290.11H145.06V145.06H0Z" fill="var(--s2)"/><path d="M0 0H290.11V290.11H0Z" fill="none" stroke="var(--fg)" stroke-width=".8"/><path d="M0 145.06H145.06V290.11" fill="none" stroke="var(--fg)" stroke-width=".5" stroke-dasharray="3 2"/>
+function mapBase(){let g=`<rect x="0" y="145.06" width="145.06" height="145.05" fill="var(--s1)"/><path d="M0 0H290.11V290.11H145.06V145.06H0Z" fill="var(--s2)"/><path d="M0 0H290.11V290.11H0Z" fill="none" stroke="var(--fg)" stroke-width=".8"/><path d="M0 145.06H145.06V290.11" fill="none" stroke="var(--fg)" stroke-width=".5" stroke-dasharray="3 2"/>
  <text class="street" x="145" y="-6" text-anchor="middle">Calle Posadas</text><text class="street" x="145" y="300" text-anchor="middle">Calle Pago Largo</text><text class="street" transform="translate(-6 145) rotate(-90)" text-anchor="middle">Calle 10</text><text class="street" transform="translate(297 145) rotate(90)" text-anchor="middle">Calle 9</text>
  <text class="slab" x="72.5" y="284.5" text-anchor="middle">Sector 1</text><text class="slab" x="72.5" y="139.5" text-anchor="middle">Sector 2</text>`;
  for(const [nm,x,y,w,h,k] of MAPA.areas)g+=`<rect class="ar ${k}" x="${x}" y="${y}" width="${w}" height="${h}"/>`;
  for(const [sec,mz,x,y] of MAPA.blocks)g+=`<text class="mlab" x="${x}" y="${y-1.6}">Mz ${mz}</text>`;
+ return g}
+function mapSvg(g){return`<div class="mapbox" id="mapbox"><svg viewBox="-12 -14 314 320" style="${S.zoom===1?'width:min(100%,calc((78vh - 4px)*0.98));margin:0 auto':`width:${S.zoom*100}%`}" xmlns="http://www.w3.org/2000/svg">${g}</svg></div>`}
+const ZOOM='<div class="zoom"><button type="button" data-zoom="-1" aria-label="Alejar">−</button><button type="button" data-zoom="1" aria-label="Acercar">+</button><button type="button" data-zoom="0">Ver todo</button></div>';
+function vPlano(){if(S.zoom==null)S.zoom=innerWidth<640?2.6:1;
+ let g=mapBase();
  for(const [id,x,y,w,h] of MAPA.lots){const n=+id.split('-')[2];g+=`<g class="lt ${lotClass(id)}" data-lot="${id}" tabindex="0" role="button" aria-label="${esc(lotInfo(id).nom)}"><rect x="${x}" y="${y}" width="${w}" height="${h}"/><text x="${x+w/2}" y="${y+h/2}">${n}</text></g>`}
  return`<div class="card"><div class="mapctl"><div class="legend"><span><i style="background:var(--lot)"></i>Sin ficha</span><span><i style="background:var(--pend)"></i>Ficha pendiente</span><span><i style="background:var(--ok);border-color:var(--ok)"></i>Verificada</span><span><i style="background:var(--conf);border-color:var(--conf-line)"></i>Conflicto (más de una ficha)</span></div>
  <div class="zoom"><button type="button" data-zoom="-1" aria-label="Alejar">−</button><button type="button" data-zoom="1" aria-label="Acercar">+</button><button type="button" data-zoom="0">Ver todo</button></div></div>
  <div class="mapbox" id="mapbox"><svg viewBox="-12 -14 314 320" style="${S.zoom===1?'width:min(100%,calc((78vh - 4px)*0.98));margin:0 auto':`width:${S.zoom*100}%`}" xmlns="http://www.w3.org/2000/svg">${g}</svg></div>
  <p class="help">Pasá el mouse por un lote para ver quién lo cargó. Hacé clic para abrir la tarjeta.</p></div>`}
+// ---------- plano de deuda ----------
+const DCAT=[['ok','Al día'],['m1','1 a 4 meses'],['m5','5 a 6 meses'],['m7','7 meses o más'],['nd','Sin dato de deuda'],['libre','Sin propietario identificado']];
+function dIdx(){const idx={};if(!S.padron)return idx;const src=S.dsrc||'ambos';
+ if(src!=='fichas')for(const p of S.padron){const ids=lotIds(p.lotes_plano);if(!ids.length)continue;const dud=/confirmar|\bo\b/i.test(p.lotes_plano||'');for(const id of ids){if(!idx[id]||(idx[id].dud&&!dud))idx[id]={p,src:'padrón',dud}}}
+ if(src!=='padron'){const byK={};S.padron.forEach(p=>{const k=docKey(p.documento);if(k)byK[k]=p});
+  for(const f of S.fichas){if(f.estado==='rechazada')continue;const p=byK[docKey(f.titular_documento)]||null;for(const fl of f.ficha_lotes||[])idx[fl.lote_id]={p,f,src:'ficha',dud:false}}}
+ return idx}
+function dCat(r){if(!r)return'libre';if(!r.p||r.p.deuda_planilla==null)return'nd';const m=+r.p.meses_planilla||0;if(+r.p.deuda_planilla<=0||m===0)return'ok';return m<=4?'m1':m<=6?'m5':'m7'}
+function vDeuda(){if(S.zoom==null)S.zoom=innerWidth<640?2.6:1;if(!S.padron)return`<div class="card">Para ver el plano de deuda, ejecutá el script <b>04_lanzamiento.sql</b> en Supabase.</div>`;
+ if(S.sin06)return`<div class="card">Para ver el plano de deuda, ejecutá el script <b>06_padron_trabajo.sql</b> en Supabase.</div>`;
+ const idx=dIdx();S.didx=idx;const vis=S.dcat||(S.dcat=new Set(DCAT.map(x=>x[0])));
+ const cnt={},cta={},mon={};for(const [k] of DCAT){cnt[k]=0;cta[k]=new Set();mon[k]=0}
+ let g=mapBase();
+ for(const [id,x,y,w,h] of MAPA.lots){const r=idx[id],c=dCat(r);cnt[c]++;if(r&&r.p&&!cta[c].has(r.p.id)){cta[c].add(r.p.id);mon[c]+=+r.p.deuda_planilla||0}
+  const n=+id.split('-')[2];g+=`<g class="lt d-${c}${r&&r.dud?' dud':''}${vis.has(c)?'':' fade'}" data-lot="${id}" tabindex="0" role="button" aria-label="${esc(lotInfo(id).nom)}"><rect x="${x}" y="${y}" width="${w}" height="${h}"/><text x="${x+w/2}" y="${y+h/2}">${n}</text></g>`}
+ const src=S.dsrc||'ambos';
+ return`<div class="card"><div class="note">Deuda según la <b>planilla de cobranza</b> (sin verificar). La deuda es de la <b>cuenta</b> del propietario: si tiene varios lotes, todos muestran la misma deuda. Lotes con borde punteado: asignación "a confirmar" del padrón.</div>
+ <div class="tabs"><span class="help" style="align-self:center">Quién es dueño de cada lote según:</span>${[['ambos','Fichas + padrón'],['fichas','Solo fichas'],['padron','Solo padrón']].map(([k,l])=>`<button type="button" data-dsrc="${k}" aria-pressed="${src===k}">${l}</button>`).join('')}</div>
+ <div class="dleg">${DCAT.map(([k,l])=>`<button type="button" class="dchip" data-dcat="${k}" aria-pressed="${vis.has(k)}"><i class="sw d-${k}"></i><span><b>${l}</b><span class="help">${cnt[k]} lote${cnt[k]===1?'':'s'}${k==='libre'?'':` · ${cta[k].size} cuenta${cta[k].size===1?'':'s'}`}${mon[k]>0?` · ${$$(mon[k])}`:''}</span></span></button>`).join('')}</div>
+ <div class="mapctl"><span class="help">Tocá un color para mostrarlo u ocultarlo en el plano.${vis.size<DCAT.length?' <button type="button" class="link" data-dcat="todos">Mostrar todos</button>':''}</span>${ZOOM}</div>
+ ${mapSvg(g)}<p class="help">Pasá el mouse por un lote para ver el propietario y su deuda. Hacé clic para abrir su ficha del padrón.</p></div>`}
 function vLista(){const q=S.q.trim().toLowerCase();let rs=S.fichas.filter(f=>S.f==='todas'||f.estado===S.f||(S.f==='sinlote'&&!(f.ficha_lotes||[]).length)||(S.f==='conflicto'&&f.estado!=='rechazada'&&(f.ficha_lotes||[]).some(x=>lotClass(x.lote_id)==='conf')));
  if(q)rs=rs.filter(f=>(f.titular_nombre+' '+f.titular_documento+' '+f.tramite+' '+(f.ficha_lotes||[]).map(x=>x.lote_id).join(' ')).toLowerCase().includes(q));
  const F=[['todas','Todas'],['pendiente','Pendientes'],['verificada','Verificadas'],['rechazada','Rechazadas'],['sinlote','Sin lote'],['conflicto','Con conflicto']];
@@ -190,7 +219,7 @@ function vLista(){const q=S.q.trim().toLowerCase();let rs=S.fichas.filter(f=>S.f
  <td>${esc(f.email||'—')}<br><span class="mono">${esc(tel(f.celular))}</span></td><td><span class="st ${f.estado}">${f.estado}</span></td></tr>`).join(''):`<tr><td colspan="6" class="empty">Todavía no hay fichas${S.f!=='todas'?' con ese filtro':''}.</td></tr>`}
  </tbody></table></div></div>`}
 function render(){if(!S.miembro)return;const mb=$('#mapbox'),sc=mb?[mb.scrollLeft,mb.scrollTop]:null;
- $('#main').innerHTML=vResumen()+(S.v==='plano'?vPlano():S.v==='faltan'?vFaltan():vLista());const nb=$('#mapbox');if(nb&&sc){nb.scrollLeft=sc[0];nb.scrollTop=sc[1]}$('#dr').innerHTML=drawer()}
+ $('#main').innerHTML=vResumen()+(S.v==='plano'?vPlano():S.v==='faltan'?vFaltan():S.v==='deuda'?vDeuda():vLista());const nb=$('#mapbox');if(nb&&sc){nb.scrollLeft=sc[0];nb.scrollTop=sc[1]}$('#dr').innerHTML=drawer()}
 // ---------- tarjeta ----------
 // ---------- cruce de una ficha con el padrón ----------
 const digs=t=>(String(t||'').match(/\d{8,}/g)||[]).map(x=>x.slice(-8));
@@ -250,6 +279,8 @@ function drawer(){if(!S.open)return'';let head='',body='';
 // ---------- tooltip ----------
 const tip=$('#tip');
 function showTip(id,x,y){const fs=S.byLot[id]||[];const i=lotInfo(id);
+ if(S.v==='deuda'){const r=(S.didx||{})[id],c=dCat(r),p=r&&r.p;tip.innerHTML=`<b>${esc(i.nom)}</b><div class="m mono">${esc(i.partida)}</div>`+(!r?'<div class="m">Sin propietario identificado</div>':`<div>${esc(p?p.nombre:r.f.titular_nombre)}</div><div class="m">Según ${r.src}${r.dud?' (a confirmar)':''}${r.f?' · ficha '+esc(r.f.estado):''}</div>`+(c==='nd'?'<div class="m">Sin dato de deuda</div>':c==='ok'?'<div style="color:var(--good);font-weight:700">Al día</div>':`<div style="font-weight:700">Debe ${$$(p.deuda_planilla)} · ${p.meses_planilla} meses</div>`)+(p&&p.ultima_factura?`<div class="m">Última factura: ${esc(p.ultima_factura)}</div>`:''));
+  tip.hidden=false;const rr=tip.getBoundingClientRect();tip.style.left=Math.min(x+14,innerWidth-rr.width-8)+'px';tip.style.top=Math.min(y+14,innerHeight-rr.height-8)+'px';return}
  tip.innerHTML=`<b>${esc(i.nom)}</b>`+(fs.length?fs.map(f=>`<div>${esc(f.titular_nombre)}</div><div class="m mono">${esc(tel(f.celular))}</div><div class="m">${esc(f.email||'')}</div><div class="m">Ficha ${esc(f.estado)} · ${esc(f.tramite)}</div>`).join('<hr style="border:0;border-top:1px solid var(--line);margin:4px 0">'):'<div class="m">Sin ficha cargada</div>');
  tip.hidden=false;const r=tip.getBoundingClientRect();tip.style.left=Math.min(x+14,innerWidth-r.width-8)+'px';tip.style.top=Math.min(y+14,innerHeight-r.height-8)+'px'}
 document.addEventListener('pointermove',e=>{if(e.pointerType!=='mouse'){return}const lt=e.target.closest&&e.target.closest('[data-lot]');if(lt)showTip(lt.dataset.lot,e.clientX,e.clientY);else tip.hidden=true});
@@ -258,7 +289,9 @@ document.addEventListener('submit',async e=>{if(e.target.id!=='lf')return;e.prev
  const {data,error}=await sb.auth.signInWithPassword({email:$('#le').value.trim(),password:$('#lp').value});b.disabled=false;
  if(error){$('#lerr').textContent=/invalid/i.test(error.message)?'Email o contraseña incorrectos.':error.message;return}S.user=data.user;await loadApp()});
 document.addEventListener('click',async e=>{const t=e.target;
- const lt=t.closest('[data-lot]');if(lt){tip.hidden=true;S.open={lot:lt.dataset.lot};render();return}
+ const lt=t.closest('[data-lot]');if(lt){tip.hidden=true;const r=S.v==='deuda'&&(S.didx||{})[lt.dataset.lot];S.open=r&&r.p?{pad:r.p.id}:{lot:lt.dataset.lot};render();return}
+ const dc=t.closest('[data-dcat]');if(dc){const k=dc.dataset.dcat;if(k==='todos')S.dcat=new Set(DCAT.map(x=>x[0]));else{S.dcat.has(k)?S.dcat.delete(k):S.dcat.add(k)}render();return}
+ const ds=t.closest('[data-dsrc]');if(ds){S.dsrc=ds.dataset.dsrc;render();return}
  if(t.closest('a[href]'))return;
  const tr=t.closest('[data-ficha]');if(tr){S.open={ficha:+tr.dataset.ficha};render();return}
  const pr=t.closest('[data-pad]');if(pr){S.open={pad:pr.dataset.pad};render();return}
