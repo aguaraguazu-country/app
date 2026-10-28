@@ -81,6 +81,13 @@ tbody tr{cursor:pointer}tbody tr:hover{background:var(--accent-soft)}
 .pct{font-weight:700;font-size:13px;border-radius:999px;padding:3px 10px}.pct.ok{color:var(--good);background:var(--good-bg)}.pct.mid{color:var(--warn);background:var(--warn-bg)}.pct.bad{color:var(--crit);background:var(--crit-bg)}
 .drawer{grid-template-columns:minmax(0,1fr)}.fcard,.cruce{min-width:0}
 .ct{width:100%;min-width:0;font-size:13px;border-collapse:collapse;table-layout:fixed}.ct th:nth-child(1){width:20px}.ct th:nth-child(2){width:28%}.ct th{text-align:left;font-weight:600;color:var(--muted);font-size:11.5px;padding:4px 6px}.ct td{padding:5px 6px;border-top:1px solid var(--line);vertical-align:top;word-break:break-word}.ct td:first-child{font-weight:800;width:18px}.ct tr.ok td:first-child{color:var(--good)}.ct tr.mid td:first-child{color:var(--warn)}.ct tr.no td:first-child{color:var(--crit)}.ct tr.nd td{color:var(--muted)}
+.modal{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);width:min(1040px,94vw);max-height:90vh;overflow-y:auto;background:var(--card);border:1px solid var(--line);border-radius:14px;z-index:20;padding:22px;display:grid;gap:14px;box-shadow:0 20px 60px rgba(0,0,0,.25)}
+.ph{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap}.ph h2{margin:2px 0}.pa{display:flex;gap:8px;align-items:center}
+.pg{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:12px}.ps{border:1px solid var(--line);border-radius:10px;padding:12px;display:grid;gap:6px;align-content:start;min-width:0}.ps h3{margin:0;font-size:14px}
+.ps dl{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;margin:0}.ps dt{color:var(--muted);font-size:13px}.ps dd{margin:0;word-break:break-word}.pl{padding:4px 0;border-top:1px dashed var(--line)}.pl:first-of-type{border-top:0}
+.hist{list-style:none;margin:0;padding:0;display:grid;gap:8px}.hist li{border-left:3px solid var(--accent);padding-left:10px}
+.edit{display:grid;gap:10px}.edit h3{margin:6px 0 0;font-size:14px}.g2{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}.vrow{display:grid;grid-template-columns:130px 140px 1fr auto;gap:8px}.chk{display:flex;gap:8px;align-items:center;font-weight:400}.chk input{width:auto}
+@media (max-width:640px){.vrow{grid-template-columns:1fr 1fr}.modal{top:auto;bottom:0;transform:translateX(-50%);max-height:92vh;border-radius:14px 14px 0 0}}
 .fcard{border:1px solid var(--line);border-radius:10px;padding:14px;display:grid;gap:10px}
 dl{display:grid;grid-template-columns:minmax(120px,160px) 1fr;gap:5px 12px;margin:0;font-size:13.5px}
 dt{color:var(--muted)}dd{margin:0;min-width:0;overflow-wrap:anywhere}
@@ -92,7 +99,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 </head>
 <body>
 <div class="wrap">
-<header><div><div class="eyebrow">Asociación Civil Aguará Guazú Country · Comisión Directiva</div><h1>Panel de la comisión<span class="agver" aria-label="Versión del sistema" style="font:500 12px/1.2 system-ui,sans-serif;color:var(--muted,#5d6862);margin-left:10px;white-space:nowrap;vertical-align:middle;letter-spacing:0">v1.22 · 28/10/26 14:44</span></h1></div><div class="who" id="who"></div></header>
+<header><div><div class="eyebrow">Asociación Civil Aguará Guazú Country · Comisión Directiva</div><h1>Panel de la comisión<span class="agver" aria-label="Versión del sistema" style="font:500 12px/1.2 system-ui,sans-serif;color:var(--muted,#5d6862);margin-left:10px;white-space:nowrap;vertical-align:middle;letter-spacing:0">v1.23 · 28/10/26 15:17</span></h1></div><div class="who" id="who"></div></header>
 <main id="main"><div class="empty">Cargando…</div></main>
 </div>
 <div id="tip" hidden></div><div id="dr"></div>
@@ -236,7 +243,7 @@ function render(){if(!S.miembro)return;const mb=$('#mapbox'),sc=mb?[mb.scrollLef
  $('#main').innerHTML=vResumen()+(S.v==='plano'?vPlano():S.v==='faltan'?vFaltan():S.v==='deuda'?vDeuda():vLista());sizeMap();const nb=$('#mapbox');if(nb&&sc){nb.scrollLeft=sc[0];nb.scrollTop=sc[1]}$('#dr').innerHTML=drawer()}
 // ---------- tarjeta ----------
 // ---------- cruce de una ficha con el padrón ----------
-const digs=t=>(String(t||'').match(/\d{8,}/g)||[]).map(x=>x.slice(-8));
+const digs=t=>(String(t||'').replace(/[\s.\-()]/g,'').match(/\d{8,}/g)||[]).map(x=>x.slice(-8));
 const lotIds=t=>(String(t||'').toUpperCase().match(/S[12]-[A-Z]-\d{2}/g)||[]);
 function matchPad(f){if(!S.padron)return null;const k=docKey(f.titular_documento);let p=k&&S.padron.find(x=>docKey(x.documento)===k),via='documento';
  if(!p){const ft=norm(f.titular_nombre);let best=null,bs=0;for(const x of S.padron){const pt=norm(x.nombre);const c=pt.filter(w=>ft.includes(w)).length;const sc=c/Math.max(pt.length,ft.length,1);if(c>=2&&sc>bs){bs=sc;best=x}}p=best;via='nombre'}
@@ -280,11 +287,61 @@ function fichaHTML(f){const d=f.datos||{},t=d.titular||{},dom=d.domicilio_real||
  <dt>Facturación</dt><dd>${d.facturacion&&d.facturacion.a_nombre!=='titular'?esc(d.facturacion.a_nombre)+' · CUIT '+esc(d.facturacion.cuit):'A nombre del titular'}</dd>
  ${(d.vehiculos||[]).length?`<dt>Vehículos</dt><dd class="mono">${d.vehiculos.map(v=>esc(v.patente)+' · '+esc(v.tipo)+(v.descripcion?' · '+esc(v.descripcion):'')).join('<br>')}</dd>`:''}
  ${d.comentarios?`<dt>Comentarios</dt><dd>${esc(d.comentarios)}</dd>`:''}<dt>Declaración jurada</dt><dd>${yes(d.declaracion_jurada)} · consentimiento de datos: ${yes(d.consentimiento_datos)}</dd></dl>
- ${cruceHTML(f)}
+ ${f.estado==='verificada'&&!S.open.ficha?`<div><button type="button" class="btn primary" data-ficha="${f.id}">Abrir ficha del propietario</button></div>`:''}${cruceHTML(f)}
  <label>Nota de la comisión<textarea id="nota-${f.id}" rows="2">${esc(f.nota_comision||'')}</textarea></label>
  <div class="acts" style="border-top:1px solid var(--line);padding-top:10px"><button type="button" class="btn sm" data-reset="${f.id}">Resetear contraseña de la app</button><span class="help" style="align-self:center">Usuario: <span class="mono">${esc(docKey(f.titular_documento))}</span></span></div><div id="rst-${f.id}"></div>
  <div class="acts"><button type="button" class="btn primary" data-set="verificada" data-id="${f.id}">Marcar verificada</button><button type="button" class="btn" data-set="pendiente" data-id="${f.id}">Volver a pendiente</button><button type="button" class="btn" data-set="rechazada" data-id="${f.id}" style="color:var(--crit)">Rechazar</button></div><div class="err" id="ferr-${f.id}"></div></div>`}
+// ---------- ficha del propietario (ventana grande, fichas verificadas) ----------
+const TIPOS_VEH=['Auto','Camioneta','Moto','Utilitario','Otro'];
+function editState(f){const d=f.datos||{},t=d.titular||{},dm=d.domicilio_real||{},ca=d.contacto_adicional;
+ return{email:f.email||t.email||'',celular:f.celular||t.celular||'',whatsapp:!!t.whatsapp,calle:dm.calle||'',localidad:dm.localidad||'',provincia:dm.provincia||'',cp:dm.cp||'',
+  caNom:ca?ca.nombre||'':'',caRel:ca?ca.relacion||'':'',caTel:ca?ca.celular||'':'',vehs:(d.vehiculos||[]).map(v=>({patente:v.patente||'',tipo:v.tipo||'Auto',descripcion:v.descripcion||''}))}}
+const CAMPOS={email:'Email',celular:'Celular',whatsapp:'WhatsApp',domicilio_real:'Domicilio',vehiculos:'Vehículos',contacto_adicional:'Contacto adicional'};
+function fmtVal(k,v){if(v==null||v==='')return'—';if(k==='whatsapp')return v?'Sí':'No';if(k==='celular')return tel(v);
+ if(k==='domicilio_real')return[v.calle,v.localidad,v.provincia,v.cp].filter(Boolean).join(', ')||'—';
+ if(k==='vehiculos')return(v||[]).map(x=>x.patente).join(', ')||'ninguno';if(k==='contacto_adicional')return v?`${v.nombre}${v.relacion?' ('+v.relacion+')':''}${v.celular?' · '+tel(v.celular):''}`:'—';return String(v)}
+async function loadHist(id){const r=await sb.from('ficha_cambios').select('cambios,por,en').eq('ficha_id',id).order('en',{ascending:false});
+ S.hist={id,err:r.error?r.error.message:null,rows:r.data||[]};if(S.open&&S.open.ficha===id)render()}
+function histHTML(f){const h=S.hist;if(!h||h.id!==f.id){loadHist(f.id);return'<p class="help">Cargando historial…</p>'}
+ if(h.err)return`<p class="help">${/ficha_cambios|does not exist|schema cache/i.test(h.err)?'Para editar fichas y ver el historial, ejecutá el script <b>07_editar_fichas.sql</b> en Supabase.':'No se pudo leer el historial: '+esc(h.err)}</p>`;
+ if(!h.rows.length)return'<p class="help">Sin cambios desde que se cargó la ficha.</p>';
+ return`<ul class="hist">${h.rows.map(r=>`<li><span class="mono help">${fdate(r.en)}${r.por===S.user.id?' · vos':''}</span>${Object.entries(r.cambios).map(([k,c])=>`<div><b>${esc(CAMPOS[k]||k)}:</b> <s class="help">${esc(fmtVal(k,c.antes))}</s> → ${esc(fmtVal(k,c.despues))}</div>`).join('')}</li>`).join('')}</ul>`}
+function editHTML(f){const e=S.edit;return`<div class="edit"><h3>Editar datos de contacto</h3>
+ <div class="g2"><label>Email<input id="ed-email" type="email" value="${esc(e.email)}"></label><label>Celular <span class="help">(con código de país, ej. +54 9 376 4152286)</span><input id="ed-celular" value="${esc(e.celular)}"></label></div>
+ <label class="chk"><input type="checkbox" id="ed-whatsapp" ${e.whatsapp?'checked':''}> Ese celular tiene WhatsApp</label>
+ <h3>Domicilio real</h3><div class="g2"><label>Calle y número<input id="ed-calle" value="${esc(e.calle)}"></label><label>Localidad<input id="ed-localidad" value="${esc(e.localidad)}"></label><label>Provincia<input id="ed-provincia" value="${esc(e.provincia)}"></label><label>Código postal<input id="ed-cp" value="${esc(e.cp)}"></label></div>
+ <h3>Contacto adicional <span class="help">(dejá el nombre vacío para quitarlo)</span></h3><div class="g2"><label>Apellido y nombre<input id="ed-caNom" value="${esc(e.caNom)}"></label><label>Relación<input id="ed-caRel" value="${esc(e.caRel)}"></label><label>Celular<input id="ed-caTel" value="${esc(e.caTel)}"></label></div>
+ <h3>Vehículos</h3>${e.vehs.length?'':'<p class="help">No tiene vehículos cargados.</p>'}${e.vehs.map((v,i)=>`<div class="vrow"><input data-ev="${i}" data-k="patente" placeholder="Patente" value="${esc(v.patente)}" class="mono"><select data-ev="${i}" data-k="tipo">${TIPOS_VEH.map(o=>`<option ${v.tipo===o?'selected':''}>${o}</option>`).join('')}</select><input data-ev="${i}" data-k="descripcion" placeholder="Marca, modelo y color" value="${esc(v.descripcion)}"><button type="button" class="btn sm" data-evrm="${i}">Quitar</button></div>`).join('')}
+ <div><button type="button" class="btn sm" data-evadd>+ Agregar vehículo</button></div>
+ <p class="help">El DNI, el nombre del titular y los lotes no se editan acá: si cambian (por ejemplo, porque vendió), se rechaza esta ficha y el nuevo dueño carga una nueva.</p>
+ <div class="err" id="ed-err"></div><div class="acts"><button type="button" class="btn primary" data-edsave="${f.id}">Guardar cambios</button><button type="button" class="btn" data-edcancel>Cancelar</button></div></div>`}
+function readEdit(){const e=S.edit;if(!e)return;const v=id=>{const el=$('#ed-'+id);return el?el.value:e[id]};
+ Object.assign(e,{email:v('email'),celular:v('celular'),calle:v('calle'),localidad:v('localidad'),provincia:v('provincia'),cp:v('cp'),caNom:v('caNom'),caRel:v('caRel'),caTel:v('caTel')});const w=$('#ed-whatsapp');if(w)e.whatsapp=w.checked;
+ document.querySelectorAll('[data-ev]').forEach(el=>{e.vehs[+el.dataset.ev][el.dataset.k]=el.value})}
+function propHTML(f){const d=f.datos||{},t=d.titular||{},dm=d.domicilio_real||{},m=matchPad(f),p=m&&m.p;
+ const sec=(tit,body)=>`<section class="ps"><h3>${tit}</h3>${body}</section>`;const row=(k,v)=>`<dt>${k}</dt><dd>${v}</dd>`;
+ const LL=(d.lotes&&d.lotes.length?d.lotes:(f.ficha_lotes||[]).map(x=>({lote_id:x.lote_id,partida:lotInfo(x.lote_id).partida,reclamo:x.reclamo})));
+ const lotes=LL.map(l=>`<div class="pl"><b class="mono">${esc(l.lote_id)}</b> <span class="mono help">${esc(l.partida||'')}</span><div class="help">${esc(l.titularidad||'')} · ${esc(l.documento||'')}${l.estado?' · '+esc(l.estado):''}${l.reclamo?' · <span class="chip">reclamo</span>':''}</div></div>`).join('')||'<p class="help">Sin lotes marcados.</p>';
+ const vehs=(d.vehiculos||[]).map(v=>`<div><b class="mono">${esc(v.patente)}</b> · ${esc(v.tipo||'')}${v.descripcion?' · '+esc(v.descripcion):''}${v.extranjera?' · otro país':''}</div>`).join('')||'<p class="help">Sin vehículos.</p>';
+ const ca=d.contacto_adicional;
+ return`<div class="ph"><div><div class="eyebrow">Ficha del propietario</div><h2>${esc(f.titular_nombre)}</h2><span class="mono help">${esc(f.tramite)} · cargada ${fdate(f.creado)}${f.revisado_en?' · verificada '+fdate(f.revisado_en):''}</span></div>
+ <div class="pa"><span class="st ${f.estado}">${f.estado}</span>${S.edit?'':`<button type="button" class="btn primary" data-edit="${f.id}">Editar datos</button>`}<button type="button" class="x" data-close aria-label="Cerrar">×</button></div></div>
+ ${S.edit?editHTML(f):`<div class="pg">
+ ${sec('Titular',`<dl>${row('Tipo',t.tipo==='juridica'?'Empresa / entidad':'Persona')}${row(esc(t.tipo_documento||'Documento'),`<span class="mono">${esc(t.documento||f.titular_documento)}</span>`)}${row('Condición IVA',esc(t.condicion_iva||'—'))}${row('Facturación',d.facturacion&&d.facturacion.a_nombre!=='titular'?esc(d.facturacion.a_nombre+' · '+(d.facturacion.cuit||'')):'A nombre del titular')}${row('Usuario de la app',`<span class="mono">${esc(docKey(f.titular_documento))}</span>`)}</dl>`)}
+ ${sec('Contacto',`<dl>${row('Email',esc(f.email||'—'))}${row('Celular',`<span class="mono">${esc(tel(f.celular))}</span>${t.whatsapp?' · WhatsApp':''}`)}${row('Contacto adicional',ca?esc(fmtVal('contacto_adicional',ca)):'—')}${row('Acepta avisos',d.acepta_notificacion_electronica?'Sí':'No')}</dl>`)}
+ ${sec('Lotes',lotes+((d.cotitulares||[]).length?`<p class="help">Condóminos: ${d.cotitulares.map(x=>esc(x.nombre)).join(', ')}</p>`:''))}
+ ${sec('Domicilio',`<dl>${row('Real',esc([dm.calle,dm.localidad,dm.provincia,dm.cp].filter(Boolean).join(', ')||'—'))}${row('Notificaciones',d.domicilio_notificaciones==='igual_real'?'En el domicilio real':esc(d.domicilio_notificaciones||'—'))}</dl>`)}
+ ${sec('Vehículos',vehs)}
+ ${sec('Deuda (según planilla)',p?(p.deuda_planilla==null?'<p class="help">Sin dato.</p>':+p.deuda_planilla>0?`<p><b>${$$(p.deuda_planilla)}</b> · ${p.meses_planilla??'?'} meses</p><p class="help">Última factura: ${esc(p.ultima_factura||'—')}</p>`:'<p><span class="st verificada">al día</span></p>')+`<p class="help">Padrón: ${esc(p.nombre)} (${esc(p.id)}) · <button type="button" class="link" data-pad="${esc(p.id)}">ver en el padrón</button></p>`:'<p class="help">No figura en el padrón.</p>')}
+ ${d.apoderado?sec('Apoderado',`<p>${esc(d.apoderado.nombre)} (${esc(d.apoderado.relacion)})<br><span class="mono">${esc(tel(d.apoderado.celular))}</span> · ${esc(d.apoderado.email||'')}</p>`):''}
+ ${d.comentarios?sec('Comentarios del propietario',`<p>${esc(d.comentarios)}</p>`):''}
+ </div>
+ <details class="ps"><summary><b>Cruce con el padrón</b> ${m&&m.pct!=null?`<span class="pct ${m.pct>=80?'ok':m.pct>=50?'mid':'bad'}">${m.pct}%</span>`:''}</summary>${cruceHTML(f)}</details>
+ <section class="ps"><h3>Historial de cambios</h3>${histHTML(f)}</section>
+ <section class="ps"><label>Nota de la comisión<textarea id="nota-${f.id}" rows="2">${esc(f.nota_comision||'')}</textarea></label>
+ <div class="acts"><button type="button" class="btn sm" data-reset="${f.id}">Resetear contraseña de la app</button><button type="button" class="btn sm" data-set="verificada" data-id="${f.id}">Guardar nota</button><button type="button" class="btn sm" data-set="pendiente" data-id="${f.id}">Volver a pendiente</button><button type="button" class="btn sm" data-set="rechazada" data-id="${f.id}" style="color:var(--crit)">Rechazar</button></div><div id="rst-${f.id}"></div><div class="err" id="ferr-${f.id}"></div></section>`}`}
 function drawer(){if(!S.open)return'';let head='',body='';
+ {const fv=S.open.ficha&&S.fichas.find(x=>x.id===S.open.ficha);if(fv&&fv.estado==='verificada')return`<div class="scrim" data-close></div><div class="modal" role="dialog" aria-label="Ficha del propietario">${propHTML(fv)}</div>`}
  if(S.open.lot){const i=lotInfo(S.open.lot),fs=S.byLot[S.open.lot]||[];head=`<div><h2>${esc(i.nom)}</h2><span class="mono help">${esc(i.partida)} · ${i.sup!=null?i.sup.toLocaleString('es-AR')+' m²':''}</span></div>`;
   body=fs.length?(fs.length>1?`<div class="note">Hay ${fs.length} fichas que reclaman este lote. Revisá cuál corresponde y rechazá la otra.</div>`:'')+fs.map(fichaHTML).join(''):'<div class="empty">Ningún propietario cargó todavía este lote.</div>'}
  else if(S.open.pad){const x=(cruce()||[]).find(y=>y.id===S.open.pad);head='<div><h2>Padrón</h2></div>';body=x?padHTML(x):''}
@@ -307,12 +364,22 @@ document.addEventListener('click',async e=>{const t=e.target;
  const dc=t.closest('[data-dcat]');if(dc){const k=dc.dataset.dcat;if(k==='todos')S.dcat=new Set(DCAT.map(x=>x[0]));else{S.dcat.has(k)?S.dcat.delete(k):S.dcat.add(k)}render();return}
  const ds=t.closest('[data-dsrc]');if(ds){S.dsrc=ds.dataset.dsrc;render();return}
  if(t.closest('a[href]'))return;
+ const ed=t.closest('[data-edit]');if(ed){const f=S.fichas.find(x=>x.id===+ed.dataset.edit);S.edit=editState(f);render();return}
+ if(t.closest('[data-edcancel]')){S.edit=null;render();return}
+ if(t.closest('[data-evadd]')){readEdit();S.edit.vehs.push({patente:'',tipo:'Auto',descripcion:''});render();return}
+ const evr=t.closest('[data-evrm]');if(evr){readEdit();S.edit.vehs.splice(+evr.dataset.evrm,1);render();return}
+ const es=t.closest('[data-edsave]');if(es){readEdit();const id=+es.dataset.edsave,e=S.edit;es.disabled=true;
+  const payload={email:e.email,celular:e.celular,whatsapp:e.whatsapp,domicilio_real:{calle:e.calle,localidad:e.localidad,provincia:e.provincia,cp:e.cp},
+   contacto_adicional:e.caNom.trim()?{nombre:e.caNom,relacion:e.caRel,celular:e.caTel}:null,vehiculos:e.vehs.filter(v=>v.patente.trim()||v.descripcion.trim())};
+  const {data,error}=await sb.rpc('editar_ficha',{p_id:id,p:payload});es.disabled=false;
+  if(error){$('#ed-err').innerHTML=/editar_ficha|schema cache|does not exist/i.test(error.message)?'Falta ejecutar el script <b>07_editar_fichas.sql</b> en Supabase.':'No se pudo guardar: '+esc(error.message);return}
+  S.edit=null;S.hist=null;const keep=S.open;await loadData();S.open=keep;render();return}
  const tr=t.closest('[data-ficha]');if(tr){S.open={ficha:+tr.dataset.ficha};render();return}
  const pr=t.closest('[data-pad]');if(pr){S.open={pad:pr.dataset.pad};render();return}
  const so=t.closest('[data-sort]');if(so){const k=so.dataset.sort,o=S.ord||{};S.ord={k,d:o.k===k?-o.d:(k==='deuda'?-1:1)};render();return}
  const sp=t.closest('[data-savepad]');if(sp){const id=sp.dataset.savepad,v=$('#pnota').value;sp.disabled=true;const {error}=await sb.rpc('guardar_nota_padron',{p_id:id,p_nota:v});sp.disabled=false;
   if(error){$('#pmsg').innerHTML=`<span class="err">No se pudo guardar: ${esc(error.message)}</span>`;return}const x=S.padron.find(y=>y.id===id);if(x){x.nota=v.trim()||null;x.nota_en=new Date().toISOString()}render();return}
- if(t.closest('[data-close]')){S.open=null;render();return}
+ if(t.closest('[data-close]')){S.open=null;S.edit=null;render();return}
  const kp=t.closest('[data-kpi]');if(kp){const [v,x]=kp.dataset.kpi.split('|');S.v=v;S.q='';if(v==='lista')S.f=x;if(v==='faltan')S.pf=x;if(v==='plano')S.zoom=null;render();const tb=$('#main .tabs');if(tb)tb.scrollIntoView({behavior:'smooth',block:'start'});return}
  const v=t.closest('[data-v]');if(v){S.v=v.dataset.v;render();return}
  const f=t.closest('[data-f]');if(f){S.f=f.dataset.f;render();return}
@@ -329,9 +396,10 @@ document.addEventListener('click',async e=>{const t=e.target;
   const g=String(f.celular||'').replace(/\D/g,'');const wa=g.length>=12?'https://wa.me/'+g+'?text='+encodeURIComponent(msg):null;
   box.innerHTML=`<div class="note" style="display:grid;gap:6px"><div>Contraseña provisoria: <b class="mono" style="font-size:18px">${esc(pw)}</b></div><div class="help">Se muestra una sola vez. Pasásela al socio${f.estado!=='verificada'?' (va a poder entrar cuando la ficha esté verificada)':''}.</div>${wa?`<div><a class="btn sm primary" href="${wa}" target="_blank" rel="noopener">Enviar por WhatsApp</a></div>`:'<div class="help">La ficha no tiene celular: pasásela por otro medio.</div>'}</div>`;return}
  const st=t.closest('[data-set]');if(st){const id=+st.dataset.id;st.disabled=true;
-  const {error}=await sb.from('fichas').update({estado:st.dataset.set,nota_comision:($('#nota-'+id).value||null),revisado_por:S.user.id,revisado_en:new Date().toISOString()}).eq('id',id);
+  const cur=S.fichas.find(x=>x.id===id),upd={estado:st.dataset.set,nota_comision:($('#nota-'+id).value||null)};if(!cur||cur.estado!==st.dataset.set){upd.revisado_por=S.user.id;upd.revisado_en=new Date().toISOString()}
+  const {error}=await sb.from('fichas').update(upd).eq('id',id);
   if(error){st.disabled=false;$('#ferr-'+id).textContent='No se pudo guardar: '+error.message;return}const keep=S.open;await loadData();S.open=keep;render()}});
-document.addEventListener('keydown',e=>{if(e.key==='Escape'&&S.open){S.open=null;render()}const lt=e.target.closest&&e.target.closest('[data-lot]');if(lt&&e.key==='Enter'){S.open={lot:lt.dataset.lot};render()}});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&S.open){S.open=null;S.edit=null;render()}const lt=e.target.closest&&e.target.closest('[data-lot]');if(lt&&e.key==='Enter'){S.open={lot:lt.dataset.lot};render()}});
 document.addEventListener('input',e=>{if(e.target.id==='q'){S.q=e.target.value;const p=e.target.selectionStart;render();const q=$('#q');q.focus();q.setSelectionRange(p,p)}});
 function backup(){const c=v=>{v=v==null?'':String(v);return/[;"\n\r]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v};
  const H=['tramite','recibida','estado','es_prueba','titular','documento','email','celular','lotes_declarados','lotes','lote_sin_identificar','domicilio','acepta_avisos','vehiculos','nota_comision','datos_completos_json'];
