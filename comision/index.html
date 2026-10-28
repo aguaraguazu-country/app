@@ -72,6 +72,10 @@ tbody tr{cursor:pointer}tbody tr:hover{background:var(--accent-soft)}
 .dh{display:flex;justify-content:space-between;gap:10px;align-items:start}
 .x{font:inherit;font-size:22px;border:0;background:none;color:var(--fg);cursor:pointer}
 .sortb{all:unset;cursor:pointer;font:inherit;text-transform:inherit;letter-spacing:inherit;color:inherit;white-space:nowrap}.sortb:hover{color:var(--accent)}.sortb:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}.sortb[aria-sort=ascending],.sortb[aria-sort=descending]{color:var(--accent)}
+.cruce{border:1px solid var(--line);border-radius:10px;padding:12px;display:grid;gap:8px;background:var(--bg)}.cruce .ch{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.pct{font-weight:700;font-size:13px;border-radius:999px;padding:3px 10px}.pct.ok{color:var(--good);background:var(--good-bg)}.pct.mid{color:var(--warn);background:var(--warn-bg)}.pct.bad{color:var(--crit);background:var(--crit-bg)}
+.drawer{grid-template-columns:minmax(0,1fr)}.fcard,.cruce{min-width:0}
+.ct{width:100%;min-width:0;font-size:13px;border-collapse:collapse;table-layout:fixed}.ct th:nth-child(1){width:20px}.ct th:nth-child(2){width:28%}.ct th{text-align:left;font-weight:600;color:var(--muted);font-size:11.5px;padding:4px 6px}.ct td{padding:5px 6px;border-top:1px solid var(--line);vertical-align:top;word-break:break-word}.ct td:first-child{font-weight:800;width:18px}.ct tr.ok td:first-child{color:var(--good)}.ct tr.mid td:first-child{color:var(--warn)}.ct tr.no td:first-child{color:var(--crit)}.ct tr.nd td{color:var(--muted)}
 .fcard{border:1px solid var(--line);border-radius:10px;padding:14px;display:grid;gap:10px}
 dl{display:grid;grid-template-columns:minmax(120px,160px) 1fr;gap:5px 12px;margin:0;font-size:13.5px}
 dt{color:var(--muted)}dd{margin:0;min-width:0;overflow-wrap:anywhere}
@@ -83,7 +87,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 </head>
 <body>
 <div class="wrap">
-<header><div><div class="eyebrow">Asociación Civil Aguará Guazú Country · Comisión Directiva</div><h1>Panel de la comisión<span class="agver" aria-label="Versión del sistema" style="font:500 12px/1.2 system-ui,sans-serif;color:var(--muted,#5d6862);margin-left:10px;white-space:nowrap;vertical-align:middle;letter-spacing:0">v1.19 · 27/10/26 20:56</span></h1></div><div class="who" id="who"></div></header>
+<header><div><div class="eyebrow">Asociación Civil Aguará Guazú Country · Comisión Directiva</div><h1>Panel de la comisión<span class="agver" aria-label="Versión del sistema" style="font:500 12px/1.2 system-ui,sans-serif;color:var(--muted,#5d6862);margin-left:10px;white-space:nowrap;vertical-align:middle;letter-spacing:0">v1.20 · 27/10/26 22:00</span></h1></div><div class="who" id="who"></div></header>
 <main id="main"><div class="empty">Cargando…</div></main>
 </div>
 <div id="tip" hidden></div><div id="dr"></div>
@@ -188,6 +192,36 @@ function vLista(){const q=S.q.trim().toLowerCase();let rs=S.fichas.filter(f=>S.f
 function render(){if(!S.miembro)return;const mb=$('#mapbox'),sc=mb?[mb.scrollLeft,mb.scrollTop]:null;
  $('#main').innerHTML=vResumen()+(S.v==='plano'?vPlano():S.v==='faltan'?vFaltan():vLista());const nb=$('#mapbox');if(nb&&sc){nb.scrollLeft=sc[0];nb.scrollTop=sc[1]}$('#dr').innerHTML=drawer()}
 // ---------- tarjeta ----------
+// ---------- cruce de una ficha con el padrón ----------
+const digs=t=>(String(t||'').match(/\d{8,}/g)||[]).map(x=>x.slice(-8));
+const lotIds=t=>(String(t||'').toUpperCase().match(/S[12]-[A-Z]-\d{2}/g)||[]);
+function matchPad(f){if(!S.padron)return null;const k=docKey(f.titular_documento);let p=k&&S.padron.find(x=>docKey(x.documento)===k),via='documento';
+ if(!p){const ft=norm(f.titular_nombre);let best=null,bs=0;for(const x of S.padron){const pt=norm(x.nombre);const c=pt.filter(w=>ft.includes(w)).length;const sc=c/Math.max(pt.length,ft.length,1);if(c>=2&&sc>bs){bs=sc;best=x}}p=best;via='nombre'}
+ if(!p)return{p:null};
+ const it=[];const add=(n,w,st,fv,pv)=>it.push({n,w,st,fv,pv});
+ // documento
+ add('DNI / CUIT',40,!p.documento?'nd':docKey(p.documento)===k?'ok':'no',f.titular_documento,p.documento);
+ // nombre
+ {const ft=norm(f.titular_nombre),pt=norm(p.nombre),c=pt.filter(w=>ft.includes(w)).length;add('Nombre',15,!pt.length?'nd':c>=Math.min(2,pt.length)&&c/pt.length>=.5?'ok':c>=1?'mid':'no',f.titular_nombre,p.nombre)}
+ // lotes
+ {const fl=(f.ficha_lotes||[]).map(x=>x.lote_id),pl=lotIds(p.lotes_plano),cand=/confirmar|\bo\b/i.test(p.lotes_plano||'');const nP=p.lotes_cobranza??p.lotes_padron;
+  if(pl.length){const hit=fl.filter(x=>pl.includes(x)).length;let st=hit===fl.length&&(cand||fl.length===pl.length)?'ok':hit?'mid':'no';if(st==='ok'&&nP!=null&&nP!==fl.length)st='mid';add(st==='mid'&&hit===fl.length?'Lotes (no coincide la cantidad)':'Lotes',25,st,fl.join(', ')||'—',p.lotes_plano+(nP!=null?` (${nP} según ${p.lotes_cobranza!=null?'cobranza':'padrón'})`:''))}
+  else if(nP!=null)add('Cantidad de lotes',25,nP===fl.length?'ok':'no',String(fl.length),`${nP} según ${p.lotes_cobranza!=null?'cobranza':'padrón'}`);
+  else add('Lotes',25,'nd',fl.join(', ')||'—','sin dato')}
+ // celular
+ {const a=digs(f.celular),b=digs(p.celular);add('Celular',10,!b.length?'nd':a.some(x=>b.includes(x))?'ok':'no',f.celular,p.celular)}
+ // email
+ {const a=String(f.email||'').trim().toLowerCase(),b=String(p.email||'').trim().toLowerCase();add('Email',10,!b?'nd':a===b?'ok':'no',f.email,p.email)}
+ const con=it.filter(x=>x.st!=='nd');const tot=con.reduce((a,x)=>a+x.w,0),got=con.reduce((a,x)=>a+(x.st==='ok'?x.w:x.st==='mid'?x.w/2:0),0);
+ return{p,via,it,pct:tot?Math.round(got/tot*100):null,base:tot}}
+function cruceHTML(f){const m=matchPad(f);if(!m)return'';
+ if(!m.p)return`<div class="cruce"><div class="ch"><strong>Cruce con el padrón</strong><span class="pct bad">sin coincidencia</span></div><p class="help">No encontramos a esta persona en el padrón de marzo ni en la planilla de cobranza (ni por documento ni por nombre). Puede ser un propietario nuevo: pedí la escritura o el boleto antes de verificar.</p></div>`;
+ const c=m.pct==null?'mid':m.pct>=80?'ok':m.pct>=50?'mid':'bad';const ic={ok:'✓',mid:'≈',no:'✗',nd:'—'};
+ return`<div class="cruce"><div class="ch"><strong>Cruce con el padrón</strong><span class="pct ${c}">${m.pct==null?'sin datos para comparar':m.pct+'% de coincidencia'}</span></div>
+ <p class="help">Comparado con <b>${esc(m.p.nombre)}</b> (${esc(m.p.id)}), encontrado por ${m.via==='documento'?'documento':'<b>nombre</b> (el documento no coincide o falta)'}.${m.base<100?` Se calcula solo con los datos que hay en las dos fuentes.`:''}</p>
+ <table class="ct"><thead><tr><th></th><th>Dato</th><th>Ficha</th><th>Padrón / planilla</th></tr></thead><tbody>${m.it.map(x=>`<tr class="${x.st}"><td>${ic[x.st]}</td><td>${x.n}</td><td>${esc(x.fv||'—')}</td><td>${esc(x.pv||'—')}</td></tr>`).join('')}</tbody></table>
+ ${m.p.celular?`<p class="help">Para confirmar con el propietario, llamá o escribí al celular <b>del padrón</b> (<span class="mono">${esc(m.p.celular)}</span>), no al de la ficha.</p>`:'<p class="help">El padrón no tiene celular: confirmá con la escritura o el boleto.</p>'}
+ ${+(m.p.deuda_planilla||0)>0?`<p class="help">Según la planilla debe <b>${$$(m.p.deuda_planilla)}</b> (${m.p.meses_planilla??'?'} meses).</p>`:''}</div>`}
 function fichaHTML(f){const d=f.datos||{},t=d.titular||{},dom=d.domicilio_real||{};const yes=v=>v?'Sí':'No';
  const lotes=(d.lotes||[]).map(l=>`<div class="mono">${esc(l.lote_id)} · ${esc(l.partida||'')}</div><div class="help">${esc(l.titularidad||'')} · ${esc(l.documento||'')}${l.estado?' · '+esc(l.estado):''}</div>`).join('');
  return`<div class="fcard"><div class="dh"><div><h2>${esc(f.titular_nombre)}</h2><span class="mono help">${esc(f.tramite)} · ${fdate(f.creado)}</span></div><span class="st ${f.estado}">${f.estado}</span></div>
@@ -203,6 +237,7 @@ function fichaHTML(f){const d=f.datos||{},t=d.titular||{},dom=d.domicilio_real||
  <dt>Facturación</dt><dd>${d.facturacion&&d.facturacion.a_nombre!=='titular'?esc(d.facturacion.a_nombre)+' · CUIT '+esc(d.facturacion.cuit):'A nombre del titular'}</dd>
  ${(d.vehiculos||[]).length?`<dt>Vehículos</dt><dd class="mono">${d.vehiculos.map(v=>esc(v.patente)+' · '+esc(v.tipo)+(v.descripcion?' · '+esc(v.descripcion):'')).join('<br>')}</dd>`:''}
  ${d.comentarios?`<dt>Comentarios</dt><dd>${esc(d.comentarios)}</dd>`:''}<dt>Declaración jurada</dt><dd>${yes(d.declaracion_jurada)} · consentimiento de datos: ${yes(d.consentimiento_datos)}</dd></dl>
+ ${cruceHTML(f)}
  <label>Nota de la comisión<textarea id="nota-${f.id}" rows="2">${esc(f.nota_comision||'')}</textarea></label>
  <div class="acts" style="border-top:1px solid var(--line);padding-top:10px"><button type="button" class="btn sm" data-reset="${f.id}">Resetear contraseña de la app</button><span class="help" style="align-self:center">Usuario: <span class="mono">${esc(docKey(f.titular_documento))}</span></span></div><div id="rst-${f.id}"></div>
  <div class="acts"><button type="button" class="btn primary" data-set="verificada" data-id="${f.id}">Marcar verificada</button><button type="button" class="btn" data-set="pendiente" data-id="${f.id}">Volver a pendiente</button><button type="button" class="btn" data-set="rechazada" data-id="${f.id}" style="color:var(--crit)">Rechazar</button></div><div class="err" id="ferr-${f.id}"></div></div>`}
