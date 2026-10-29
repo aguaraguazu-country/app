@@ -51,7 +51,7 @@ button.kpi{font:inherit;color:inherit;text-align:left;cursor:pointer;width:100%}
 .lt text{fill:var(--fg);font-family:var(--body);font-size:4.2px;text-anchor:middle;dominant-baseline:central;pointer-events:none}
 .lt.pend rect{fill:var(--pend)}
 .lt.d-ok rect,.sw.d-ok{fill:#3f8f5f;background:#3f8f5f}.lt.d-ok text{fill:#fff;font-weight:700}.lt.d-m1 rect,.sw.d-m1{fill:#f2cf4a;background:#f2cf4a}.lt.d-m5 rect,.sw.d-m5{fill:#f08a36;background:#f08a36}.lt.d-m7 rect,.sw.d-m7{fill:#d43f3f;background:#d43f3f}.lt.d-m7 text{fill:#fff;font-weight:700}.lt.d-nd rect,.sw.d-nd{fill:#b9bfba;background:#b9bfba}.sw.d-libre{background:var(--lot)}
-.lt.dud rect{stroke:var(--fg);stroke-width:.7;stroke-dasharray:1.4 .9}.lt.fade{opacity:.13}
+.lt.dud rect{stroke:var(--fg);stroke-width:.7;stroke-dasharray:1.4 .9}.lt.fade{opacity:.13}.lt.pnom rect{stroke:var(--fg);stroke-width:.9;stroke-dasharray:.6 .6}
 .dleg{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:8px}.link{all:unset;cursor:pointer;color:var(--accent);text-decoration:underline}
 .dchip{display:flex;gap:10px;align-items:flex-start;text-align:left;font:inherit;color:inherit;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:9px 10px;cursor:pointer}.dchip span{display:grid;gap:2px}.dchip[aria-pressed=false]{opacity:.45}.dchip:hover{border-color:var(--accent)}.sw{width:18px;height:18px;border-radius:4px;border:1px solid var(--lotline);flex:none;margin-top:2px}
 .lt.ok rect{fill:var(--ok);stroke:var(--ok)}.lt.ok text{fill:var(--card);font-weight:700}
@@ -119,7 +119,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 </head>
 <body>
 <div class="wrap">
-<header><div><div class="eyebrow">Asociación Civil Aguará Guazú Country · Comisión Directiva</div><h1>Panel de la comisión<span class="agver" aria-label="Versión del sistema" style="font:500 12px/1.2 system-ui,sans-serif;color:var(--muted,#5d6862);margin-left:10px;white-space:nowrap;vertical-align:middle;letter-spacing:0">v1.24 · 28/10/26 15:30</span></h1></div><div class="who" id="who"></div></header>
+<header><div><div class="eyebrow">Asociación Civil Aguará Guazú Country · Comisión Directiva</div><h1>Panel de la comisión<span class="agver" aria-label="Versión del sistema" style="font:500 12px/1.2 system-ui,sans-serif;color:var(--muted,#5d6862);margin-left:10px;white-space:nowrap;vertical-align:middle;letter-spacing:0">v1.25 · 29/10/26 16:21</span></h1></div><div class="who" id="who"></div></header>
 <main id="main"><div class="empty">Cargando…</div></main>
 </div>
 <div id="tip" hidden></div><div id="dr"></div>
@@ -233,8 +233,7 @@ function vPlano(){if(S.zoom==null)S.zoom=innerWidth<640?2.6:1;
 const DCAT=[['ok','Al día'],['m1','1 a 4 meses'],['m5','5 a 6 meses'],['m7','7 meses o más'],['nd','Sin dato de deuda'],['libre','Sin propietario identificado']];
 function dIdx(){const idx={};if(!S.padron)return idx;const src=S.dsrc||'ambos';
  if(src!=='fichas')for(const p of S.padron){const ids=lotIds(p.lotes_plano);if(!ids.length)continue;const dud=/confirmar|\bo\b/i.test(p.lotes_plano||'');for(const id of ids){if(!idx[id]||(idx[id].dud&&!dud))idx[id]={p,src:'padrón',dud}}}
- if(src!=='padron'){const byK={};S.padron.forEach(p=>{const k=docKey(p.documento);if(k)byK[k]=p});
-  for(const f of S.fichas){if(f.estado==='rechazada')continue;const p=byK[docKey(f.titular_documento)]||null;for(const fl of f.ficha_lotes||[])idx[fl.lote_id]={p,f,src:'ficha',dud:false}}}
+ if(src!=='padron'){for(const f of S.fichas){if(f.estado==='rechazada')continue;const m=matchPad(f),p=m&&m.p||null,porNom=!!(p&&m.via==='nombre');for(const fl of f.ficha_lotes||[])idx[fl.lote_id]={p,f,src:'ficha',dud:false,porNom}}}
  return idx}
 function dCat(r){if(!r)return'libre';if(!r.p||r.p.deuda_planilla==null)return'nd';const m=+r.p.meses_planilla||0;if(+r.p.deuda_planilla<=0||m===0)return'ok';return m<=4?'m1':m<=6?'m5':'m7'}
 function vDeuda(){if(S.zoom==null)S.zoom=innerWidth<640?2.6:1;if(!S.padron)return`<div class="card">Para ver el plano de deuda, ejecutá el script <b>04_lanzamiento.sql</b> en Supabase.</div>`;
@@ -243,9 +242,9 @@ function vDeuda(){if(S.zoom==null)S.zoom=innerWidth<640?2.6:1;if(!S.padron)retur
  const cnt={},cta={},mon={};for(const [k] of DCAT){cnt[k]=0;cta[k]=new Set();mon[k]=0}
  let g=mapBase();
  for(const [id,x,y,w,h] of MAPA.lots){const r=idx[id],c=dCat(r);cnt[c]++;if(r&&r.p&&!cta[c].has(r.p.id)){cta[c].add(r.p.id);mon[c]+=+r.p.deuda_planilla||0}
-  const n=+id.split('-')[2];g+=`<g class="lt d-${c}${r&&r.dud?' dud':''}${vis.has(c)?'':' fade'}" data-lot="${id}" tabindex="0" role="button" aria-label="${esc(lotInfo(id).nom)}"><rect x="${x}" y="${y}" width="${w}" height="${h}"/><text x="${x+w/2}" y="${y+h/2}">${n}</text></g>`}
+  const n=+id.split('-')[2];g+=`<g class="lt d-${c}${r&&r.dud?' dud':''}${r&&r.porNom?' pnom':''}${vis.has(c)?'':' fade'}" data-lot="${id}" tabindex="0" role="button" aria-label="${esc(lotInfo(id).nom)}"><rect x="${x}" y="${y}" width="${w}" height="${h}"/><text x="${x+w/2}" y="${y+h/2}">${n}</text></g>`}
  const src=S.dsrc||'ambos';
- return`<div class="card"><div class="note">Deuda según la <b>planilla de cobranza</b> (sin verificar). La deuda es de la <b>cuenta</b> del propietario: si tiene varios lotes, todos muestran la misma deuda. Lotes con borde punteado: asignación "a confirmar" del padrón.</div>
+ return`<div class="card"><div class="note">Deuda según la <b>planilla de cobranza</b> (sin verificar). La deuda es de la <b>cuenta</b> del propietario: si tiene varios lotes, todos muestran la misma deuda. Lotes con borde punteado: asignación "a confirmar" del padrón, o deuda vinculada por nombre porque el DNI falta en el padrón o no coincide (pasá el mouse para ver cuál).</div>
  <div class="tabs"><span class="help" style="align-self:center">Quién es dueño de cada lote según:</span>${[['ambos','Fichas + padrón'],['fichas','Solo fichas'],['padron','Solo padrón']].map(([k,l])=>`<button type="button" data-dsrc="${k}" aria-pressed="${src===k}">${l}</button>`).join('')}</div>
  <div class="dleg">${DCAT.map(([k,l])=>`<button type="button" class="dchip" data-dcat="${k}" aria-pressed="${vis.has(k)}"><i class="sw d-${k}"></i><span><b>${l}</b><span class="help">${cnt[k]} lote${cnt[k]===1?'':'s'}${k==='libre'?'':` · ${cta[k].size} cuenta${cta[k].size===1?'':'s'}`}${mon[k]>0?` · ${$$(mon[k])}`:''}</span></span></button>`).join('')}</div>
  <div class="mapctl"><span class="help">Tocá un color para mostrarlo u ocultarlo en el plano.${vis.size<DCAT.length?' <button type="button" class="link" data-dcat="todos">Mostrar todos</button>':''}</span>${ZOOM}</div>
@@ -377,7 +376,7 @@ function drawer(){if(!S.open)return'';let head='',body='';
 // ---------- tooltip ----------
 const tip=$('#tip');
 function showTip(id,x,y){const fs=S.byLot[id]||[];const i=lotInfo(id);
- if(S.v==='deuda'){const r=(S.didx||{})[id],c=dCat(r),p=r&&r.p;tip.innerHTML=`<b>${esc(i.nom)}</b><div class="m mono">${esc(i.partida)}</div>`+(!r?'<div class="m">Sin propietario identificado</div>':`<div>${esc(p?p.nombre:r.f.titular_nombre)}</div><div class="m">Según ${r.src}${r.dud?' (a confirmar)':''}${r.f?' · ficha '+esc(r.f.estado):''}</div>`+(c==='nd'?'<div class="m">Sin dato de deuda</div>':c==='ok'?'<div style="color:var(--good);font-weight:700">Al día</div>':`<div style="font-weight:700">Debe ${$$(p.deuda_planilla)} · ${p.meses_planilla} meses</div>`)+(p&&p.ultima_factura?`<div class="m">Última factura: ${esc(p.ultima_factura)}</div>`:''));
+ if(S.v==='deuda'){const r=(S.didx||{})[id],c=dCat(r),p=r&&r.p;tip.innerHTML=`<b>${esc(i.nom)}</b><div class="m mono">${esc(i.partida)}</div>`+(!r?'<div class="m">Sin propietario identificado</div>':`<div>${esc(p?p.nombre:r.f.titular_nombre)}</div><div class="m">Según ${r.src}${r.dud?' (a confirmar)':''}${r.f?' · ficha '+esc(r.f.estado):''}</div>${r.porNom?'<div class="m" style="color:var(--warn)">Deuda vinculada por nombre (el DNI falta en el padrón o no coincide): confirmalo</div>':''}`+(c==='nd'?'<div class="m">Sin dato de deuda</div>':c==='ok'?'<div style="color:var(--good);font-weight:700">Al día</div>':`<div style="font-weight:700">Debe ${$$(p.deuda_planilla)} · ${p.meses_planilla} meses</div>`)+(p&&p.ultima_factura?`<div class="m">Última factura: ${esc(p.ultima_factura)}</div>`:''));
   tip.hidden=false;const rr=tip.getBoundingClientRect();tip.style.left=Math.min(x+14,innerWidth-rr.width-8)+'px';tip.style.top=Math.min(y+14,innerHeight-rr.height-8)+'px';return}
  tip.innerHTML=`<b>${esc(i.nom)}</b>`+(fs.length?fs.map(f=>`<div>${esc(f.titular_nombre)}</div><div class="m mono">${esc(tel(f.celular))}</div><div class="m">${esc(f.email||'')}</div><div class="m">Ficha ${esc(f.estado)} · ${esc(f.tramite)}</div>`).join('<hr style="border:0;border-top:1px solid var(--line);margin:4px 0">'):'<div class="m">Sin ficha cargada</div>');
  tip.hidden=false;const r=tip.getBoundingClientRect();tip.style.left=Math.min(x+14,innerWidth-r.width-8)+'px';tip.style.top=Math.min(y+14,innerHeight-r.height-8)+'px'}
