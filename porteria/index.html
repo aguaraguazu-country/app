@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Portería Aguará Guazú</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#2f6b4f">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,600&display=swap">
+<style>
+/* App de la guardia: celular en la entrada. Arriba buscador; pestañas Visitas de hoy / Inquilinos; botones grandes Ingresó / Salió;
+   "Llegó alguien sin aviso" abre una hoja para contactar al socio (llamada o WhatsApp) y cargar la visita. */
+:root{--bg:#f6f7f4;--card:#fff;--fg:#1d2420;--muted:#5d6862;--line:#d9ddd6;--accent:#2f6b4f;--accent-soft:#e3efe8;--warn-bg:#fbf0dc;--crit:#b42318;--good:#2f7d4f;--wa:#1f7a4d;
+ --display:'Fraunces',Georgia,serif;--body:'Public Sans',system-ui,sans-serif}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#141916;--card:#1c2320;--fg:#e6ebe7;--muted:#9aa59f;--line:#2f3833;--accent:#7cc39f;--accent-soft:#1f3329;--warn-bg:#2f2615;--crit:#f2867b;--good:#7cc39f;--wa:#2b8a5a;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#141916;--card:#1c2320;--fg:#e6ebe7;--muted:#9aa59f;--line:#2f3833;--accent:#7cc39f;--accent-soft:#1f3329;--warn-bg:#2f2615;--crit:#f2867b;--good:#7cc39f;--wa:#2b8a5a;color-scheme:dark}
+*{box-sizing:border-box}[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px;line-height:1.4}
+.wrap{max-width:560px;margin:0 auto;padding-block:max(16px,env(safe-area-inset-top,0px)) 90px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:grid;gap:12px}
+header{display:flex;justify-content:space-between;align-items:flex-end;gap:10px}
+.eyebrow{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600}
+h1{font-family:var(--display);font-weight:600;font-size:26px;margin:2px 0 0;line-height:1.15}
+h2{font-size:18px;margin:0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px;display:grid;gap:10px}
+label{font-weight:600;font-size:14px;display:grid;gap:5px}
+input,select{font:inherit;font-size:17px;padding:12px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--fg);width:100%}
+.btn{font:inherit;font-weight:600;border-radius:10px;padding:12px 14px;cursor:pointer;border:1px solid var(--line);background:var(--card);color:var(--fg);text-align:center;text-decoration:none;display:block}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--card)}.btn.wa{background:var(--wa);border-color:var(--wa);color:#fff}
+.btn.sm{padding:9px 12px;font-size:15px}.btn[disabled]{opacity:.6;cursor:wait}
+.err{color:var(--crit);font-size:14px;min-height:1.2em}.help{color:var(--muted);font-size:14px;margin:0}
+.search{position:sticky;top:0;z-index:2;background:var(--bg);padding:6px 0}
+.tabs{display:grid;grid-template-columns:1fr 1fr;gap:6px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:4px}
+.tabs button{font:inherit;font-weight:600;font-size:15px;border:0;border-radius:9px;padding:10px;background:none;color:var(--muted);cursor:pointer}
+.tabs button[aria-selected="true"]{background:var(--accent);color:var(--card)}
+.it{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px;display:grid;gap:6px}
+.it.in{border-left:5px solid var(--good)}
+.who{font-size:18px;font-weight:700}.meta{color:var(--muted);font-size:14px}.dest{font-size:15px}
+.st{font-size:13px;font-weight:700;border-radius:999px;padding:3px 9px;justify-self:start}.st.in{background:var(--accent-soft);color:var(--good)}.st.out{background:var(--bg);color:var(--muted);border:1px solid var(--line)}
+.acts{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:4px}
+.plate{font-family:ui-monospace,monospace;font-weight:700;letter-spacing:.06em;border:1px solid var(--fg);border-radius:4px;padding:0 5px;font-size:14px}
+.res{display:grid;gap:8px}.r{display:flex;justify-content:space-between;gap:10px;align-items:center;border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:var(--card);cursor:pointer;text-align:left;font:inherit;color:var(--fg);width:100%}
+.r small{color:var(--muted);display:block;font-size:13px}
+.fab{position:fixed;left:50%;transform:translateX(-50%);bottom:max(16px,env(safe-area-inset-bottom,0px));width:min(528px,calc(100% - 32px));z-index:5;box-shadow:0 6px 18px rgba(0,0,0,.18)}
+.sheet{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:10;display:flex;align-items:flex-end;justify-content:center}
+.sheet>div{background:var(--bg);width:100%;max-width:560px;max-height:92vh;overflow:auto;border-radius:16px 16px 0 0;padding:16px max(16px,env(safe-area-inset-left,0px)) max(20px,env(safe-area-inset-bottom,0px));display:grid;gap:12px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.toast{position:fixed;top:12px;left:50%;transform:translateX(-50%);background:var(--fg);color:var(--bg);padding:10px 16px;border-radius:10px;font-weight:600;z-index:20}
+.empty{color:var(--muted);text-align:center;padding:18px 8px}
+button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header><div><div class="eyebrow">Aguará Guazú Country</div><h1>Portería<span class="agver" aria-label="Versión del sistema" style="font:500 12px/1.2 system-ui,sans-serif;color:var(--muted,#5d6862);margin-left:10px;white-space:nowrap;vertical-align:middle;letter-spacing:0">v1.27 · 01/11/26 16:18</span></h1></div><button class="btn sm" id="out" hidden>Salir</button></header>
+<main id="main"><p class="help">Cargando…</p></main>
+</div>
+<div id="layer"></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.3/dist/umd/supabase.js"></script>
+<script>
+const SB_URL='https://ejyfijaahbobvbpxtsfj.supabase.co',SB_KEY='sb_publishable_fDK_li5-1Yr9kW-ynu4s7A_Rr652rif',TK='ag_guardia_token';
+const sb=window.supabase?window.supabase.createClient(SB_URL,SB_KEY,{auth:{persistSession:false}}):null;
+const $=s=>document.querySelector(s);const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const S={tok:null,d:null,tab:'v',q:'',res:[],sheet:null,busy:false};
+const tokGet=()=>{try{return localStorage.getItem(TK)}catch(_){return S.tok}},tokSet=v=>{S.tok=v;try{v?localStorage.setItem(TK,v):localStorage.removeItem(TK)}catch(_){}};
+const hora=t=>t?new Date(t).toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit',hour12:false}):'';
+const dia=t=>t?new Date(t).toLocaleDateString('es-AR',{day:'2-digit',month:'2-digit'}):'';
+const F2=d=>d?d.split('-').reverse().slice(0,2).join('/'):'';
+const norm=s=>String(s||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase();
+const nPat=s=>String(s||'').toUpperCase().replace(/[^A-Z0-9]/g,'');
+function waNum(c){let d=String(c||'').replace(/\D/g,'');if(!d)return '';if(d.startsWith('549'))return d;if(d.startsWith('54'))return '549'+d.slice(2);if(d.startsWith('0'))d=d.slice(1);return d.length===10?'549'+d:d}
+function toast(t){const e=document.createElement('div');e.className='toast';e.textContent=t;document.body.appendChild(e);setTimeout(()=>e.remove(),2200)}
+async function rpc(fn,args){const r=await sb.rpc(fn,args);if(r.error&&/venci/i.test(r.error.message)){tokSet(null);S.d=null;vLogin('Tu sesión venció. Volvé a ingresar.');throw r.error}return r}
+
+function vLogin(msg){$('#out').hidden=true;$('#main').innerHTML=`<form class="card" id="lf"><h2>Ingreso de la guardia</h2>
+ <label>Usuario<input id="u" autocomplete="username" autocapitalize="off"></label>
+ <label>PIN<input id="pin" type="password" inputmode="numeric" autocomplete="current-password"></label>
+ <div class="err" id="lerr">${esc(msg||'')}</div><button class="btn primary" id="lb">Ingresar</button>
+ <p class="help">El usuario y el PIN los da la comisión. Si no los tenés, pedíselos.</p></form>`}
+
+function estado(u){if(!u)return '<span class="st out">Todavía no ingresó</span>';return u.mov==='ingreso'?`<span class="st in">Adentro desde ${dia(u.en)!==dia(new Date())?dia(u.en)+' ':''}${hora(u.en)}</span>`:`<span class="st out">Salió ${hora(u.en)}</span>`}
+function itVisita(v){const dentro=v.ultimo&&v.ultimo.mov==='ingreso';
+ return `<div class="it ${dentro?'in':''}"><div class="who">${esc(v.nombre)}</div>
+  <div class="meta">DNI ${esc(v.dni)}${v.patente?` · <span class="plate">${esc(v.patente)}</span>`:''}${v.desde!==v.hasta?` · del ${F2(v.desde)} al ${F2(v.hasta)}`:''}</div>
+  <div class="dest">Va a: <b>${esc(v.socio||'')}</b>${v.lotes?' · '+esc(v.lotes):''}</div>${estado(v.ultimo)}
+  <div class="acts"><button class="btn ${dentro?'':'primary'}" data-mov="ingreso" data-t="visita" data-id="${v.id}">Ingresó</button><button class="btn ${dentro?'primary':''}" data-mov="egreso" data-t="visita" data-id="${v.id}">Salió</button></div></div>`}
+function itInq(i){const dentro=i.ultimo&&i.ultimo.mov==='ingreso';
+ return `<div class="it ${dentro?'in':''}"><div class="who">${i.personas.map(p=>esc(p.nombre)).join(', ')}</div>
+  <div class="meta">Inquilinos hasta el ${esc(i.hasta.split('-').reverse().join('/'))}${i.vehiculos.length?' · '+i.vehiculos.map(p=>`<span class="plate">${esc(p)}</span>`).join(' '):''}</div>
+  <div class="meta">${i.personas.map(p=>esc(p.nombre)+' (DNI '+esc(p.dni)+')').join(' · ')}</div>
+  <div class="dest">Casa de: <b>${esc(i.socio||'')}</b>${i.lotes?' · '+esc(i.lotes):''}</div>${estado(i.ultimo)}
+  <div class="acts"><button class="btn ${dentro?'':'primary'}" data-mov="ingreso" data-t="inquilino" data-id="${i.id}">Ingresó</button><button class="btn ${dentro?'primary':''}" data-mov="egreso" data-t="inquilino" data-id="${i.id}">Salió</button></div></div>`}
+function coincide(x){const q=norm(S.q),qp=nPat(S.q);if(!q)return true;
+ const txt=norm([x.nombre,x.socio,x.lotes,x.dni,(x.personas||[]).map(p=>p.nombre+' '+p.dni).join(' ')].join(' '));
+ return txt.includes(q)||(qp.length>=3&&nPat([x.patente,...(x.vehiculos||[])].join(' ')).includes(qp))}
+function vMain(){$('#out').hidden=false;const d=S.d;if(!d)return;
+ const vis=d.visitas.filter(coincide),inq=d.inquilinos.filter(coincide);
+ const lista=S.q?((vis.length||inq.length)?vis.map(itVisita).join('')+inq.map(itInq).join(''):'<p class="empty">No hay visitas ni inquilinos de hoy que coincidan.</p>'):S.tab==='v'?(vis.length?vis.map(itVisita).join(''):`<p class="empty">${S.q?'No hay visitas de hoy que coincidan.':'No hay visitas avisadas para hoy.'}</p>`)
+  :(inq.length?inq.map(itInq).join(''):`<p class="empty">${S.q?'No hay inquilinos que coincidan.':'No hay inquilinos cargados.'}</p>`);
+ const socios=S.q.length>=2&&S.res.length?`<div class="card"><h2 style="font-size:16px">Socios que coinciden</h2><div class="res">${S.res.map((r,k)=>`<button class="r" data-socio="${k}"><span><b>${esc(r.socio)}</b><small>${esc(r.lotes||'Lote sin identificar')}${r.patentes?' · '+esc(r.patentes):''}</small></span><span aria-hidden="true">›</span></button>`).join('')}</div></div>`:'';
+ $('#main').innerHTML=`<p class="help">Guardia: <b>${esc(d.guardia)}</b> · ${new Date().toLocaleDateString('es-AR',{weekday:'long',day:'numeric',month:'long'})}</p>
+  <div class="search"><input id="q" type="search" placeholder="Buscar nombre, lote, DNI o patente" value="${esc(S.q)}" autocomplete="off"></div>
+  ${S.q?'':`<div class="tabs" role="tablist"><button role="tab" aria-selected="${S.tab==='v'}" data-tab="v">Visitas de hoy (${d.visitas.length})</button><button role="tab" aria-selected="${S.tab==='i'}" data-tab="i">Inquilinos (${d.inquilinos.length})</button></div>`}
+  ${socios}<div style="display:grid;gap:10px">${lista}</div>
+  <button class="btn primary fab" data-nueva="1">Llegó alguien sin aviso</button>`;
+ const q=$('#q');if(S.focoQ){q.focus();q.setSelectionRange(q.value.length,q.value.length)}}
+
+function vSheet(){const s=S.sheet,L=$('#layer');if(!s){L.innerHTML='';return}
+ let body;
+ if(!s.socio){body=`<h2>¿A qué casa va?</h2><input id="sq" type="search" placeholder="Nombre del socio, lote o patente" value="${esc(s.q||'')}" autocomplete="off">
+  <div class="res">${(s.res||[]).map((r,k)=>`<button class="r" data-pick="${k}"><span><b>${esc(r.socio)}</b><small>${esc(r.lotes||'Lote sin identificar')}</small></span><span aria-hidden="true">›</span></button>`).join('')||(s.q&&s.q.length>=2?'<p class="help">Sin resultados.</p>':'<p class="help">Escribí al menos 2 letras.</p>')}</div>`}
+ else{const r=s.socio,w=waNum(r.celular),txt=`Hola ${r.socio}, le escribimos de la guardia de Aguará Guazú. En la entrada está ${s.nombre||'una persona'}${s.dni?' (DNI '+s.dni+')':''} que quiere ingresar a su casa${r.lotes?' ('+r.lotes+')':''}. ¿Autoriza el ingreso?`;
+  body=`<h2>${esc(r.socio)}</h2><p class="help">${esc(r.lotes||'Lote sin identificar')} · <button class="btn sm" style="display:inline;padding:2px 8px" data-cambiar="1">Cambiar</button></p>
+  <label>Nombre y apellido de quien llega<input id="nn" value="${esc(s.nombre||'')}" autocomplete="off"></label>
+  <div class="grid2"><label>DNI<input id="nd" value="${esc(s.dni||'')}" inputmode="numeric" autocomplete="off"></label><label>Patente<input id="np" value="${esc(s.patente||'')}" style="text-transform:uppercase" autocomplete="off"></label></div>
+  <b style="font-size:15px">1. Preguntale al socio</b>
+  ${w?`<div class="grid2"><a class="btn" href="tel:+${w}">Llamar</a><a class="btn wa" id="wa" target="_blank" rel="noopener" href="https://wa.me/${w}?text=${encodeURIComponent(txt)}">WhatsApp</a></div>`:'<p class="err">Este socio no tiene celular cargado. Consultá con la comisión.</p>'}
+  <b style="font-size:15px">2. Si autorizó, cargá la visita</b>
+  <label>¿Cómo autorizó?<select id="na"><option value="">Elegí…</option>${['Llamada','WhatsApp','En persona'].map(o=>`<option ${s.autorizo===o?'selected':''}>${o}</option>`).join('')}</select></label>
+  <label>Puede entrar hasta el<input id="nh" type="date" value="${s.hasta||new Date().toLocaleDateString('sv')}" min="${new Date().toLocaleDateString('sv')}"></label>
+  <div class="err" id="nerr"></div><button class="btn primary" id="ng">Autorizar e ingresar ahora</button>`}
+ L.innerHTML=`<div class="sheet" data-cerrar="1"><div role="dialog" aria-label="Llegó alguien sin aviso">${body}<button class="btn" data-cerrar="1">Cancelar</button></div></div>`;
+ const f=$(s.socio?'#nn':'#sq');if(f&&!s.noFocus)f.focus();s.noFocus=false}
+function leerSheet(){const s=S.sheet;if(!s||!s.socio)return;s.nombre=$('#nn').value;s.dni=$('#nd').value;s.patente=$('#np').value;s.autorizo=$('#na').value;s.hasta=$('#nh').value}
+
+async function cargar(){try{const r=await rpc('guardia_hoy',{p_token:S.tok});if(r.error){$('#main').innerHTML='<div class="card">No se pudo cargar. Revisá la conexión.</div>';return}S.d=r.data;if(!S.busy)vMain()}catch(_){}}
+let tq,ts;
+async function buscar(q){if(q.length<2)return [];try{const r=await rpc('guardia_buscar',{p_token:S.tok,p_q:q});return r.data||[]}catch(_){return []}}
+document.addEventListener('input',e=>{
+ if(e.target.id==='q'){S.q=e.target.value;S.focoQ=true;clearTimeout(tq);vMain();tq=setTimeout(async()=>{const q=S.q;const r=await buscar(q);if(q===S.q){S.res=r;vMain()}},350)}
+ if(e.target.id==='sq'){const s=S.sheet;s.q=e.target.value;clearTimeout(ts);ts=setTimeout(async()=>{const q=s.q;const r=await buscar(q);if(S.sheet===s&&q===s.q){s.res=r;vSheet()}},350)}});
+document.addEventListener('click',async e=>{const t=e.target.closest('[data-tab],[data-mov],[data-nueva],[data-cerrar],[data-pick],[data-cambiar],[data-socio],#out,#ng,#wa');if(!t)return;
+ if(t.id==='out'){if(!confirm('¿Cerrar la sesión de la guardia en este celular?'))return;try{await sb.rpc('guardia_salir',{p_token:S.tok})}catch(_){}tokSet(null);S.d=null;vLogin();return}
+ if(t.dataset.tab){S.tab=t.dataset.tab;S.focoQ=false;vMain();return}
+ if(t.dataset.mov){t.disabled=true;try{const r=await rpc('guardia_movimiento',{p_token:S.tok,p_tipo:t.dataset.t,p_id:+t.dataset.id,p_mov:t.dataset.mov});if(r.error){toast(r.error.message);t.disabled=false;return}
+   toast(t.dataset.mov==='ingreso'?'Ingreso registrado':'Salida registrada');S.focoQ=false;await cargar()}catch(_){};return}
+ if(t.dataset.nueva){S.busy=true;S.sheet={q:''};vSheet();return}
+ if(t.dataset.socio){S.busy=true;S.sheet={socio:S.res[+t.dataset.socio]};vSheet();return}
+ if(t.dataset.cerrar!==undefined&&(e.target===t)){S.sheet=null;S.busy=false;vSheet();vMain();return}
+ if(t.dataset.pick){S.sheet.socio=S.sheet.res[+t.dataset.pick];vSheet();return}
+ if(t.dataset.cambiar){leerSheet();S.sheet.socio=null;vSheet();return}
+ if(t.id==='wa'){leerSheet();if(!S.sheet.autorizo)S.sheet.autorizo='WhatsApp';S.sheet.noFocus=true;setTimeout(vSheet,300);return}
+ if(t.id==='ng'){leerSheet();const s=S.sheet,err=$('#nerr');err.textContent='';
+  if(!s.nombre.trim()||!s.dni.trim()){err.textContent='Escribí el nombre y el DNI de quien llega.';return}
+  if(!s.autorizo){err.textContent='Elegí cómo autorizó el socio. Si no autorizó, no puede entrar.';return}
+  t.disabled=true;try{const r=await rpc('guardia_visita_guardar',{p_token:S.tok,p:{socio_ref:s.socio.ref,nombre:s.nombre,dni:s.dni,patente:s.patente,autorizo:s.autorizo,hasta:s.hasta,ingresa:true}});
+   if(r.error){err.textContent=r.error.message;t.disabled=false;return}S.sheet=null;S.busy=false;vSheet();S.tab='v';S.q='';S.res=[];toast('Visita cargada e ingreso registrado');await cargar()}catch(_){};return}});
+document.addEventListener('submit',async e=>{e.preventDefault();if(e.target.id!=='lf')return;const b=$('#lb'),err=$('#lerr');err.textContent='';
+ const u=$('#u').value.trim(),p=$('#pin').value;if(!u||!p){err.textContent='Escribí el usuario y el PIN.';return}
+ b.disabled=true;const r=await sb.rpc('login_guardia',{p_usuario:u,p_pin:p});b.disabled=false;
+ if(r.error){err.textContent='No se pudo ingresar. Revisá la conexión.';return}if(r.data.error){err.textContent=r.data.error;return}tokSet(r.data.token);cargar()});
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&S.tok&&S.d)cargar()});
+setInterval(()=>{if(S.tok&&S.d&&!S.busy&&!document.hidden&&document.activeElement?.id!=='q')cargar()},60000);
+if(!sb)$('#main').innerHTML='<div class="card">No se pudo cargar la app. Revisá la conexión y recargá.</div>';else{S.tok=tokGet();S.tok?cargar():vLogin()}
+</script>
+</body>
+</html>
