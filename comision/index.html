@@ -122,7 +122,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 </head>
 <body>
 <div class="wrap">
-<header><div><div class="eyebrow">Asociación Civil Aguará Guazú Country · Comisión Directiva</div><h1>Panel de la comisión<span class="agver" aria-label="Versión del sistema" style="font:500 12px/1.2 system-ui,sans-serif;color:var(--muted,#5d6862);margin-left:10px;white-space:nowrap;vertical-align:middle;letter-spacing:0">v1.28 · 01/11/26 16:41</span></h1></div><div class="who" id="who"></div></header>
+<header><div><div class="eyebrow">Asociación Civil Aguará Guazú Country · Comisión Directiva</div><h1>Panel de la comisión<span class="agver" aria-label="Versión del sistema" style="font:500 12px/1.2 system-ui,sans-serif;color:var(--muted,#5d6862);margin-left:10px;white-space:nowrap;vertical-align:middle;letter-spacing:0">v1.29 · 01/11/26 16:47</span></h1></div><div class="who" id="who"></div></header>
 <main id="main"><div class="empty">Cargando…</div></main>
 </div>
 <div id="tip" hidden></div><div id="dr"></div>
@@ -205,6 +205,44 @@ document.addEventListener('click',async e=>{const t=e.target.closest('[data-gnew
  if(d.gact){const on=d.val==='true',x=S.gd.lista.find(y=>y.id==d.gact);if(!on&&!confirm(`¿Deshabilitar a ${x.nombre}? No va a poder entrar a la app de portería.`))return;const m=await gAccion({accion:'activo',id:+d.gact,activo:on},t);if(m)alert(m);return}
  if(d.gses){const m=await gAccion({accion:'cerrar_sesiones',id:+d.gses},t);if(m)alert(m);return}});
 
+
+// ---------- Visitas e inquilinos ----------
+const hoyAR=()=>new Date().toLocaleDateString('sv',{timeZone:'America/Argentina/Buenos_Aires'});
+const fD=d=>d?d.split('-').reverse().join('/'):'';
+async function loadAccesos(){const d30=new Date(Date.now()-30*864e5).toLocaleDateString('sv');
+ const [v,i,a]=await Promise.all([
+  sb.from('visitas').select('id,socio_txt,nombre,dni,patente,desde,hasta,origen,autorizo,anulada,creado,guardias(nombre)').gte('hasta',d30).order('desde',{ascending:false}).limit(1000),
+  sb.from('inquilinos').select('id,desde,hasta,personas,vehiculos,anulado,creado,fichas(titular_nombre,celular,ficha_lotes(lote_id))').order('desde',{ascending:false}).limit(500),
+  sb.from('accesos').select('visita_id,inquilino_id,movimiento,en').gte('en',new Date(Date.now()-40*864e5).toISOString()).order('en',{ascending:false}).limit(5000)]);
+ const err=v.error||i.error||a.error;const ult={};(a.data||[]).forEach(x=>{const k=x.visita_id?'v'+x.visita_id:'i'+x.inquilino_id;(ult[k]=ult[k]||{n:0,last:x}).n+=x.movimiento==='ingreso'?1:0});
+ S.ax={err:err?err.message:null,vis:v.data||[],inq:i.data||[],ult};if(S.v==='accesos')render()}
+function axEstado(k){const u=(S.ax.ult||{})[k];if(!u)return'<span class="help">No ingresó</span>';const l=u.last;
+ return l.movimiento==='ingreso'?`<span class="gst on">Adentro desde ${fdt(l.en)}</span>`:`<span class="gst off" style="color:var(--muted);background:var(--bg)">Salió ${fdt(l.en)}</span>`}
+function vAccesos(){const A=S.ax;if(!A){loadAccesos();return'<div class="card"><div class="empty">Cargando visitas e inquilinos…</div></div>'}
+ if(A.err)return`<div class="card">${/does not exist|schema cache|relation/i.test(A.err)?'Para ver visitas e inquilinos, ejecutá el script <b>10_visitas_inquilinos.sql</b> en Supabase.':'No se pudo cargar: '+esc(A.err)}</div>`;
+ const hoy=hoyAR(),sub=S.axs||'v',fil=S.axf||'hoy',q=(S.axq||'').trim().toLowerCase();
+ const mq=t=>!q||t.toLowerCase().includes(q);
+ let body;
+ if(sub==='v'){const F=[['hoy','Hoy'],['prox','Próximas'],['pas','Últimos 30 días'],['anul','Anuladas']];
+  const rs=A.vis.filter(v=>fil==='anul'?v.anulada:!v.anulada&&(fil==='hoy'?v.desde<=hoy&&v.hasta>=hoy:fil==='prox'?v.desde>hoy:v.hasta<hoy))
+   .filter(v=>mq([v.nombre,v.dni,v.patente,v.socio_txt].join(' ')));
+  body=`<div class="tabs">${F.map(([k,l])=>`<button type="button" data-axf="${k}" aria-pressed="${fil===k}">${l} (${A.vis.filter(v=>k==='anul'?v.anulada:!v.anulada&&(k==='hoy'?v.desde<=hoy&&v.hasta>=hoy:k==='prox'?v.desde>hoy:v.hasta<hoy)).length})</button>`).join('')}</div>
+  <div class="tablebox"><table class="tbl-g"><thead><tr><th>Visita</th><th>Va a (socio · lote)</th><th>Fechas</th><th>Cargada por</th><th>Estado</th></tr></thead><tbody>
+  ${rs.map(v=>`<tr><td><b>${esc(v.nombre)}</b><div class="help">DNI ${esc(v.dni)}${v.patente?' · <span class="mono">'+esc(v.patente)+'</span>':''}</div></td><td>${esc(v.socio_txt)}</td>
+   <td>${v.desde===v.hasta?fD(v.desde):fD(v.desde)+' al '+fD(v.hasta)}</td><td>${v.origen==='guardia'?`Guardia${v.guardias?' ('+esc(v.guardias.nombre)+')':''}<div class="help">sin aviso · autorizó por ${esc(v.autorizo||'')}</div>`:'Socio desde la app'}</td>
+   <td>${v.anulada?'<span class="gst off">Anulada</span>':axEstado('v'+v.id)}</td></tr>`).join('')||'<tr><td colspan="5" class="help">No hay visitas en este filtro.</td></tr>'}</tbody></table></div>`}
+ else{const vig=A.inq.filter(i=>!i.anulado&&i.hasta>=hoy).filter(i=>mq([i.fichas?.titular_nombre,(i.fichas?.ficha_lotes||[]).map(l=>l.lote_id).join(' '),i.personas.map(p=>p.nombre+' '+p.dni).join(' '),i.vehiculos.join(' ')].join(' ')));
+  body=`<div class="tablebox"><table class="tbl-g"><thead><tr><th>Inquilinos</th><th>Casa de (dueño · lote)</th><th>Período</th><th>Vehículos</th><th>Estado</th></tr></thead><tbody>
+  ${vig.map(i=>`<tr><td>${i.personas.map(p=>`<div><b>${esc(p.nombre)}</b> <span class="help">DNI ${esc(p.dni)}</span></div>`).join('')}</td>
+   <td>${esc(i.fichas?.titular_nombre||'')}<div class="help">${esc((i.fichas?.ficha_lotes||[]).map(l=>l.lote_id).join(', '))}</div></td>
+   <td>${fD(i.desde)} al ${fD(i.hasta)}${i.desde>hoy?'<div class="help">todavía no empezó</div>':''}</td><td class="mono">${i.vehiculos.map(esc).join(' ')||'—'}</td><td>${axEstado('i'+i.id)}</td></tr>`).join('')||'<tr><td colspan="5" class="help">No hay inquilinos vigentes.</td></tr>'}</tbody></table></div>`}
+ return`<div class="card"><div class="tabs" style="justify-content:space-between;align-items:center"><span style="display:flex;gap:6px"><button type="button" data-axs="v" aria-pressed="${sub==='v'}">Visitas</button><button type="button" data-axs="i" aria-pressed="${sub==='i'}">Inquilinos (${A.inq.filter(i=>!i.anulado&&i.hasta>=hoy).length})</button></span>
+  <span style="display:flex;gap:6px;flex:1 1 260px;justify-content:flex-end"><input type="search" id="axq" placeholder="Buscar nombre, DNI, patente, socio o lote" value="${esc(S.axq||'')}" style="flex:1 1 220px;max-width:340px"><button class="btn sm" data-axr="1">Actualizar</button></span></div>
+  <p class="help">Lo que cargan los socios en su app y la guardia en portería. Solo lectura: las visitas las anula el socio desde su app.</p>${body}</div>`}
+document.addEventListener('click',e=>{const t=e.target.closest('[data-axs],[data-axf],[data-axr]');if(!t)return;const d=t.dataset;
+ if(d.axs){S.axs=d.axs;render()}if(d.axf){S.axf=d.axf;render()}if(d.axr){S.ax=null;render()}});
+document.addEventListener('input',e=>{if(e.target.id!=='axq')return;S.axq=e.target.value;const p=e.target.selectionStart;render();const q=$('#axq');q.focus();q.setSelectionRange(p,p)});
+
 // ---------- vistas ----------
 function vResumen(){const act=S.fichas.filter(f=>f.estado!=='rechazada');const lotes=Object.keys(S.byLot).length;const conf=Object.keys(S.byLot).filter(id=>lotClass(id)==='conf').length;
  const K=(l,v,go,on,extra='')=>`<button type="button" class="kpi" data-kpi="${go}" aria-pressed="${on}"><span class="l">${l}</span><span class="v">${v}${extra}</span><span class="go">Ver →</span></button>`;
@@ -212,7 +250,7 @@ function vResumen(){const act=S.fichas.filter(f=>f.estado!=='rechazada');const l
  return`<div class="kpis">${K('Fichas recibidas',act.length,'lista|todas',S.v==='lista'&&S.f==='todas')}${K('Lotes con ficha',lotes,'plano',S.v==='plano',de(202))}
  ${K('Pendientes de revisar',act.filter(f=>f.estado==='pendiente').length,'lista|pendiente',S.v==='lista'&&S.f==='pendiente')}${K('Lotes con conflicto',conf,'lista|conflicto',S.v==='lista'&&S.f==='conflicto')}
  ${K('Sin lote identificado',act.filter(f=>!(f.ficha_lotes||[]).length).length,'lista|sinlote',S.v==='lista'&&S.f==='sinlote')}${c?K('Del padrón ya cargaron',c.filter(x=>x.est==='verif'||x.est==='pend').length,'faltan|cargo',S.v==='faltan'&&S.pf==='cargo',de(c.length)):''}</div>
- <div class="tabs"><button type="button" data-v="plano" aria-pressed="${S.v==='plano'}">Plano</button><button type="button" data-v="lista" aria-pressed="${S.v==='lista'}">Fichas</button><button type="button" data-v="faltan" aria-pressed="${S.v==='faltan'}">Padrón</button><button type="button" data-v="deuda" aria-pressed="${S.v==='deuda'}">Deuda</button><button type="button" data-v="guardia" aria-pressed="${S.v==='guardia'}">Guardia</button><span style="margin-left:auto;display:flex;gap:6px"><button type="button" class="btn sm" id="backup">Descargar copia (Excel)</button><button type="button" class="btn sm" id="reload">Actualizar</button></span></div>`}
+ <div class="tabs"><button type="button" data-v="plano" aria-pressed="${S.v==='plano'}">Plano</button><button type="button" data-v="lista" aria-pressed="${S.v==='lista'}">Fichas</button><button type="button" data-v="faltan" aria-pressed="${S.v==='faltan'}">Padrón</button><button type="button" data-v="deuda" aria-pressed="${S.v==='deuda'}">Deuda</button><button type="button" data-v="accesos" aria-pressed="${S.v==='accesos'}">Visitas e inquilinos</button><button type="button" data-v="guardia" aria-pressed="${S.v==='guardia'}">Guardia</button><span style="margin-left:auto;display:flex;gap:6px"><button type="button" class="btn sm" id="backup">Descargar copia (Excel)</button><button type="button" class="btn sm" id="reload">Actualizar</button></span></div>`}
 const $$=n=>n==null?'—':'$ '+Math.round(n).toLocaleString('es-AR');
 const EST={verif:['verificada','Verificada'],pend:['pendiente','Pendiente'],posible:['pendiente','Posible'],falta:['rechazada','No cargó']};
 function vFaltan(){const c=cruce();if(!c)return`<div class="card">Para ver el padrón, ejecutá el script <b>04_lanzamiento.sql</b> en Supabase.</div>`;const q=S.q.trim().toLowerCase();
@@ -302,7 +340,7 @@ function vLista(){const q=S.q.trim().toLowerCase();let rs=S.fichas.filter(f=>S.f
  <td>${esc(f.email||'—')}<br><span class="mono">${esc(tel(f.celular))}</span></td><td><span class="st ${f.estado}">${f.estado}</span></td></tr>`).join(''):`<tr><td colspan="6" class="empty">Todavía no hay fichas${S.f!=='todas'?' con ese filtro':''}.</td></tr>`}
  </tbody></table></div></div>`}
 function render(){if(!S.miembro)return;const mb=$('#mapbox'),sc=mb?[mb.scrollLeft,mb.scrollTop]:null;
- $('#main').innerHTML=vResumen()+(S.v==='plano'?vPlano():S.v==='faltan'?vFaltan():S.v==='deuda'?vDeuda():S.v==='guardia'?vGuardia():vLista());sizeMap();const nb=$('#mapbox');if(nb&&sc){nb.scrollLeft=sc[0];nb.scrollTop=sc[1]}$('#dr').innerHTML=drawer()}
+ $('#main').innerHTML=vResumen()+(S.v==='plano'?vPlano():S.v==='faltan'?vFaltan():S.v==='deuda'?vDeuda():S.v==='guardia'?vGuardia():S.v==='accesos'?vAccesos():vLista());sizeMap();const nb=$('#mapbox');if(nb&&sc){nb.scrollLeft=sc[0];nb.scrollTop=sc[1]}$('#dr').innerHTML=drawer()}
 // ---------- tarjeta ----------
 // ---------- cruce de una ficha con el padrón ----------
 const digs=t=>(String(t||'').replace(/[\s.\-()]/g,'').match(/\d{8,}/g)||[]).map(x=>x.slice(-8));
