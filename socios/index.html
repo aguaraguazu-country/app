@@ -30,12 +30,20 @@ input{font:inherit;font-size:17px;padding:12px;border:1px solid var(--line);bord
 .mono{font-family:var(--mono);font-size:14px}
 .note{background:var(--warn-bg);border-radius:10px;padding:12px;font-size:14px}
 .soon{display:grid;gap:6px}.soon div{display:flex;justify-content:space-between;color:var(--muted);font-size:15px;border-bottom:1px dashed var(--line);padding-bottom:6px}
+.big{font-family:var(--display);font-size:34px;font-weight:600;line-height:1.1}.big.crit{color:var(--crit)}.big.good{color:var(--good)}
+.rows{display:grid;gap:8px}.row{display:flex;justify-content:space-between;gap:10px;font-size:15px;border-bottom:1px dashed var(--line);padding-bottom:7px}.row b{font-variant-numeric:tabular-nums;white-space:nowrap}
+.lbl{display:grid;gap:3px;justify-items:start}.tag{font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;background:var(--warn-bg);border-radius:6px;padding:2px 6px;}
+.months{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:8px}
+.mo{border:1px solid var(--line);border-radius:10px;padding:8px;font-size:13px;display:grid;gap:2px;background:var(--bg)}.mo span{color:var(--muted);font-size:12px;text-transform:capitalize}
+.mo.ok{border-color:var(--good);background:var(--accent-soft)}.mo.ok b{color:var(--good)}.mo.bad{border-color:var(--crit)}.mo.bad b{color:var(--crit)}
+.pay{display:flex;justify-content:space-between;gap:10px;font-size:14px;padding:8px 0;border-bottom:1px solid var(--line)}.pay:last-child{border-bottom:0}.pay small{color:var(--muted);display:block}.pay b{white-space:nowrap;font-variant-numeric:tabular-nums}
+.wa{display:block;text-align:center;text-decoration:none;background:#1f7a4d;border-color:#1f7a4d;color:#fff}
 button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 </style>
 </head>
 <body>
 <div class="wrap">
-<header><div class="eyebrow">Aguará Guazú Country</div><h1>App de socios<span class="agver" aria-label="Versión del sistema" style="font:500 12px/1.2 system-ui,sans-serif;color:var(--muted,#5d6862);margin-left:10px;white-space:nowrap;vertical-align:middle;letter-spacing:0">v1.25 · 29/10/26 16:21</span></h1></header>
+<header><div class="eyebrow">Aguará Guazú Country</div><h1>App de socios<span class="agver" aria-label="Versión del sistema" style="font:500 12px/1.2 system-ui,sans-serif;color:var(--muted,#5d6862);margin-left:10px;white-space:nowrap;vertical-align:middle;letter-spacing:0">v1.26 · 01/11/26 15:18</span></h1></header>
 <main id="main"><p class="help">Cargando…</p></main>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.3/dist/umd/supabase.js"></script>
@@ -44,7 +52,40 @@ const SB_URL='https://ejyfijaahbobvbpxtsfj.supabase.co',SB_KEY='sb_publishable_f
 const sb=window.supabase?window.supabase.createClient(SB_URL,SB_KEY,{auth:{persistSession:false}}):null;
 const $=s=>document.querySelector(s);const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const tokGet=()=>{try{return localStorage.getItem(TK)}catch(_){return S.tok}},tokSet=v=>{S.tok=v;try{v?localStorage.setItem(TK,v):localStorage.removeItem(TK)}catch(_){}};
-const S={tok:null,yo:null,show:false,cp:false};
+const S={tok:null,yo:null,ec:null,show:false,cp:false};
+const WA='5493786610915';
+const $$=n=>'$ '+Math.abs(Math.round(n||0)).toLocaleString('es-AR');
+const MES=m=>{const [y,mm]=m.split('-');return ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'][+mm-1]+' '+y.slice(2)};
+const FEC=f=>f?f.split('-').reverse().join('/'):'';
+function vCuenta(){const e=S.ec,y=S.yo;
+ const wa=t=>`<a class="btn wa" target="_blank" rel="noopener" href="https://wa.me/${WA}?text=${encodeURIComponent(t)}">Consultar a tesorería por WhatsApp</a>`;
+ const base='Hola, soy '+(y.nombre||'')+'. Quiero consultar mi estado de cuenta.';
+ if(!e)return '<div class="card"><h2>Mi cuenta</h2><p class="help">Cargando tu estado de cuenta…</p></div>';
+ if(e.error)return '';
+ if(e.estado==='ficha_no_verificada')return `<div class="card"><h2>Mi cuenta</h2><p class="help">Tu estado de cuenta va a aparecer acá cuando la comisión verifique tu ficha.</p></div>`;
+ if(!(e.cuentas||[]).length)return `<div class="card"><h2>Mi cuenta</h2><p class="help">Todavía no tenemos tu estado de cuenta cargado.</p>${wa(base)}</div>`;
+ return e.cuentas.map(c=>{const tot=c.total||0,al=tot<=0;
+  const head=al?(tot<0?`<div class="big good">${$$(tot)} a favor</div><p class="help">Estás al día y tenés pagos adelantados.</p>`:`<div class="big good">Estás al día</div>`)
+   :`<div class="big crit">${$$(tot)}</div><p class="help">Total adeudado${c.meses_atraso?` · equivale a ${c.meses_atraso} ${c.meses_atraso==1?'cuota':'cuotas'} aprox.`:''}</p>`;
+  const rows=[`<div class="row"><span>Cuotas desde nov-2026 sin pagar</span><b>${$$(c.deuda_mes)}</b></div>`];
+  if(c.deuda_antigua_inicial||c.deuda_antigua)rows.push(`<div class="row"><span class="lbl">Deuda anterior a nov-2026<span class="tag">en revisión</span></span><b>${$$(c.deuda_antigua)}</b></div>`);
+  if(c.a_favor>0)rows.push(`<div class="row"><span>Pagado por adelantado</span><b>− ${$$(c.a_favor)}</b></div>`);
+  if(c.cuota_mes)rows.push(`<div class="row"><span>Tu cuota mensual${c.cant_lotes>1?` (${c.cant_lotes} lotes)`:''}</span><b>${$$(c.cuota_mes)}</b></div>`);
+  const hoy=new Date().toLocaleDateString('sv').slice(0,7),fut=(c.meses||[]).filter(m=>m.mes>hoy),ult=fut.length?fut[fut.length-1].mes:null;
+  const meses=(c.meses||[]).filter(m=>m.mes<=hoy).map(m=>{const ok=m.estado.charAt(0)==='✔',bad=m.estado.charAt(0)==='✘';
+   const t=ok?(m.estado.replace(/^✔\s*/,'').replace(/^F\s*/,'Factura ')||'pagado'):bad?'impaga':'—';
+   return `<div class="mo ${ok?'ok':bad?'bad':''}"><span>${MES(m.mes)}</span><b>${ok?'✔ ':bad?'✘ ':''}${esc(t.charAt(0).toUpperCase()+t.slice(1))}</b></div>`}).join('');
+  const pagos=(c.pagos||[]).map(p=>{const aj=/^Ajuste/.test(p.tipo),ad=/^Adelanto/.test(p.tipo);
+   const tit=aj?(p.a_antigua<0?'Corrección: suma a la deuda anterior':'Corrección: baja la deuda anterior'):ad?'Pago adelantado (registro anterior)':'Pago'+(p.medio?' · '+esc(p.medio):'');
+   const det=aj?'':[p.a_cuotas?$$(p.a_cuotas)+' a cuotas':'',p.a_antigua?$$(p.a_antigua)+' a deuda anterior':''].filter(Boolean).join(' · ');
+   return `<div class="pay"><div>${esc(tit)}<small>${FEC(p.fecha)}${p.factura?' · Factura '+esc(p.factura):''}${det?' · '+det:''}</small></div><b>${aj?(p.a_antigua<0?'+ ':'− ')+$$(p.a_antigua):$$(p.importe)}</b></div>`}).join('');
+  const act=c.actualizado?(d=>d.toLocaleDateString('es-AR',{day:'2-digit',month:'2-digit'})+' a las '+d.toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit',hour12:false})+' hs')(new Date(c.actualizado)):'';
+  return `<div class="card"><h2>Mi cuenta${e.cuentas.length>1?' · '+esc(c.lotes||c.id):''}</h2>${head}<div class="rows">${rows.join('')}</div>
+   ${c.deuda_antigua?'<p class="help">La deuda anterior a noviembre 2026 sale de los registros anteriores de la asociación y la comisión la está revisando. Si no coincide con lo que pagaste, consultá con tus comprobantes.</p>':''}
+   ${meses?`<h2 style="font-size:16px">Mes a mes</h2><div class="months">${meses}</div>`:''}
+   ${ult?`<p class="help" style="color:var(--good);font-weight:600">✔ Cuotas pagadas por adelantado hasta ${MES(ult)}</p>`:''}
+   ${pagos?`<h2 style="font-size:16px">Últimos pagos registrados</h2><div>${pagos}</div>`:''}
+   <p class="help">Actualizado al ${act}. Los pagos aparecen cuando tesorería los registra.</p>${wa(base+(c.lotes?' (lote '+c.lotes+')':''))}</div>`}).join('')}
 function vLogin(msg){$('#main').innerHTML=`<div class="card"><h2>¿Primera vez?</h2><p class="help">Si todavía no cargaste tu ficha de propietario, empezá acá. Al final elegís tu contraseña.</p><a class="btn" style="display:block;text-align:center;text-decoration:none" href="../ficha/">Completar mi ficha</a></div>
  <form class="card" id="lf"><h2>Ya tengo cuenta</h2>
  <label>DNI <span class="help" style="font-weight:400">(solo números, sin puntos)</span><input id="dni" inputmode="numeric" autocomplete="username" maxlength="11"></label>
@@ -55,17 +96,19 @@ function vLogin(msg){$('#main').innerHTML=`<div class="card"><h2>¿Primera vez?<
 function vHome(){const y=S.yo;$('#main').innerHTML=`${y.provisoria?'<div class="note">Estás usando una contraseña provisoria. Te recomendamos cambiarla por una tuya (abajo).</div>':''}
  <div class="card"><h2>Hola, ${esc(y.nombre)}</h2><p class="help">Ficha ${esc(y.tramite)}</p>
  ${(y.lotes||[]).length?y.lotes.map(l=>`<div class="lot"><span>${l.sector==='S1'?'Sector 1':'Sector 2'} · Mz ${esc(l.manzana)} · Lote ${l.parcela}</span><span class="mono">${esc(l.partida)}</span></div>`).join(''):'<p class="help">Tus lotes todavía no están identificados en el plano.</p>'}</div>
- <div class="card"><h2>Muy pronto en esta app</h2><div class="soon"><div><span>Estado de cuenta</span><span>en preparación</span></div><div><span>Autorizar visitas</span><span>en preparación</span></div><div><span>Inquilinos</span><span>en preparación</span></div></div></div>
+${vCuenta()}
+ <div class="card"><h2>Muy pronto en esta app</h2><div class="soon"><div><span>Autorizar visitas</span><span>en preparación</span></div><div><span>Inquilinos</span><span>en preparación</span></div></div></div>
  <div class="card"><button type="button" class="btn" id="tcp">${S.cp||y.provisoria?'Cambiar contraseña':'Cambiar contraseña…'}</button>
  <form id="cpf" ${S.cp||y.provisoria?'':'hidden'} style="display:grid;gap:10px"><label>Contraseña actual<input id="pa" type="password" autocomplete="current-password"></label>
  <label>Nueva contraseña<input id="pn" type="password" autocomplete="new-password"></label><label>Repetí la nueva<input id="pn2" type="password" autocomplete="new-password"></label>
  <p class="help">Al menos 6 caracteres. No uses tu DNI, ni 123456, ni el mismo número repetido.</p><div class="err" id="cperr"></div><button class="btn primary" type="submit" id="cpb">Guardar contraseña nueva</button></form></div>
  <button class="btn" id="out" type="button">Salir</button>`}
-async function cargar(){const {data,error}=await sb.rpc('socio_yo',{p_token:S.tok});if(error){tokSet(null);return vLogin(/venci/i.test(error.message)?'Tu sesión venció. Volvé a ingresar.':'')}S.yo=data;vHome()}
+async function cargar(){const {data,error}=await sb.rpc('socio_yo',{p_token:S.tok});if(error){tokSet(null);return vLogin(/venci/i.test(error.message)?'Tu sesión venció. Volvé a ingresar.':'')}S.yo=data;S.ec=null;vHome();
+ const r=await sb.rpc('socio_estado_cuenta',{p_token:S.tok});S.ec=r.error?{error:true}:r.data;if(S.yo)vHome()}
 async function start(){if(!sb){$('#main').innerHTML='<div class="card">No se pudo cargar la app. Revisá tu conexión y recargá.</div>';return}S.tok=tokGet();if(S.tok)return cargar();vLogin()}
 document.addEventListener('input',e=>{if(e.target.id==='dni')e.target.value=e.target.value.replace(/\D/g,'')});
 document.addEventListener('change',e=>{if(e.target.id==='show'){S.show=e.target.checked;$('#pw').type=S.show?'text':'password'}});
-document.addEventListener('click',e=>{if(e.target.id==='out'){tokSet(null);S.yo=null;vLogin()}if(e.target.id==='tcp'){S.cp=!S.cp;vHome()}});
+document.addEventListener('click',e=>{if(e.target.id==='out'){tokSet(null);S.yo=null;S.ec=null;vLogin()}if(e.target.id==='tcp'){S.cp=!S.cp;vHome()}});
 document.addEventListener('submit',async e=>{e.preventDefault();
  if(e.target.id==='lf'){const b=$('#lb'),err=$('#lerr');err.textContent='';const dni=$('#dni').value,pw=$('#pw').value;if(!dni||!pw){err.textContent='Escribí tu DNI y tu contraseña.';return}
   b.disabled=true;const {data,error}=await sb.rpc('login_socio',{p_doc:dni,p_pass:pw});b.disabled=false;
