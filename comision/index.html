@@ -112,6 +112,9 @@ tbody tr{cursor:pointer}tbody tr:hover{background:var(--accent-soft)}
 dl{display:grid;grid-template-columns:minmax(120px,160px) 1fr;gap:5px 12px;margin:0;font-size:13.5px}
 dt{color:var(--muted)}dd{margin:0;min-width:0;overflow-wrap:anywhere}
 .acts{display:flex;flex-wrap:wrap;gap:8px}
+.gform{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;align-items:end;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:12px}
+.gacts{display:flex;flex-wrap:wrap;gap:6px}.gst{font-weight:700;font-size:12px;border-radius:999px;padding:2px 9px}.gst.on{color:var(--good);background:var(--good-bg)}.gst.off{color:var(--crit);background:var(--crit-bg)}
+.tbl-g{min-width:640px}
 .note{font-size:13px;background:var(--warn-bg);border-radius:8px;padding:8px 10px}
 .empty{padding:24px;text-align:center;color:var(--muted)}
 button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
@@ -119,7 +122,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 </head>
 <body>
 <div class="wrap">
-<header><div><div class="eyebrow">Asociación Civil Aguará Guazú Country · Comisión Directiva</div><h1>Panel de la comisión<span class="agver" aria-label="Versión del sistema" style="font:500 12px/1.2 system-ui,sans-serif;color:var(--muted,#5d6862);margin-left:10px;white-space:nowrap;vertical-align:middle;letter-spacing:0">v1.27 · 01/11/26 16:18</span></h1></div><div class="who" id="who"></div></header>
+<header><div><div class="eyebrow">Asociación Civil Aguará Guazú Country · Comisión Directiva</div><h1>Panel de la comisión<span class="agver" aria-label="Versión del sistema" style="font:500 12px/1.2 system-ui,sans-serif;color:var(--muted,#5d6862);margin-left:10px;white-space:nowrap;vertical-align:middle;letter-spacing:0">v1.28 · 01/11/26 16:41</span></h1></div><div class="who" id="who"></div></header>
 <main id="main"><div class="empty">Cargando…</div></main>
 </div>
 <div id="tip" hidden></div><div id="dr"></div>
@@ -162,6 +165,46 @@ function waLink(tel){const g=(String(tel||'').match(/\d[\d\s-]{8,}\d/)||[''])[0]
  const msg='Hola, ¿cómo estás? Te escribimos de la Comisión Directiva de Aguará Guazú Country. Estamos actualizando el padrón de propietarios y todavía no recibimos tu ficha. Se completa en 5 minutos desde el celular: https://aguaraguazu-country.github.io/app/ (tocá "Completar mi ficha") ¡Muchas gracias!';
  return'https://wa.me/549'+g+'?text='+encodeURIComponent(msg)}
 function lotClass(id){const fs=S.byLot[id];if(!fs||!fs.length)return'';if(fs.length>1||fs.some(f=>(f.ficha_lotes||[]).some(x=>x.lote_id===id&&x.reclamo)))return'conf';return fs[0].estado==='verificada'?'ok':'pend'}
+
+// ---------- Guardia (portoneros) ----------
+const PURL='https://aguaraguazu-country.github.io/app/porteria/';
+const fdt=t=>t?new Date(t).toLocaleString('es-AR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false}):'—';
+async function loadGuardia(){const [a,b]=await Promise.all([sb.rpc('comision_guardias'),sb.rpc('comision_movimientos',{p_limite:50})]);
+ S.gd={err:a.error?a.error.message:null,lista:a.data||[],movs:b.data||[]};if(S.v==='guardia')render()}
+function vGuardia(){const g=S.gd;if(!g){loadGuardia();return'<div class="card"><div class="empty">Cargando guardia…</div></div>'}
+ if(g.err)return`<div class="card">${/function|does not exist|schema cache/i.test(g.err)?'Para gestionar la guardia, ejecutá los scripts <b>10_visitas_inquilinos.sql</b> y <b>11_gestion_guardia.sql</b> en Supabase.':'No se pudo cargar: '+esc(g.err)}</div>`;
+ const F=S.gf;let form='';
+ if(F){const x=F.id?g.lista.find(y=>y.id===F.id):{};
+  form=`<form id="gf" class="gform"><b style="grid-column:1/-1">${F.modo==='crear'?'Nuevo usuario de guardia':F.modo==='pin'?'Nuevo PIN para '+esc(x.nombre):'Editar '+esc(x.nombre)}</b>
+   ${F.modo!=='pin'?`<label>Nombre y apellido<input id="gn" value="${esc(x.nombre||'')}" required></label><label>Usuario <span class="help" style="font-weight:400">(sin espacios)</span><input id="gu" value="${esc(x.usuario||'')}" autocapitalize="off" required></label>`:''}
+   ${F.modo!=='editar'?`<label>PIN <span class="help" style="font-weight:400">(6 a 10 números)</span><input id="gp" inputmode="numeric" autocomplete="new-password" required></label>`:''}
+   <div class="gacts"><button class="btn primary" id="gb">${F.modo==='crear'?'Crear':'Guardar'}</button><button type="button" class="btn" data-gx="1">Cancelar</button></div>
+   <div class="err" id="gerr" style="grid-column:1/-1"></div>
+   ${F.modo!=='editar'?'<p class="help" style="grid-column:1/-1">Anotá el PIN y pasáselo al guardia en persona o por mensaje privado. Después no se puede volver a ver: si se lo olvida, le ponés uno nuevo.</p>':''}</form>`}
+ const rows=g.lista.map(x=>`<tr><td><b>${esc(x.nombre)}</b></td><td class="mono">${esc(x.usuario)}</td><td><span class="gst ${x.activo?'on':'off'}">${x.activo?'Habilitado':'Deshabilitado'}</span></td>
+  <td>${fdt(x.ultimo_ingreso)}${x.sesiones?` <span class="help">· ${x.sesiones} sesión${x.sesiones>1?'es':''} abierta${x.sesiones>1?'s':''}</span>`:''}</td><td>${x.movimientos_7d}</td>
+  <td><div class="gacts"><button class="btn sm" data-ge="${x.id}">Editar</button><button class="btn sm" data-gpin="${x.id}">Cambiar PIN</button>
+  <button class="btn sm" data-gact="${x.id}" data-val="${!x.activo}">${x.activo?'Deshabilitar':'Habilitar'}</button>${x.sesiones?`<button class="btn sm" data-gses="${x.id}">Cerrar sesiones</button>`:''}</div></td></tr>`).join('');
+ const mv=g.movs.map(m=>`<tr><td>${fdt(m.en)}</td><td><span class="gst ${m.movimiento==='ingreso'?'on':'off'}">${m.movimiento==='ingreso'?'Ingreso':'Salida'}</span></td><td>${esc(m.persona||'')}${m.patente?` <span class="mono">${esc(m.patente)}</span>`:''}<div class="help">${m.tipo}${m.origen==='guardia'?' sin aviso · autorizó por '+esc(m.autorizo||''):''}</div></td><td>${esc(m.destino||'')}</td><td>${esc(m.guardia||'')}</td></tr>`).join('');
+ return`<div class="card"><div class="tabs" style="justify-content:space-between;align-items:center"><h2 style="margin:0">Usuarios de la guardia</h2><span style="display:flex;gap:6px"><button class="btn sm" data-gcopy="1">Copiar link de portería</button>${F?'':'<button class="btn sm primary" data-gnew="1">+ Nuevo usuario</button>'}</span></div>
+  <p class="help">Cada guardia entra en <a href="${PURL}" target="_blank" rel="noopener">${PURL}</a> con su usuario y PIN. Al deshabilitar o cambiar el PIN se cierra su sesión en el celular.</p>
+  ${form}<div class="tablebox"><table class="tbl-g"><thead><tr><th>Nombre</th><th>Usuario</th><th>Estado</th><th>Último ingreso a la app</th><th>Movimientos (7 días)</th><th>Acciones</th></tr></thead><tbody>${rows||'<tr><td colspan="6" class="help">Todavía no hay usuarios. Creá el primero con "+ Nuevo usuario".</td></tr>'}</tbody></table></div></div>
+  <div class="card"><div class="tabs" style="justify-content:space-between;align-items:center"><h2 style="margin:0">Últimos movimientos en la entrada</h2><button class="btn sm" data-grel="1">Actualizar</button></div>
+  <div class="tablebox"><table class="tbl-g"><thead><tr><th>Fecha y hora</th><th>Movimiento</th><th>Persona</th><th>Va a</th><th>Guardia</th></tr></thead><tbody>${mv||'<tr><td colspan="5" class="help">Sin movimientos todavía.</td></tr>'}</tbody></table></div></div>`}
+async function gAccion(p,btn){if(btn)btn.disabled=true;const {data,error}=await sb.rpc('comision_guardia',{p});if(btn)btn.disabled=false;if(error)return error.message;S.gd.lista=data||[];S.gf=null;render();return null}
+document.addEventListener('submit',async e=>{if(e.target.id!=='gf')return;e.preventDefault();const F=S.gf,p={accion:F.modo,id:F.id||null};
+ if(F.modo!=='pin'){p.nombre=$('#gn').value;p.usuario=$('#gu').value}if(F.modo!=='editar')p.pin=$('#gp').value.trim();
+ const m=await gAccion(p,$('#gb'));if(m)$('#gerr').textContent=m});
+document.addEventListener('click',async e=>{const t=e.target.closest('[data-gnew],[data-ge],[data-gpin],[data-gact],[data-gses],[data-gx],[data-grel],[data-gcopy]');if(!t)return;const d=t.dataset;
+ if(d.gnew){S.gf={modo:'crear'};render();$('#gn').focus();return}
+ if(d.ge){S.gf={modo:'editar',id:+d.ge};render();return}
+ if(d.gpin){S.gf={modo:'pin',id:+d.gpin};render();$('#gp').focus();return}
+ if(d.gx){S.gf=null;render();return}
+ if(d.grel){S.gd=null;render();return}
+ if(d.gcopy){try{await navigator.clipboard.writeText(PURL);t.textContent='Link copiado'}catch(_){prompt('Copiá el link:',PURL)}return}
+ if(d.gact){const on=d.val==='true',x=S.gd.lista.find(y=>y.id==d.gact);if(!on&&!confirm(`¿Deshabilitar a ${x.nombre}? No va a poder entrar a la app de portería.`))return;const m=await gAccion({accion:'activo',id:+d.gact,activo:on},t);if(m)alert(m);return}
+ if(d.gses){const m=await gAccion({accion:'cerrar_sesiones',id:+d.gses},t);if(m)alert(m);return}});
+
 // ---------- vistas ----------
 function vResumen(){const act=S.fichas.filter(f=>f.estado!=='rechazada');const lotes=Object.keys(S.byLot).length;const conf=Object.keys(S.byLot).filter(id=>lotClass(id)==='conf').length;
  const K=(l,v,go,on,extra='')=>`<button type="button" class="kpi" data-kpi="${go}" aria-pressed="${on}"><span class="l">${l}</span><span class="v">${v}${extra}</span><span class="go">Ver →</span></button>`;
@@ -169,7 +212,7 @@ function vResumen(){const act=S.fichas.filter(f=>f.estado!=='rechazada');const l
  return`<div class="kpis">${K('Fichas recibidas',act.length,'lista|todas',S.v==='lista'&&S.f==='todas')}${K('Lotes con ficha',lotes,'plano',S.v==='plano',de(202))}
  ${K('Pendientes de revisar',act.filter(f=>f.estado==='pendiente').length,'lista|pendiente',S.v==='lista'&&S.f==='pendiente')}${K('Lotes con conflicto',conf,'lista|conflicto',S.v==='lista'&&S.f==='conflicto')}
  ${K('Sin lote identificado',act.filter(f=>!(f.ficha_lotes||[]).length).length,'lista|sinlote',S.v==='lista'&&S.f==='sinlote')}${c?K('Del padrón ya cargaron',c.filter(x=>x.est==='verif'||x.est==='pend').length,'faltan|cargo',S.v==='faltan'&&S.pf==='cargo',de(c.length)):''}</div>
- <div class="tabs"><button type="button" data-v="plano" aria-pressed="${S.v==='plano'}">Plano</button><button type="button" data-v="lista" aria-pressed="${S.v==='lista'}">Fichas</button><button type="button" data-v="faltan" aria-pressed="${S.v==='faltan'}">Padrón</button><button type="button" data-v="deuda" aria-pressed="${S.v==='deuda'}">Deuda</button><span style="margin-left:auto;display:flex;gap:6px"><button type="button" class="btn sm" id="backup">Descargar copia (Excel)</button><button type="button" class="btn sm" id="reload">Actualizar</button></span></div>`}
+ <div class="tabs"><button type="button" data-v="plano" aria-pressed="${S.v==='plano'}">Plano</button><button type="button" data-v="lista" aria-pressed="${S.v==='lista'}">Fichas</button><button type="button" data-v="faltan" aria-pressed="${S.v==='faltan'}">Padrón</button><button type="button" data-v="deuda" aria-pressed="${S.v==='deuda'}">Deuda</button><button type="button" data-v="guardia" aria-pressed="${S.v==='guardia'}">Guardia</button><span style="margin-left:auto;display:flex;gap:6px"><button type="button" class="btn sm" id="backup">Descargar copia (Excel)</button><button type="button" class="btn sm" id="reload">Actualizar</button></span></div>`}
 const $$=n=>n==null?'—':'$ '+Math.round(n).toLocaleString('es-AR');
 const EST={verif:['verificada','Verificada'],pend:['pendiente','Pendiente'],posible:['pendiente','Posible'],falta:['rechazada','No cargó']};
 function vFaltan(){const c=cruce();if(!c)return`<div class="card">Para ver el padrón, ejecutá el script <b>04_lanzamiento.sql</b> en Supabase.</div>`;const q=S.q.trim().toLowerCase();
@@ -259,7 +302,7 @@ function vLista(){const q=S.q.trim().toLowerCase();let rs=S.fichas.filter(f=>S.f
  <td>${esc(f.email||'—')}<br><span class="mono">${esc(tel(f.celular))}</span></td><td><span class="st ${f.estado}">${f.estado}</span></td></tr>`).join(''):`<tr><td colspan="6" class="empty">Todavía no hay fichas${S.f!=='todas'?' con ese filtro':''}.</td></tr>`}
  </tbody></table></div></div>`}
 function render(){if(!S.miembro)return;const mb=$('#mapbox'),sc=mb?[mb.scrollLeft,mb.scrollTop]:null;
- $('#main').innerHTML=vResumen()+(S.v==='plano'?vPlano():S.v==='faltan'?vFaltan():S.v==='deuda'?vDeuda():vLista());sizeMap();const nb=$('#mapbox');if(nb&&sc){nb.scrollLeft=sc[0];nb.scrollTop=sc[1]}$('#dr').innerHTML=drawer()}
+ $('#main').innerHTML=vResumen()+(S.v==='plano'?vPlano():S.v==='faltan'?vFaltan():S.v==='deuda'?vDeuda():S.v==='guardia'?vGuardia():vLista());sizeMap();const nb=$('#mapbox');if(nb&&sc){nb.scrollLeft=sc[0];nb.scrollTop=sc[1]}$('#dr').innerHTML=drawer()}
 // ---------- tarjeta ----------
 // ---------- cruce de una ficha con el padrón ----------
 const digs=t=>(String(t||'').replace(/[\s.\-()]/g,'').match(/\d{8,}/g)||[]).map(x=>x.slice(-8));
