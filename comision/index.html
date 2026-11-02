@@ -125,7 +125,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 </head>
 <body>
 <div class="wrap">
-<header><div><div class="eyebrow">Asociación Civil Aguará Guazú Country · Comisión Directiva</div><h1>Panel de la comisión<span class="agver" aria-label="Versión del sistema" style="font:500 12px/1.2 system-ui,sans-serif;color:var(--muted,#5d6862);margin-left:10px;white-space:nowrap;vertical-align:middle;letter-spacing:0">v1.31 · 02/11/26 18:04</span></h1></div><div class="who" id="who"></div></header>
+<header><div><div class="eyebrow">Asociación Civil Aguará Guazú Country · Comisión Directiva</div><h1>Panel de la comisión<span class="agver" aria-label="Versión del sistema" style="font:500 12px/1.2 system-ui,sans-serif;color:var(--muted,#5d6862);margin-left:10px;white-space:nowrap;vertical-align:middle;letter-spacing:0">v1.32 · 02/11/26 18:28</span></h1></div><div class="who" id="who"></div></header>
 <main id="main"><div class="empty">Cargando…</div></main>
 </div>
 <div id="tip" hidden></div><div id="dr"></div>
@@ -149,7 +149,7 @@ async function start(){if(!sb){$('#main').innerHTML='<div class="card">No se pud
  const {data:{session}}=await sb.auth.getSession();if(!session)return vLogin();S.user=session.user;await loadApp()}
 async function loadApp(){const {data:m,error}=await sb.from('miembros').select('nombre,rol').eq('user_id',S.user.id).maybeSingle();
  if(error||!m||!['admin','comision','tesorero'].includes(m.rol)){await sb.auth.signOut();return vLogin('Tu usuario no tiene acceso al panel. Pedile a la comisión que te habilite.')}
- S.miembro=m;$('#who').innerHTML=`<span>${esc(m.nombre)} · ${esc(m.rol)}</span><button class="btn sm" id="out">Salir</button>`;await loadData()}
+ S.miembro=m;$('#who').innerHTML=`<span>${esc(m.nombre)} · ${esc(m.rol)}</span><button class="btn sm" data-mipass="1">Mi contraseña</button><button class="btn sm" id="out">Salir</button>`;await loadData()}
 async function loadData(){$('#main').innerHTML='<div class="empty">Cargando fichas…</div>';
  const {data,error}=await sb.from('fichas').select('id,tramite,creado,estado,es_prueba,titular_nombre,titular_documento,email,celular,cantidad_lotes,lote_sin_identificar,datos,nota_comision,revisado_en,ficha_lotes(lote_id,reclamo)').order('creado',{ascending:false});
  if(error){$('#main').innerHTML=`<div class="card">No se pudieron leer las fichas: ${esc(error.message)}</div>`;return}
@@ -288,6 +288,48 @@ document.addEventListener('click',e=>{const t=e.target.closest('[data-tsub],[dat
  if(d.tsub){S.tsub=d.tsub;render()}if(d.tfe){S.tfe=d.tfe;render()}if(d.trel){S.tes=null;render()}});
 document.addEventListener('input',e=>{if(e.target.id!=='tq')return;S.tq=e.target.value;const p=e.target.selectionStart;render();const q=$('#tq');q.focus();q.setSelectionRange(p,p)});
 
+
+// ---------- Usuarios del panel (solo administradores) + cambiar mi contraseña ----------
+const ROLES={admin:'Administrador (todo + usuarios)',comision:'Comisión',tesorero:'Tesorería'};
+async function loadUsr(){const r=await sb.rpc('admin_usuarios');S.us={err:r.error?r.error.message:null,lista:r.data||[]};if(S.v==='usuarios')render()}
+function vUsr(){const U=S.us;if(!U){loadUsr();return'<div class="card"><div class="empty">Cargando usuarios…</div></div>'}
+ if(U.err)return`<div class="card">${/function|does not exist|schema cache/i.test(U.err)?'Para gestionar usuarios desde acá, ejecutá el script <b>14_usuarios_panel.sql</b> en Supabase.':'No se pudo cargar: '+esc(U.err)}</div>`;
+ const F=S.uf;let form='';
+ if(F){const x=F.id?U.lista.find(y=>y.user_id===F.id):{};const sel=`<label>Rol<select id="ur">${Object.entries(ROLES).map(([k,l])=>`<option value="${k}" ${(x.rol||'comision')===k?'selected':''}>${l}</option>`).join('')}</select></label>`;
+  form=`<form id="uf" class="gform"><b style="grid-column:1/-1">${F.modo==='crear'?'Nuevo usuario del panel':F.modo==='contrasena'?'Nueva contraseña para '+esc(x.nombre):'Editar '+esc(x.nombre)}</b>
+   ${F.modo==='crear'?`<label>Nombre y apellido<input id="un" required></label><label>Email (será su usuario)<input id="ue" type="email" autocomplete="off" required></label>${sel}`:''}
+   ${F.modo==='editar'?`<label>Nombre y apellido<input id="un" value="${esc(x.nombre)}" required></label>${sel}`:''}
+   ${F.modo!=='editar'?`<label>Contraseña <span class="help" style="font-weight:400">(mínimo 8 caracteres)</span><input id="up" type="text" autocomplete="new-password" required></label>`:''}
+   <div class="gacts"><button class="btn primary" id="ub">${F.modo==='crear'?'Crear usuario':'Guardar'}</button><button type="button" class="btn" data-ux="1">Cancelar</button></div>
+   <div class="err" id="uerr" style="grid-column:1/-1"></div>
+   ${F.modo!=='editar'?'<p class="help" style="grid-column:1/-1">Pasale la contraseña en privado (en persona o en un mensaje aparte que después se borre). Después la puede cambiar con el botón "Mi contraseña", arriba a la derecha.</p>':''}</form>`}
+ const rows=U.lista.map(x=>`<tr><td><b>${esc(x.nombre)}</b>${x.yo?' <span class="help">(vos)</span>':''}</td><td class="mono">${esc(x.email)}</td><td>${esc(ROLES[x.rol]||x.rol)}</td>
+  <td><span class="gst ${x.activo?'on':'off'}">${x.activo?'Habilitado':'Deshabilitado'}</span></td><td>${fdt(x.ultimo_ingreso)}</td>
+  <td><div class="gacts"><button class="btn sm" data-ue="${x.user_id}">Editar</button><button class="btn sm" data-up="${x.user_id}">Cambiar contraseña</button>${x.yo?'':`<button class="btn sm" data-ua="${x.user_id}" data-val="${!x.activo}">${x.activo?'Deshabilitar':'Habilitar'}</button>`}</div></td></tr>`).join('');
+ return`<div class="card"><div class="tabs" style="justify-content:space-between;align-items:center"><h2 style="margin:0">Usuarios del panel</h2>${F?'':'<button class="btn sm primary" data-unew="1">+ Nuevo usuario</button>'}</div>
+  <p class="help">Quiénes pueden entrar a este panel. <b>Administrador</b>: todo, incluida esta pestaña. <b>Comisión</b> y <b>Tesorería</b>: ven y usan el panel, pero no gestionan usuarios. Al deshabilitar a alguien no puede volver a entrar.</p>
+  ${form}<div class="tablebox"><table class="tbl-g"><thead><tr><th>Nombre</th><th>Email</th><th>Rol</th><th>Estado</th><th>Último ingreso</th><th>Acciones</th></tr></thead><tbody>${rows}</tbody></table></div></div>`}
+async function uAccion(p,btn){if(btn)btn.disabled=true;const {data,error}=await sb.rpc('admin_usuario',{p});if(btn)btn.disabled=false;if(error)return error.message;S.us.lista=data||[];S.uf=null;render();return null}
+document.addEventListener('submit',async e=>{
+ if(e.target.id==='uf'){e.preventDefault();const F=S.uf,p={accion:F.modo,user_id:F.id||null};
+  if(F.modo==='crear'){p.nombre=$('#un').value;p.email=$('#ue').value;p.rol=$('#ur').value;p.password=$('#up').value}
+  if(F.modo==='editar'){p.nombre=$('#un').value;p.rol=$('#ur').value}
+  if(F.modo==='contrasena')p.password=$('#up').value;
+  const m=await uAccion(p,$('#ub'));if(m)$('#uerr').textContent=m}
+ if(e.target.id==='mpf'){e.preventDefault();const a=$('#mp1').value,b=$('#mp2').value,er=$('#mperr');er.textContent='';
+  if(a.length<8){er.textContent='Mínimo 8 caracteres.';return}if(a!==b){er.textContent='Las dos contraseñas no coinciden.';return}
+  const {error}=await sb.auth.updateUser({password:a});if(error){er.textContent=error.message;return}$('#mpdlg').remove();alert('Listo, tu contraseña quedó cambiada.')}});
+document.addEventListener('click',async e=>{const t=e.target.closest('[data-unew],[data-ue],[data-up],[data-ua],[data-ux],[data-mipass],[data-mpx]');if(!t)return;const d=t.dataset;
+ if(d.unew){S.uf={modo:'crear'};render();$('#un').focus();return}
+ if(d.ue){S.uf={modo:'editar',id:d.ue};render();return}
+ if(d.up){S.uf={modo:'contrasena',id:d.up};render();$('#up').focus();return}
+ if(d.ux){S.uf=null;render();return}
+ if(d.ua){const on=d.val==='true',x=S.us.lista.find(y=>y.user_id===d.ua);if(!on&&!confirm(`¿Deshabilitar a ${x.nombre}? No va a poder entrar al panel.`))return;const m=await uAccion({accion:'activo',user_id:d.ua,activo:on},t);if(m)alert(m);return}
+ if(d.mipass){document.body.insertAdjacentHTML('beforeend',`<div id="mpdlg" style="position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;z-index:50"><form id="mpf" class="card" style="width:min(380px,92vw)"><h2>Cambiar mi contraseña</h2>
+  <label>Nueva contraseña<input id="mp1" type="password" autocomplete="new-password"></label><label>Repetila<input id="mp2" type="password" autocomplete="new-password"></label>
+  <div class="err" id="mperr"></div><div class="gacts"><button class="btn primary">Guardar</button><button type="button" class="btn" data-mpx="1">Cancelar</button></div></form></div>`);$('#mp1').focus();return}
+ if(d.mpx){$('#mpdlg').remove();return}});
+
 // ---------- vistas ----------
 function vResumen(){const act=S.fichas.filter(f=>f.estado!=='rechazada');const lotes=Object.keys(S.byLot).length;const conf=Object.keys(S.byLot).filter(id=>lotClass(id)==='conf').length;
  const K=(l,v,go,on,extra='')=>`<button type="button" class="kpi" data-kpi="${go}" aria-pressed="${on}"><span class="l">${l}</span><span class="v">${v}${extra}</span><span class="go">Ver →</span></button>`;
@@ -295,7 +337,7 @@ function vResumen(){const act=S.fichas.filter(f=>f.estado!=='rechazada');const l
  return`<div class="kpis">${K('Fichas recibidas',act.length,'lista|todas',S.v==='lista'&&S.f==='todas')}${K('Lotes con ficha',lotes,'plano',S.v==='plano',de(202))}
  ${K('Pendientes de revisar',act.filter(f=>f.estado==='pendiente').length,'lista|pendiente',S.v==='lista'&&S.f==='pendiente')}${K('Lotes con conflicto',conf,'lista|conflicto',S.v==='lista'&&S.f==='conflicto')}
  ${K('Sin lote identificado',act.filter(f=>!(f.ficha_lotes||[]).length).length,'lista|sinlote',S.v==='lista'&&S.f==='sinlote')}${c?K('Del padrón ya cargaron',c.filter(x=>x.est==='verif'||x.est==='pend').length,'faltan|cargo',S.v==='faltan'&&S.pf==='cargo',de(c.length)):''}</div>
- <div class="tabs"><button type="button" data-v="plano" aria-pressed="${S.v==='plano'}">Plano</button><button type="button" data-v="lista" aria-pressed="${S.v==='lista'}">Fichas</button><button type="button" data-v="faltan" aria-pressed="${S.v==='faltan'}">Padrón</button><button type="button" data-v="deuda" aria-pressed="${S.v==='deuda'}">Deuda</button><button type="button" data-v="tesoreria" aria-pressed="${S.v==='tesoreria'}">Tesorería</button><button type="button" data-v="accesos" aria-pressed="${S.v==='accesos'}">Visitas e inquilinos</button><button type="button" data-v="guardia" aria-pressed="${S.v==='guardia'}">Guardia</button><span style="margin-left:auto;display:flex;gap:6px"><button type="button" class="btn sm" id="backup">Descargar copia (Excel)</button><button type="button" class="btn sm" id="reload">Actualizar</button></span></div>`}
+ <div class="tabs"><button type="button" data-v="plano" aria-pressed="${S.v==='plano'}">Plano</button><button type="button" data-v="lista" aria-pressed="${S.v==='lista'}">Fichas</button><button type="button" data-v="faltan" aria-pressed="${S.v==='faltan'}">Padrón</button><button type="button" data-v="deuda" aria-pressed="${S.v==='deuda'}">Deuda</button><button type="button" data-v="tesoreria" aria-pressed="${S.v==='tesoreria'}">Tesorería</button><button type="button" data-v="accesos" aria-pressed="${S.v==='accesos'}">Visitas e inquilinos</button><button type="button" data-v="guardia" aria-pressed="${S.v==='guardia'}">Guardia</button>${S.miembro&&S.miembro.rol==='admin'?`<button type="button" data-v="usuarios" aria-pressed="${S.v==='usuarios'}">Usuarios</button>`:''}<span style="margin-left:auto;display:flex;gap:6px"><button type="button" class="btn sm" id="backup">Descargar copia (Excel)</button><button type="button" class="btn sm" id="reload">Actualizar</button></span></div>`}
 const $$=n=>n==null?'—':'$ '+Math.round(n).toLocaleString('es-AR');
 const EST={verif:['verificada','Verificada'],pend:['pendiente','Pendiente'],posible:['pendiente','Posible'],falta:['rechazada','No cargó']};
 function vFaltan(){const c=cruce();if(!c)return`<div class="card">Para ver el padrón, ejecutá el script <b>04_lanzamiento.sql</b> en Supabase.</div>`;const q=S.q.trim().toLowerCase();
@@ -385,7 +427,7 @@ function vLista(){const q=S.q.trim().toLowerCase();let rs=S.fichas.filter(f=>S.f
  <td>${esc(f.email||'—')}<br><span class="mono">${esc(tel(f.celular))}</span></td><td><span class="st ${f.estado}">${f.estado}</span></td></tr>`).join(''):`<tr><td colspan="6" class="empty">Todavía no hay fichas${S.f!=='todas'?' con ese filtro':''}.</td></tr>`}
  </tbody></table></div></div>`}
 function render(){if(!S.miembro)return;const mb=$('#mapbox'),sc=mb?[mb.scrollLeft,mb.scrollTop]:null;
- $('#main').innerHTML=vResumen()+(S.v==='plano'?vPlano():S.v==='faltan'?vFaltan():S.v==='deuda'?vDeuda():S.v==='guardia'?vGuardia():S.v==='accesos'?vAccesos():S.v==='tesoreria'?vTes():vLista());sizeMap();const nb=$('#mapbox');if(nb&&sc){nb.scrollLeft=sc[0];nb.scrollTop=sc[1]}$('#dr').innerHTML=drawer()}
+ $('#main').innerHTML=vResumen()+(S.v==='plano'?vPlano():S.v==='faltan'?vFaltan():S.v==='deuda'?vDeuda():S.v==='guardia'?vGuardia():S.v==='accesos'?vAccesos():S.v==='tesoreria'?vTes():S.v==='usuarios'?vUsr():vLista());sizeMap();const nb=$('#mapbox');if(nb&&sc){nb.scrollLeft=sc[0];nb.scrollTop=sc[1]}$('#dr').innerHTML=drawer()}
 // ---------- tarjeta ----------
 // ---------- cruce de una ficha con el padrón ----------
 const digs=t=>(String(t||'').replace(/[\s.\-()]/g,'').match(/\d{8,}/g)||[]).map(x=>x.slice(-8));
