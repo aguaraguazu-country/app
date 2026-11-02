@@ -51,7 +51,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{ou
 </head>
 <body>
 <div class="wrap">
-<header><div><div class="eyebrow">Aguará Guazú Country</div><h1>Portería<span class="agver" aria-label="Versión del sistema" style="font:500 12px/1.2 system-ui,sans-serif;color:var(--muted,#5d6862);margin-left:10px;white-space:nowrap;vertical-align:middle;letter-spacing:0">v1.34 · 02/11/26 19:01</span></h1></div><button class="btn sm" id="out" hidden>Salir</button></header>
+<header><div><div class="eyebrow">Aguará Guazú Country</div><h1>Portería<span class="agver" aria-label="Versión del sistema" style="font:500 12px/1.2 system-ui,sans-serif;color:var(--muted,#5d6862);margin-left:10px;white-space:nowrap;vertical-align:middle;letter-spacing:0">v1.35 · 02/11/26 19:09</span></h1></div><button class="btn sm" id="out" hidden>Salir</button></header>
 <main id="main"><p class="help">Cargando…</p></main>
 </div>
 <div id="layer"></div>
@@ -120,6 +120,7 @@ function vSheet(){const s=S.sheet,L=$('#layer');if(!s){L.innerHTML='';return}
   <div class="err" id="nerr"></div><button class="btn primary" id="ng">Autorizar e ingresar ahora</button>`}
  L.innerHTML=`<div class="sheet" data-cerrar="1"><div role="dialog" aria-label="Llegó alguien sin aviso">${body}<button class="btn" data-cerrar="1">Cancelar</button></div></div>`;
  const f=$(s.socio?'#nn':'#sq');if(f&&!s.noFocus)f.focus();s.noFocus=false}
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&S.sheet){S.sheet=null;S.busy=false;vSheet();vMain()}});
 function leerSheet(){const s=S.sheet;if(!s||!s.socio)return;s.nombre=$('#nn').value;s.dni=$('#nd').value;s.patente=$('#np').value;s.autorizo=$('#na').value;s.hasta=$('#nh').value}
 
 async function cargar(){try{const r=await rpc('guardia_hoy',{p_token:S.tok});if(r.error){$('#main').innerHTML='<div class="card">No se pudo cargar. Revisá la conexión.</div>';return}S.d=r.data;if(!S.busy)vMain()}catch(_){}}

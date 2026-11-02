@@ -129,7 +129,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 </head>
 <body>
 <div class="wrap">
-<header><div><div class="eyebrow">Asociación Civil Aguará Guazú Country · Comisión Directiva</div><h1>Panel de la comisión<span class="agver" aria-label="Versión del sistema" style="font:500 12px/1.2 system-ui,sans-serif;color:var(--muted,#5d6862);margin-left:10px;white-space:nowrap;vertical-align:middle;letter-spacing:0">v1.34 · 02/11/26 19:01</span></h1></div><div class="who" id="who"></div></header>
+<header><div><div class="eyebrow">Asociación Civil Aguará Guazú Country · Comisión Directiva</div><h1>Panel de la comisión<span class="agver" aria-label="Versión del sistema" style="font:500 12px/1.2 system-ui,sans-serif;color:var(--muted,#5d6862);margin-left:10px;white-space:nowrap;vertical-align:middle;letter-spacing:0">v1.35 · 02/11/26 19:09</span></h1></div><div class="who" id="who"></div></header>
 <main id="main"><div class="empty">Cargando…</div></main>
 </div>
 <div id="tip" hidden></div><div id="dr"></div>
@@ -318,7 +318,9 @@ document.addEventListener('mousedown',e=>{const o=e.target.closest('[data-cbo]')
 document.addEventListener('keydown',e=>{const id=e.target.id;if(!(id in CB))return;const L=$('#'+id+'_l');if(!L||L.hidden){if(e.key==='ArrowDown')cbOpen(id,true);return}
  const os=[...L.querySelectorAll('[data-cbo]')],k=os.findIndex(x=>x.classList.contains('on'));
  if(e.key==='ArrowDown'||e.key==='ArrowUp'){e.preventDefault();const n=Math.max(0,Math.min(os.length-1,k+(e.key==='ArrowDown'?1:-1)));os.forEach((x,j)=>x.classList.toggle('on',j===n));os[n]&&os[n].scrollIntoView({block:'nearest'})}
- else if(e.key==='Enter'&&os[k]){e.preventDefault();e.target.value=L._rs[k].v;cbClose(id)}else if(e.key==='Escape'||e.key==='Tab')cbClose(id)});
+ else if(e.key==='Enter'&&os[k]){e.preventDefault();e.target.value=L._rs[k].v;cbClose(id)}else if(e.key==='Escape'){e.preventDefault();cbClose(id)}else if(e.key==='Tab')cbClose(id)});
+// Escape cierra el formulario de carga (si hay una lista desplegada, primero cierra la lista)
+document.addEventListener('keydown',e=>{if(e.key!=='Escape'||e.defaultPrevented)return;const b=$('#tfm');if(b&&b.innerHTML){e.preventDefault();b.innerHTML=''}});
 const lev=(a,b)=>{const d=[...Array(b.length+1).keys()];for(let i=1;i<=a.length;i++){let p=d[0];d[0]=i;for(let j=1;j<=b.length;j++){const t=d[j];d[j]=Math.min(d[j]+1,d[j-1]+1,p+(a[i-1]===b[j-1]?0:1));p=t}}return d[b.length]};
 function tProveedores(){const T=S.tes,c={};T.gastos.map(g=>g.proveedor).concat((T.band||[]).filter(b=>b.tipo==='gasto'&&b.estado!=='anulado').map(b=>(b.datos||{}).proveedor))
  .filter(Boolean).forEach(x=>{const k=nrm(x);if(!k)return;c[k]=c[k]||{};c[k][x]=(c[k][x]||0)+1});
@@ -686,7 +688,7 @@ document.addEventListener('click',async e=>{const t=e.target;
   const cur=S.fichas.find(x=>x.id===id),upd={estado:st.dataset.set,nota_comision:($('#nota-'+id).value||null)};if(!cur||cur.estado!==st.dataset.set){upd.revisado_por=S.user.id;upd.revisado_en=new Date().toISOString()}
   const {error}=await sb.from('fichas').update(upd).eq('id',id);
   if(error){st.disabled=false;$('#ferr-'+id).textContent='No se pudo guardar: '+error.message;return}const keep=S.open;await loadData();S.open=keep;render()}});
-document.addEventListener('keydown',e=>{if(e.key==='Escape'&&S.open){S.open=null;S.edit=null;render()}const lt=e.target.closest&&e.target.closest('[data-lot]');if(lt&&e.key==='Enter'){S.open={lot:lt.dataset.lot};render()}});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&S.open&&!e.defaultPrevented){S.open=null;S.edit=null;render()}const lt=e.target.closest&&e.target.closest('[data-lot]');if(lt&&e.key==='Enter'){S.open={lot:lt.dataset.lot};render()}});
 document.addEventListener('input',e=>{if(e.target.id==='q'){S.q=e.target.value;const p=e.target.selectionStart;render();const q=$('#q');q.focus();q.setSelectionRange(p,p)}});
 function backup(){const c=v=>{v=v==null?'':String(v);return/[;"\n\r]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v};
  const H=['tramite','recibida','estado','es_prueba','titular','documento','email','celular','lotes_declarados','lotes','lote_sin_identificar','domicilio','acepta_avisos','vehiculos','nota_comision','datos_completos_json'];
