@@ -115,6 +115,9 @@ dt{color:var(--muted)}dd{margin:0;min-width:0;overflow-wrap:anywhere}
 .gform{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;align-items:end;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:12px}
 .gacts{display:flex;flex-wrap:wrap;gap:6px}.gst{font-weight:700;font-size:12px;border-radius:999px;padding:2px 9px}.gst.on{color:var(--good);background:var(--good-bg)}.gst.off{color:var(--crit);background:var(--crit-bg)}
 .tbl-g{min-width:640px}
+.gst{white-space:nowrap}.tbl-g td b,.tbl-g td{font-variant-numeric:tabular-nums}.tbl-g td:nth-child(n+3){white-space:nowrap}.tk{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px}.tk div{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px 12px}.tk small{display:block;color:var(--muted);font-size:12px}.tk b{font-size:20px;font-variant-numeric:tabular-nums}
+.mc{display:inline-block;min-width:22px;text-align:center;border-radius:5px;font-size:11px;font-weight:700;padding:1px 3px;margin:1px}.mc.ok{background:var(--good-bg);color:var(--good)}.mc.no{background:var(--crit-bg);color:var(--crit)}.mc.wa{background:var(--warn-bg);color:var(--warn)}.mc.fu{color:var(--muted)}
+.okline{border-radius:10px;padding:10px 12px;font-size:14px}.okline.ok{background:var(--good-bg);color:var(--good)}.okline.no{background:var(--crit-bg);color:var(--crit)}
 .note{font-size:13px;background:var(--warn-bg);border-radius:8px;padding:8px 10px}
 .empty{padding:24px;text-align:center;color:var(--muted)}
 button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
@@ -122,7 +125,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 </head>
 <body>
 <div class="wrap">
-<header><div><div class="eyebrow">Asociación Civil Aguará Guazú Country · Comisión Directiva</div><h1>Panel de la comisión<span class="agver" aria-label="Versión del sistema" style="font:500 12px/1.2 system-ui,sans-serif;color:var(--muted,#5d6862);margin-left:10px;white-space:nowrap;vertical-align:middle;letter-spacing:0">v1.30 · 01/11/26 20:18</span></h1></div><div class="who" id="who"></div></header>
+<header><div><div class="eyebrow">Asociación Civil Aguará Guazú Country · Comisión Directiva</div><h1>Panel de la comisión<span class="agver" aria-label="Versión del sistema" style="font:500 12px/1.2 system-ui,sans-serif;color:var(--muted,#5d6862);margin-left:10px;white-space:nowrap;vertical-align:middle;letter-spacing:0">v1.31 · 02/11/26 18:04</span></h1></div><div class="who" id="who"></div></header>
 <main id="main"><div class="empty">Cargando…</div></main>
 </div>
 <div id="tip" hidden></div><div id="dr"></div>
@@ -243,6 +246,48 @@ document.addEventListener('click',e=>{const t=e.target.closest('[data-axs],[data
  if(d.axs){S.axs=d.axs;render()}if(d.axf){S.axf=d.axf;render()}if(d.axr){S.ax=null;render()}});
 document.addEventListener('input',e=>{if(e.target.id!=='axq')return;S.axq=e.target.value;const p=e.target.selectionStart;render();const q=$('#axq');q.focus();q.setSelectionRange(p,p)});
 
+
+// ---------- Tesorería (etapa 1: espejo de la planilla, solo lectura) ----------
+async function loadTes(){const [r,c,p,g]=await Promise.all([sb.rpc('tes_resumen'),sb.rpc('tes_cuenta_corriente'),
+  sb.from('tes_pagos').select('orden,socio_id,fecha,importe,medio,comprobante,factura,tipo,obs,adjunto').order('fecha',{ascending:false}).order('orden',{ascending:false}).limit(300),
+  sb.from('tes_gastos').select('fecha,concepto,categoria,proveedor,importe,sale_de,comprobante,nro,vale,adjunto').order('fecha',{ascending:false}).limit(300)]);
+ const err=r.error||c.error||p.error||g.error;S.tes={err:err?err.message:null,r:r.data,cc:c.data||[],pagos:p.data||[],gastos:g.data||[]};if(S.v==='tesoreria')render()}
+const $p=n=>(n<0?'− ':'')+'$ '+Math.abs(Math.round(+n||0)).toLocaleString('es-AR');
+function vTes(){const T=S.tes;if(!T){loadTes();return'<div class="card"><div class="empty">Cargando tesorería…</div></div>'}
+ if(T.err)return`<div class="card">${/function|does not exist|schema cache|relation/i.test(T.err)?'Para ver la tesorería en el sistema, ejecutá el script <b>12_tesoreria.sql</b> en Supabase y después actualizá la planilla (menú Aguará Guazú → Actualizar socios).':'No se pudo cargar: '+esc(T.err)}</div>`;
+ const r=T.r||{},sub=S.tsub||'cc',q=(S.tq||'').trim().toLowerCase(),fe=S.tfe||'todos',E=r.estados||{};
+ const sync=r.sincronizado?new Date(r.sincronizado):null,min=sync?Math.round((Date.now()-sync)/60000):null;
+ const dif=r.diferencias||[];
+ const K=(t,v,c)=>`<div><small>${t}</small><b style="${c?'color:'+c:''}">${v}</b></div>`;
+ let body='';
+ if(sub==='cc'){const F=[['todos','Todos'],['Debe','Deben'],['Deuda antigua','Deuda antigua'],['A pagar','A pagar'],['Al día','Al día']];
+  const rs=T.cc.filter(x=>fe==='todos'||x.estado===fe).filter(x=>!q||(x.socio+' '+x.socio_id+' '+(x.lotes||'')).toLowerCase().includes(q)).sort((a,b)=>b.total-a.total);
+  const chip=m=>{const e=m.estado||'',cl=e[0]==='✔'?'ok':e[0]==='✘'?'no':e[0]==='⏳'?'wa':'fu';const d=new Date(m.mes+'T12:00:00').toLocaleDateString('es-AR',{month:'short'});return`<span class="mc ${cl}" title="${esc(d+': '+e)}">${esc(d.slice(0,3))}</span>`};
+  body=`<div class="tabs">${F.map(([k,l])=>`<button type="button" data-tfe="${k}" aria-pressed="${fe===k}">${l}${k==='todos'?'':' ('+(E[k]||0)+')'}</button>`).join('')}</div>
+  <div class="tablebox"><table class="tbl-g"><thead><tr><th>Socio</th><th>Meses (nov-26 →)</th><th>Deuda antigua / meses ant.</th><th>Vencido</th><th>A pagar</th><th>Total</th><th>Estado</th><th>Último pago</th></tr></thead><tbody>
+  ${rs.map(x=>`<tr><td><b>${esc(x.socio)}</b><div class="help">${esc(x.socio_id)}${x.lotes?' · '+esc(x.lotes):''}${x.cant_lotes>1?' · '+x.cant_lotes+' lotes':''}</div></td><td style="white-space:nowrap">${(x.meses||[]).slice(0,8).map(chip).join('')}</td>
+   <td>${x.deuda_antigua?$p(x.deuda_antigua):'—'}${x.deuda_antigua?`<div class="help">${x.tipo_deuda==='Antigua'?'antigua (plan de pagos)':'meses anteriores'}</div>`:''}</td><td>${x.cuotas_vencidas?$p(x.cuotas_vencidas):'—'}</td><td>${x.a_pagar?$p(x.a_pagar):'—'}</td>
+   <td><b>${x.total<0?'a favor '+$p(-x.total):$p(x.total)}</b></td><td><span class="gst ${x.estado==='Al día'?'on':x.estado==='A pagar'?'':'off'}" ${x.estado==='A pagar'?'style="color:var(--warn);background:var(--warn-bg)"':''}>${esc(x.estado)}</span></td><td>${x.ultimo_pago?fD(x.ultimo_pago):'—'}</td></tr>`).join('')||'<tr><td colspan="8" class="help">Sin resultados.</td></tr>'}</tbody></table></div>`}
+ else if(sub==='pagos'){const nom={};T.cc.forEach(x=>nom[x.socio_id]=x.socio);
+  const rs=T.pagos.filter(p=>!q||((nom[p.socio_id]||'')+' '+p.socio_id+' '+(p.comprobante||'')+' '+(p.factura||'')).toLowerCase().includes(q));
+  body=`<div class="tablebox"><table class="tbl-g"><thead><tr><th>Fecha</th><th>Socio</th><th>Importe</th><th>Medio</th><th>Comprobante</th><th>Factura</th><th>Tipo</th></tr></thead><tbody>
+  ${rs.map(p=>`<tr><td>${fD(p.fecha)}</td><td>${esc(nom[p.socio_id]||p.socio_id)}<div class="help">${esc(p.socio_id)}</div></td><td><b>${$p(p.importe)}</b></td><td>${esc(p.medio||'—')}</td><td>${p.adjunto?`<a href="${esc(p.adjunto)}" target="_blank" rel="noopener">${esc(p.comprobante||'ver')}</a>`:esc(p.comprobante||'—')}</td><td>${esc(p.factura||'—')}</td><td>${p.tipo==='Pago'?'Pago':'<span class="help">'+esc(p.tipo)+'</span>'}</td></tr>`).join('')||'<tr><td colspan="7" class="help">Sin pagos.</td></tr>'}</tbody></table></div>`}
+ else{const rs=T.gastos.filter(g=>!q||(g.concepto+' '+(g.categoria||'')+' '+(g.proveedor||'')).toLowerCase().includes(q));
+  body=`<div class="tablebox"><table class="tbl-g"><thead><tr><th>Fecha</th><th>Concepto</th><th>Categoría</th><th>Proveedor</th><th>Importe</th><th>Sale de</th><th>Comprobante</th></tr></thead><tbody>
+  ${rs.map(g=>`<tr><td>${fD(g.fecha)}</td><td>${esc(g.concepto)}</td><td>${esc(g.categoria||'—')}</td><td>${esc(g.proveedor||'—')}</td><td><b>${$p(g.importe)}</b></td><td>${esc(g.sale_de||'—')}</td><td>${g.adjunto?`<a href="${esc(g.adjunto)}" target="_blank" rel="noopener">${esc((g.comprobante||'')+' '+(g.vale||g.nro||''))||'ver'}</a>`:esc(((g.comprobante||'')+' '+(g.vale||g.nro||'')).trim()||'—')}</td></tr>`).join('')||'<tr><td colspan="7" class="help">Sin gastos.</td></tr>'}</tbody></table></div>`}
+ return`<div class="card"><div class="tabs" style="justify-content:space-between;align-items:center"><h2 style="margin:0">Tesorería</h2><span class="help">${sync?'Datos de la planilla de tesorería · actualizados hace '+(min<60?min+' min':Math.round(min/60)+' h'):'Todavía no se sincronizó con la planilla'} · <button class="btn sm" data-trel="1">Actualizar</button></span></div>
+  <div class="okline ${dif.length?'no':'ok'}">${dif.length?`⚠ El sistema y la planilla no coinciden en ${dif.length} socio${dif.length>1?'s':''}: ${dif.slice(0,6).map(d=>esc(d.socio)+' (sistema '+$p(d.sistema)+' · planilla '+$p(d.planilla)+')').join(' · ')}`:`✔ El cálculo del sistema coincide con la planilla en los ${r.socios||0} socios.`}</div>
+  <div class="tk">${K('Deuda total',$p(r.deuda_total),'var(--crit)')}${K('Deuda antigua y meses anteriores',$p(r.deuda_antigua))}${K('Cuotas vencidas impagas',$p(r.cuotas_vencidas))}${K('A cobrar este mes (no vencido)',$p(r.a_pagar),'var(--warn)')}
+   ${K('Cobrado este mes · efectivo',$p(r.cobrado_mes_efectivo),'var(--good)')}${K('Cobrado este mes · banco',$p(r.cobrado_mes_banco),'var(--good)')}${K('Gastos del mes',$p(r.gastos_mes),'var(--crit)')}${K('Saldo caja / banco',$p(r.saldo_efectivo)+' / '+$p(r.saldo_banco))}
+   ${K('Pagaron o adelantaron',E['Al día']||0,'var(--good)')}${K('A pagar (vence el '+(r.vencimiento_dia||10)+')',E['A pagar']||0,'var(--warn)')}${K('Deben',(E['Debe']||0)+' + '+(E['Deuda antigua']||0)+' con deuda antigua','var(--crit)')}</div>
+  ${r.pagos_sin_medio?`<p class="note">${r.pagos_sin_medio} pago(s) sin medio de pago cargado: no entran en los saldos de caja ni banco.</p>`:''}</div>
+  <div class="card"><div class="tabs" style="justify-content:space-between;align-items:center"><span style="display:flex;gap:6px"><button type="button" data-tsub="cc" aria-pressed="${sub==='cc'}">Cuenta corriente</button><button type="button" data-tsub="pagos" aria-pressed="${sub==='pagos'}">Pagos (${T.pagos.length})</button><button type="button" data-tsub="gastos" aria-pressed="${sub==='gastos'}">Gastos (${T.gastos.length})</button></span>
+  <input type="search" id="tq" placeholder="Buscar socio, lote, comprobante…" value="${esc(S.tq||'')}" style="flex:1 1 220px;max-width:340px"></div>
+  <p class="help">Solo lectura por ahora: los pagos y gastos se cargan en la planilla de tesorería y llegan acá cada hora.</p>${body}</div>`}
+document.addEventListener('click',e=>{const t=e.target.closest('[data-tsub],[data-tfe],[data-trel]');if(!t)return;const d=t.dataset;
+ if(d.tsub){S.tsub=d.tsub;render()}if(d.tfe){S.tfe=d.tfe;render()}if(d.trel){S.tes=null;render()}});
+document.addEventListener('input',e=>{if(e.target.id!=='tq')return;S.tq=e.target.value;const p=e.target.selectionStart;render();const q=$('#tq');q.focus();q.setSelectionRange(p,p)});
+
 // ---------- vistas ----------
 function vResumen(){const act=S.fichas.filter(f=>f.estado!=='rechazada');const lotes=Object.keys(S.byLot).length;const conf=Object.keys(S.byLot).filter(id=>lotClass(id)==='conf').length;
  const K=(l,v,go,on,extra='')=>`<button type="button" class="kpi" data-kpi="${go}" aria-pressed="${on}"><span class="l">${l}</span><span class="v">${v}${extra}</span><span class="go">Ver →</span></button>`;
@@ -250,7 +295,7 @@ function vResumen(){const act=S.fichas.filter(f=>f.estado!=='rechazada');const l
  return`<div class="kpis">${K('Fichas recibidas',act.length,'lista|todas',S.v==='lista'&&S.f==='todas')}${K('Lotes con ficha',lotes,'plano',S.v==='plano',de(202))}
  ${K('Pendientes de revisar',act.filter(f=>f.estado==='pendiente').length,'lista|pendiente',S.v==='lista'&&S.f==='pendiente')}${K('Lotes con conflicto',conf,'lista|conflicto',S.v==='lista'&&S.f==='conflicto')}
  ${K('Sin lote identificado',act.filter(f=>!(f.ficha_lotes||[]).length).length,'lista|sinlote',S.v==='lista'&&S.f==='sinlote')}${c?K('Del padrón ya cargaron',c.filter(x=>x.est==='verif'||x.est==='pend').length,'faltan|cargo',S.v==='faltan'&&S.pf==='cargo',de(c.length)):''}</div>
- <div class="tabs"><button type="button" data-v="plano" aria-pressed="${S.v==='plano'}">Plano</button><button type="button" data-v="lista" aria-pressed="${S.v==='lista'}">Fichas</button><button type="button" data-v="faltan" aria-pressed="${S.v==='faltan'}">Padrón</button><button type="button" data-v="deuda" aria-pressed="${S.v==='deuda'}">Deuda</button><button type="button" data-v="accesos" aria-pressed="${S.v==='accesos'}">Visitas e inquilinos</button><button type="button" data-v="guardia" aria-pressed="${S.v==='guardia'}">Guardia</button><span style="margin-left:auto;display:flex;gap:6px"><button type="button" class="btn sm" id="backup">Descargar copia (Excel)</button><button type="button" class="btn sm" id="reload">Actualizar</button></span></div>`}
+ <div class="tabs"><button type="button" data-v="plano" aria-pressed="${S.v==='plano'}">Plano</button><button type="button" data-v="lista" aria-pressed="${S.v==='lista'}">Fichas</button><button type="button" data-v="faltan" aria-pressed="${S.v==='faltan'}">Padrón</button><button type="button" data-v="deuda" aria-pressed="${S.v==='deuda'}">Deuda</button><button type="button" data-v="tesoreria" aria-pressed="${S.v==='tesoreria'}">Tesorería</button><button type="button" data-v="accesos" aria-pressed="${S.v==='accesos'}">Visitas e inquilinos</button><button type="button" data-v="guardia" aria-pressed="${S.v==='guardia'}">Guardia</button><span style="margin-left:auto;display:flex;gap:6px"><button type="button" class="btn sm" id="backup">Descargar copia (Excel)</button><button type="button" class="btn sm" id="reload">Actualizar</button></span></div>`}
 const $$=n=>n==null?'—':'$ '+Math.round(n).toLocaleString('es-AR');
 const EST={verif:['verificada','Verificada'],pend:['pendiente','Pendiente'],posible:['pendiente','Posible'],falta:['rechazada','No cargó']};
 function vFaltan(){const c=cruce();if(!c)return`<div class="card">Para ver el padrón, ejecutá el script <b>04_lanzamiento.sql</b> en Supabase.</div>`;const q=S.q.trim().toLowerCase();
@@ -340,7 +385,7 @@ function vLista(){const q=S.q.trim().toLowerCase();let rs=S.fichas.filter(f=>S.f
  <td>${esc(f.email||'—')}<br><span class="mono">${esc(tel(f.celular))}</span></td><td><span class="st ${f.estado}">${f.estado}</span></td></tr>`).join(''):`<tr><td colspan="6" class="empty">Todavía no hay fichas${S.f!=='todas'?' con ese filtro':''}.</td></tr>`}
  </tbody></table></div></div>`}
 function render(){if(!S.miembro)return;const mb=$('#mapbox'),sc=mb?[mb.scrollLeft,mb.scrollTop]:null;
- $('#main').innerHTML=vResumen()+(S.v==='plano'?vPlano():S.v==='faltan'?vFaltan():S.v==='deuda'?vDeuda():S.v==='guardia'?vGuardia():S.v==='accesos'?vAccesos():vLista());sizeMap();const nb=$('#mapbox');if(nb&&sc){nb.scrollLeft=sc[0];nb.scrollTop=sc[1]}$('#dr').innerHTML=drawer()}
+ $('#main').innerHTML=vResumen()+(S.v==='plano'?vPlano():S.v==='faltan'?vFaltan():S.v==='deuda'?vDeuda():S.v==='guardia'?vGuardia():S.v==='accesos'?vAccesos():S.v==='tesoreria'?vTes():vLista());sizeMap();const nb=$('#mapbox');if(nb&&sc){nb.scrollLeft=sc[0];nb.scrollTop=sc[1]}$('#dr').innerHTML=drawer()}
 // ---------- tarjeta ----------
 // ---------- cruce de una ficha con el padrón ----------
 const digs=t=>(String(t||'').replace(/[\s.\-()]/g,'').match(/\d{8,}/g)||[]).map(x=>x.slice(-8));
