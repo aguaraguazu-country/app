@@ -112,6 +112,10 @@ tbody tr{cursor:pointer}tbody tr:hover{background:var(--accent-soft)}
 dl{display:grid;grid-template-columns:minmax(120px,160px) 1fr;gap:5px 12px;margin:0;font-size:13.5px}
 dt{color:var(--muted)}dd{margin:0;min-width:0;overflow-wrap:anywhere}
 .acts{display:flex;flex-wrap:wrap;gap:8px}
+select{-webkit-appearance:none;appearance:none;padding-right:34px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%235d6862' stroke-width='2' fill='none'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center}
+.cb{position:relative}.cb input{padding-right:40px}.cb-a{position:absolute;right:1px;top:1px;bottom:1px;width:38px;border:0;background:transparent;cursor:pointer;color:var(--muted);font-size:15px;border-radius:0 8px 8px 0}
+.cb-l{position:absolute;left:0;right:0;top:calc(100% + 4px);max-height:260px;overflow-y:auto;background:var(--card);border:1px solid var(--line);border-radius:10px;box-shadow:0 12px 32px rgba(0,0,0,.18);z-index:30;font-weight:400}
+.cb-l div{padding:9px 12px;cursor:pointer;border-bottom:1px solid var(--line)}.cb-l div:last-child{border-bottom:0}.cb-l div:hover,.cb-l div.on{background:var(--bg)}.cb-l small{display:block;color:var(--muted);font-size:12px}.cb-l .cb-n{color:var(--muted);cursor:default}
 .gform{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;align-items:end;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:12px}
 .gacts{display:flex;flex-wrap:wrap;gap:6px}.gst{font-weight:700;font-size:12px;border-radius:999px;padding:2px 9px}.gst.on{color:var(--good);background:var(--good-bg)}.gst.off{color:var(--crit);background:var(--crit-bg)}
 .tbl-g{min-width:640px}
@@ -125,7 +129,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 </head>
 <body>
 <div class="wrap">
-<header><div><div class="eyebrow">Asociación Civil Aguará Guazú Country · Comisión Directiva</div><h1>Panel de la comisión<span class="agver" aria-label="Versión del sistema" style="font:500 12px/1.2 system-ui,sans-serif;color:var(--muted,#5d6862);margin-left:10px;white-space:nowrap;vertical-align:middle;letter-spacing:0">v1.33 · 02/11/26 18:46</span></h1></div><div class="who" id="who"></div></header>
+<header><div><div class="eyebrow">Asociación Civil Aguará Guazú Country · Comisión Directiva</div><h1>Panel de la comisión<span class="agver" aria-label="Versión del sistema" style="font:500 12px/1.2 system-ui,sans-serif;color:var(--muted,#5d6862);margin-left:10px;white-space:nowrap;vertical-align:middle;letter-spacing:0">v1.34 · 02/11/26 19:01</span></h1></div><div class="who" id="who"></div></header>
 <main id="main"><div class="empty">Cargando…</div></main>
 </div>
 <div id="tip" hidden></div><div id="dr"></div>
@@ -251,8 +255,9 @@ document.addEventListener('input',e=>{if(e.target.id!=='axq')return;S.axq=e.targ
 async function loadTes(){const [r,c,p,g]=await Promise.all([sb.rpc('tes_resumen'),sb.rpc('tes_cuenta_corriente'),
   sb.from('tes_pagos').select('orden,socio_id,fecha,importe,medio,comprobante,factura,tipo,obs,adjunto').order('fecha',{ascending:false}).order('orden',{ascending:false}).limit(300),
   sb.from('tes_gastos').select('fecha,concepto,categoria,proveedor,importe,sale_de,comprobante,nro,vale,adjunto').order('fecha',{ascending:false}).limit(300)]);
+ const lc=await sb.from('tes_config').select('listas').maybeSingle();
  const b=await sb.from('tes_bandeja').select('id,tipo,datos,adjunto,estado,fila,cargado_nombre,creado,procesado').order('id',{ascending:false}).limit(40);
- const err=r.error||c.error||p.error||g.error;S.tes={err:err?err.message:null,r:r.data,cc:c.data||[],pagos:p.data||[],gastos:g.data||[],band:b.error?null:(b.data||[])};if(S.v==='tesoreria')render()}
+ const err=r.error||c.error||p.error||g.error;S.tes={err:err?err.message:null,r:r.data,cc:c.data||[],pagos:p.data||[],gastos:g.data||[],band:b.error?null:(b.data||[]),cats:(!lc.error&&lc.data&&lc.data.listas&&lc.data.listas.categorias)||null};if(S.v==='tesoreria')render()}
 const $p=n=>(n<0?'− ':'')+'$ '+Math.abs(Math.round(+n||0)).toLocaleString('es-AR');
 function vTes(){const T=S.tes;if(!T){loadTes();return'<div class="card"><div class="empty">Cargando tesorería…</div></div>'}
  if(T.err)return`<div class="card">${/function|does not exist|schema cache|relation/i.test(T.err)?'Para ver la tesorería en el sistema, ejecutá el script <b>12_tesoreria.sql</b> en Supabase y después actualizá la planilla (menú Aguará Guazú → Actualizar socios).':'No se pudo cargar: '+esc(T.err)}</div>`;
@@ -297,17 +302,38 @@ function vBand(T){if(!T.band)return'';const nom={};T.cc.forEach(x=>nom[x.socio_i
  return`<div class="card"><h2 style="margin:0 0 6px">Cargas hechas desde el sistema</h2>
   <p class="help">Cada carga pasa sola a la planilla (pestaña Pagos o Gastos, al final, con la marca [Sistema #n]) en hasta 15 minutos, o al instante desde la planilla con el menú Aguará Guazú → Traer pagos y gastos cargados en el sistema. Mientras espera se puede anular; una vez en la planilla, se corrige en la planilla.</p>
   <div class="tablebox"><table class="tbl-g"><thead><tr><th>Cargado</th><th>Tipo</th><th>Socio / concepto</th><th>Fecha</th><th>Importe</th><th>Comprobante</th><th>Estado</th><th></th></tr></thead><tbody>${rows||'<tr><td colspan="8" class="help">Todavía no se cargó nada desde el sistema.</td></tr>'}</tbody></table></div></div>`}
+// Selector con flecha y búsqueda (sirve en celular y en Safari, donde las listas comunes no muestran flecha)
+const CB={},nrm=x=>String(x||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9ñ ]/g,' ').replace(/\s+/g,' ').trim();
+function cbox(id,items,ph){CB[id]=items;return`<div class="cb"><input id="${id}" autocomplete="off" role="combobox" aria-expanded="false" placeholder="${esc(ph||'')}"><button type="button" class="cb-a" data-cba="${id}" tabindex="-1" aria-label="Ver lista">▾</button><div class="cb-l" id="${id}_l" hidden></div></div>`}
+function cbOpen(id,todo){const i=$('#'+id),L=$('#'+id+'_l'),w=nrm(todo?'':i.value).split(' ').filter(Boolean);
+ const rs=CB[id].filter(x=>{const h=nrm(x.v+' '+(x.s||''));return w.every(k=>h.includes(k))}).slice(0,250);
+ L.innerHTML=rs.map((x,k)=>`<div data-cbo="${id}" data-k="${k}"${k===0?' class="on"':''}>${esc(x.v)}${x.s?`<small>${esc(x.s)}</small>`:''}</div>`).join('')||'<div class="cb-n">Sin coincidencias'+(id==='tf_pr'?': se va a guardar como proveedor nuevo':'')+'</div>';
+ L._rs=rs;L.hidden=false;i.setAttribute('aria-expanded','true')}
+function cbClose(id){const L=$('#'+id+'_l');if(L){L.hidden=true;$('#'+id).setAttribute('aria-expanded','false')}}
+document.addEventListener('input',e=>{if(e.target.id in CB)cbOpen(e.target.id)});
+document.addEventListener('mousedown',e=>{const o=e.target.closest('[data-cbo]'),a=e.target.closest('[data-cba]');
+ if(o){e.preventDefault();const id=o.dataset.cbo;$('#'+id).value=$('#'+id+'_l')._rs[+o.dataset.k].v;cbClose(id);return}
+ if(a){e.preventDefault();const id=a.dataset.cba,L=$('#'+id+'_l');if(L.hidden){$('#'+id).focus();cbOpen(id,true)}else cbClose(id);return}
+ Object.keys(CB).forEach(id=>{if(!e.target.closest('.cb')||e.target.id!==id)cbClose(id)})});
+document.addEventListener('keydown',e=>{const id=e.target.id;if(!(id in CB))return;const L=$('#'+id+'_l');if(!L||L.hidden){if(e.key==='ArrowDown')cbOpen(id,true);return}
+ const os=[...L.querySelectorAll('[data-cbo]')],k=os.findIndex(x=>x.classList.contains('on'));
+ if(e.key==='ArrowDown'||e.key==='ArrowUp'){e.preventDefault();const n=Math.max(0,Math.min(os.length-1,k+(e.key==='ArrowDown'?1:-1)));os.forEach((x,j)=>x.classList.toggle('on',j===n));os[n]&&os[n].scrollIntoView({block:'nearest'})}
+ else if(e.key==='Enter'&&os[k]){e.preventDefault();e.target.value=L._rs[k].v;cbClose(id)}else if(e.key==='Escape'||e.key==='Tab')cbClose(id)});
+const lev=(a,b)=>{const d=[...Array(b.length+1).keys()];for(let i=1;i<=a.length;i++){let p=d[0];d[0]=i;for(let j=1;j<=b.length;j++){const t=d[j];d[j]=Math.min(d[j]+1,d[j-1]+1,p+(a[i-1]===b[j-1]?0:1));p=t}}return d[b.length]};
+function tProveedores(){const T=S.tes,c={};T.gastos.map(g=>g.proveedor).concat((T.band||[]).filter(b=>b.tipo==='gasto'&&b.estado!=='anulado').map(b=>(b.datos||{}).proveedor))
+ .filter(Boolean).forEach(x=>{const k=nrm(x);if(!k)return;c[k]=c[k]||{};c[k][x]=(c[k][x]||0)+1});
+ return Object.values(c).map(m=>Object.keys(m).sort((a,b)=>m[b]-m[a])[0]).sort((a,b)=>a.localeCompare(b,'es'))}
 const CATS_DEF=['Limpieza','Mantenimiento y reparaciones','Sueldos y cargas sociales','Seguridad y guardia','Luz, agua e internet','Honorarios','Impuestos y tasas','Gastos bancarios','Insumos y herramientas','Obras','Combustible','Otros'];
 function tForm(tipo){const T=S.tes,hoy=hoyAR(),pago=tipo==='pago';
- const cats=[...new Set(CATS_DEF.concat(T.gastos.map(g=>g.categoria).filter(Boolean)))].sort();
+ const cats=T.cats||CATS_DEF;
  const opt=a=>a.map(x=>`<option>${esc(x)}</option>`).join('');
  let box=$('#tfm');if(!box){box=document.createElement('div');box.id='tfm';document.body.appendChild(box)}
  box.innerHTML=`<div class="scrim" data-tfx></div><div class="modal" role="dialog" aria-label="${pago?'Cargar pago':'Cargar gasto'}" style="width:min(620px,96vw)">
  <form id="tf" class="gform" style="padding:18px 20px;margin:0" novalidate><b style="grid-column:1/-1;font-size:17px">${pago?'Cargar pago de un socio':'Cargar gasto'}</b>
- ${pago?`<label style="grid-column:1/-1">Socio <span class="help" style="font-weight:400">(escribí nombre, apellido, ID o lote y elegí de la lista)</span><input id="tf_s" list="tf_sl" autocomplete="off" required>
-   <datalist id="tf_sl">${T.cc.slice().sort((a,b)=>a.socio.localeCompare(b.socio)).map(x=>`<option value="${esc(x.socio+' · '+x.socio_id)}">${esc((x.lotes||'')+(x.total>0?' · debe '+$p(x.total):''))}</option>`).join('')}</datalist></label>`
+ ${pago?`<label style="grid-column:1/-1">Socio <span class="help" style="font-weight:400">(buscá por nombre, ID o lote)</span>${cbox('tf_s',T.cc.slice().sort((a,b)=>a.socio.localeCompare(b.socio,'es')).map(x=>({v:x.socio+' · '+x.socio_id,s:(x.lotes||'')+(x.total>0?' · debe '+$p(x.total):'')})),'Tocá la flecha o escribí para buscar')}</label>`
  :`<label style="grid-column:1/-1">Concepto<input id="tf_c" maxlength="120" required placeholder="Ej.: corte de pasto espacios comunes"></label>
-   <label>Categoría<input id="tf_cat" list="tf_cl" autocomplete="off"><datalist id="tf_cl">${opt(cats)}</datalist></label><label>Proveedor / a quién se pagó<input id="tf_pr" maxlength="80"></label>`}
+   <label>Categoría<select id="tf_cat"><option value="">Elegí…</option>${opt(cats)}</select></label><label>Proveedor / a quién se pagó${cbox('tf_pr',tProveedores().map(v=>({v})),'Elegí o escribí uno nuevo')}</label>
+   <p class="help" style="grid-column:1/-1;margin:-4px 0 0">¿Falta una categoría? Se agrega en la planilla, pestaña <b>Listas</b>, y aparece acá en la próxima actualización.</p>`}
  <label>Fecha<input id="tf_f" type="date" value="${hoy}" max="${hoy}" required></label>
  <label>Importe ($)<input id="tf_i" inputmode="decimal" placeholder="60000" required></label>
  ${pago?`<label>Medio de pago<select id="tf_m" required><option value="">Elegí…</option>${opt(['Efectivo','Transferencia','Depósito','Mercado Pago','Otro'])}</select></label>
@@ -319,7 +345,7 @@ function tForm(tipo){const T=S.tes,hoy=hoyAR(),pago=tipo==='pago';
  <p class="note" style="grid-column:1/-1;margin:0">Esto pasa a la planilla de tesorería sola. <b>No lo cargues también a mano en la planilla</b>, porque quedaría duplicado.</p>
  <div class="err" id="tf_e" style="grid-column:1/-1"></div>
  <div class="gacts" style="grid-column:1/-1"><button class="btn primary" id="tf_b">Guardar</button><button type="button" class="btn" data-tfx>Cancelar</button></div></form></div>`;
- box.dataset.tipo=tipo;(pago?$('#tf_s'):$('#tf_c')).focus()}
+ box.dataset.tipo=tipo;box.dataset.prok='';if(!pago)$('#tf_c').focus()}
 async function tFoto(f){if(!/^image\/(jpeg|png|webp|heic|heif)/.test(f.type)||!window.createImageBitmap)return f;
  try{const im=await createImageBitmap(f),k=Math.min(1,1600/Math.max(im.width,im.height)),c=document.createElement('canvas');c.width=Math.round(im.width*k);c.height=Math.round(im.height*k);
   c.getContext('2d').drawImage(im,0,0,c.width,c.height);const b=await new Promise(r=>c.toBlob(r,'image/jpeg',.82));return b&&b.size<f.size?new File([b],'comprobante.jpg',{type:'image/jpeg'}):f}catch(_){return f}}
@@ -328,7 +354,12 @@ async function tGuardar(){const tipo=$('#tfm').dataset.tipo,pago=tipo==='pago',E
  const p={fecha:v('#tf_f'),importe:imp,obs:v('#tf_o')};
  if(pago){const s=v('#tf_s'),x=S.tes.cc.find(y=>y.socio+' · '+y.socio_id===s)||S.tes.cc.find(y=>y.socio_id.toLowerCase()===s.toLowerCase());
   if(!x){E.textContent='Elegí el socio de la lista que aparece al escribir.';return}Object.assign(p,{socio_id:x.socio_id,medio:v('#tf_m'),comprobante:v('#tf_n'),factura:v('#tf_fa')})}
- else Object.assign(p,{concepto:v('#tf_c'),categoria:v('#tf_cat'),proveedor:v('#tf_pr'),sale_de:v('#tf_sd'),comprobante:v('#tf_t'),nro:v('#tf_n')});
+ else{let pr=v('#tf_pr').replace(/\s+/g,' ');const ex=tProveedores(),k=nrm(pr);
+  if(pr){const igual=ex.find(x=>nrm(x)===k);
+   if(igual){pr=igual;$('#tf_pr').value=igual}
+   else if($('#tfm').dataset.prok!==k){const par=ex.find(x=>{const n=nrm(x);return k.length>=4&&(lev(n,k)<=2||n.startsWith(k)||k.startsWith(n))});
+    if(par){E.innerHTML=`Ya existe el proveedor <b>${esc(par)}</b>. ¿Es el mismo? <button type="button" class="btn sm" data-tpru="${esc(par)}">Sí, usar ${esc(par)}</button> <button type="button" class="btn sm" data-tprn="${esc(k)}">No, es otro</button>`;return}}}
+  Object.assign(p,{concepto:v('#tf_c'),categoria:v('#tf_cat'),proveedor:pr,sale_de:v('#tf_sd'),comprobante:v('#tf_t'),nro:v('#tf_n')})}
  if(!(imp>0)){E.textContent='Revisá el importe (solo números, por ejemplo 60000).';return}
  B.disabled=true;B.textContent='Guardando…';let adj=null;
  try{const f0=$('#tf_a').files[0];
@@ -340,7 +371,9 @@ async function tGuardar(){const tipo=$('#tfm').dataset.tipo,pago=tipo==='pago',E
   $('#tfm').innerHTML='';S.tes=null;render()}
  catch(err){E.textContent=err.message;B.disabled=false;B.textContent='Guardar'}}
 document.addEventListener('submit',e=>{if(e.target.id!=='tf')return;e.preventDefault();tGuardar()});
-document.addEventListener('click',async e=>{const t=e.target.closest('[data-tcar],[data-tfx],[data-tanu]');if(!t)return;const d=t.dataset;
+document.addEventListener('click',async e=>{const t=e.target.closest('[data-tcar],[data-tfx],[data-tanu],[data-tpru],[data-tprn]');if(!t)return;const d=t.dataset;
+ if(d.tpru!==undefined){$('#tf_pr').value=d.tpru;$('#tf_e').textContent='';tGuardar();return}
+ if(d.tprn!==undefined){$('#tfm').dataset.prok=d.tprn;$('#tf_e').textContent='';tGuardar();return}
  if(d.tcar){tForm(d.tcar);return}
  if(d.tfx!==undefined){$('#tfm').innerHTML='';return}
  if(d.tanu){if(!confirm('¿Anular esta carga? No va a pasar a la planilla.'))return;t.disabled=true;const r=await sb.rpc('tes_bandeja_anular',{p_id:+d.tanu});if(r.error){alert(r.error.message);t.disabled=false;return}S.tes=null;render()}});
