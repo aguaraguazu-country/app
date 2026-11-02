@@ -125,7 +125,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 </head>
 <body>
 <div class="wrap">
-<header><div><div class="eyebrow">Asociación Civil Aguará Guazú Country · Comisión Directiva</div><h1>Panel de la comisión<span class="agver" aria-label="Versión del sistema" style="font:500 12px/1.2 system-ui,sans-serif;color:var(--muted,#5d6862);margin-left:10px;white-space:nowrap;vertical-align:middle;letter-spacing:0">v1.32 · 02/11/26 18:28</span></h1></div><div class="who" id="who"></div></header>
+<header><div><div class="eyebrow">Asociación Civil Aguará Guazú Country · Comisión Directiva</div><h1>Panel de la comisión<span class="agver" aria-label="Versión del sistema" style="font:500 12px/1.2 system-ui,sans-serif;color:var(--muted,#5d6862);margin-left:10px;white-space:nowrap;vertical-align:middle;letter-spacing:0">v1.33 · 02/11/26 18:46</span></h1></div><div class="who" id="who"></div></header>
 <main id="main"><div class="empty">Cargando…</div></main>
 </div>
 <div id="tip" hidden></div><div id="dr"></div>
@@ -251,7 +251,8 @@ document.addEventListener('input',e=>{if(e.target.id!=='axq')return;S.axq=e.targ
 async function loadTes(){const [r,c,p,g]=await Promise.all([sb.rpc('tes_resumen'),sb.rpc('tes_cuenta_corriente'),
   sb.from('tes_pagos').select('orden,socio_id,fecha,importe,medio,comprobante,factura,tipo,obs,adjunto').order('fecha',{ascending:false}).order('orden',{ascending:false}).limit(300),
   sb.from('tes_gastos').select('fecha,concepto,categoria,proveedor,importe,sale_de,comprobante,nro,vale,adjunto').order('fecha',{ascending:false}).limit(300)]);
- const err=r.error||c.error||p.error||g.error;S.tes={err:err?err.message:null,r:r.data,cc:c.data||[],pagos:p.data||[],gastos:g.data||[]};if(S.v==='tesoreria')render()}
+ const b=await sb.from('tes_bandeja').select('id,tipo,datos,adjunto,estado,fila,cargado_nombre,creado,procesado').order('id',{ascending:false}).limit(40);
+ const err=r.error||c.error||p.error||g.error;S.tes={err:err?err.message:null,r:r.data,cc:c.data||[],pagos:p.data||[],gastos:g.data||[],band:b.error?null:(b.data||[])};if(S.v==='tesoreria')render()}
 const $p=n=>(n<0?'− ':'')+'$ '+Math.abs(Math.round(+n||0)).toLocaleString('es-AR');
 function vTes(){const T=S.tes;if(!T){loadTes();return'<div class="card"><div class="empty">Cargando tesorería…</div></div>'}
  if(T.err)return`<div class="card">${/function|does not exist|schema cache|relation/i.test(T.err)?'Para ver la tesorería en el sistema, ejecutá el script <b>12_tesoreria.sql</b> en Supabase y después actualizá la planilla (menú Aguará Guazú → Actualizar socios).':'No se pudo cargar: '+esc(T.err)}</div>`;
@@ -275,15 +276,74 @@ function vTes(){const T=S.tes;if(!T){loadTes();return'<div class="card"><div cla
  else{const rs=T.gastos.filter(g=>!q||(g.concepto+' '+(g.categoria||'')+' '+(g.proveedor||'')).toLowerCase().includes(q));
   body=`<div class="tablebox"><table class="tbl-g"><thead><tr><th>Fecha</th><th>Concepto</th><th>Categoría</th><th>Proveedor</th><th>Importe</th><th>Sale de</th><th>Comprobante</th></tr></thead><tbody>
   ${rs.map(g=>`<tr><td>${fD(g.fecha)}</td><td>${esc(g.concepto)}</td><td>${esc(g.categoria||'—')}</td><td>${esc(g.proveedor||'—')}</td><td><b>${$p(g.importe)}</b></td><td>${esc(g.sale_de||'—')}</td><td>${g.adjunto?`<a href="${esc(g.adjunto)}" target="_blank" rel="noopener">${esc((g.comprobante||'')+' '+(g.vale||g.nro||''))||'ver'}</a>`:esc(((g.comprobante||'')+' '+(g.vale||g.nro||'')).trim()||'—')}</td></tr>`).join('')||'<tr><td colspan="7" class="help">Sin gastos.</td></tr>'}</tbody></table></div>`}
- return`<div class="card"><div class="tabs" style="justify-content:space-between;align-items:center"><h2 style="margin:0">Tesorería</h2><span class="help">${sync?'Datos de la planilla de tesorería · actualizados hace '+(min<60?min+' min':Math.round(min/60)+' h'):'Todavía no se sincronizó con la planilla'} · <button class="btn sm" data-trel="1">Actualizar</button></span></div>
+ return`<div class="card"><div class="tabs" style="justify-content:space-between;align-items:center"><h2 style="margin:0">Tesorería</h2>${T.band?'<span style="display:flex;gap:6px;flex-wrap:wrap"><button class="btn sm primary" data-tcar="pago">+ Cargar pago</button><button class="btn sm primary" data-tcar="gasto">+ Cargar gasto</button></span>':''}<span class="help">${sync?'Datos de la planilla de tesorería · actualizados hace '+(min<60?min+' min':Math.round(min/60)+' h'):'Todavía no se sincronizó con la planilla'} · <button class="btn sm" data-trel="1">Actualizar</button></span></div>
   <div class="okline ${dif.length?'no':'ok'}">${dif.length?`⚠ El sistema y la planilla no coinciden en ${dif.length} socio${dif.length>1?'s':''}: ${dif.slice(0,6).map(d=>esc(d.socio)+' (sistema '+$p(d.sistema)+' · planilla '+$p(d.planilla)+')').join(' · ')}`:`✔ El cálculo del sistema coincide con la planilla en los ${r.socios||0} socios.`}</div>
   <div class="tk">${K('Deuda total',$p(r.deuda_total),'var(--crit)')}${K('Deuda antigua y meses anteriores',$p(r.deuda_antigua))}${K('Cuotas vencidas impagas',$p(r.cuotas_vencidas))}${K('A cobrar este mes (no vencido)',$p(r.a_pagar),'var(--warn)')}
    ${K('Cobrado este mes · efectivo',$p(r.cobrado_mes_efectivo),'var(--good)')}${K('Cobrado este mes · banco',$p(r.cobrado_mes_banco),'var(--good)')}${K('Gastos del mes',$p(r.gastos_mes),'var(--crit)')}${K('Saldo caja / banco',$p(r.saldo_efectivo)+' / '+$p(r.saldo_banco))}
    ${K('Pagaron o adelantaron',E['Al día']||0,'var(--good)')}${K('A pagar (vence el '+(r.vencimiento_dia||10)+')',E['A pagar']||0,'var(--warn)')}${K('Deben',(E['Debe']||0)+' + '+(E['Deuda antigua']||0)+' con deuda antigua','var(--crit)')}</div>
-  ${r.pagos_sin_medio?`<p class="note">${r.pagos_sin_medio} pago(s) sin medio de pago cargado: no entran en los saldos de caja ni banco.</p>`:''}</div>
+  ${r.pagos_sin_medio?`<p class="note">${r.pagos_sin_medio} pago(s) sin medio de pago cargado: no entran en los saldos de caja ni banco.</p>`:''}</div>${vBand(T)}
   <div class="card"><div class="tabs" style="justify-content:space-between;align-items:center"><span style="display:flex;gap:6px"><button type="button" data-tsub="cc" aria-pressed="${sub==='cc'}">Cuenta corriente</button><button type="button" data-tsub="pagos" aria-pressed="${sub==='pagos'}">Pagos (${T.pagos.length})</button><button type="button" data-tsub="gastos" aria-pressed="${sub==='gastos'}">Gastos (${T.gastos.length})</button></span>
   <input type="search" id="tq" placeholder="Buscar socio, lote, comprobante…" value="${esc(S.tq||'')}" style="flex:1 1 220px;max-width:340px"></div>
-  <p class="help">Solo lectura por ahora: los pagos y gastos se cargan en la planilla de tesorería y llegan acá cada hora.</p>${body}</div>`}
+  <p class="help">Estos datos vienen de la planilla de tesorería, que es la que cuenta. Lo que se carga con "+ Cargar pago / gasto" pasa primero a la planilla y recién ahí aparece acá.</p>${body}</div>`}
+// ---------- Carga de pagos y gastos desde el panel (bandeja → planilla) ----------
+const BEST={pendiente:['Esperando pasar a la planilla','wa'],en_planilla:['En la planilla','ok'],anulado:['Anulada','fu']};
+function vBand(T){if(!T.band)return'';const nom={};T.cc.forEach(x=>nom[x.socio_id]=x.socio);
+ const rows=T.band.map(b=>{const d=b.datos||{},e=BEST[b.estado]||[b.estado,''];
+  return`<tr><td>${fdt(b.creado)}<div class="help">${esc(b.cargado_nombre||'')}</div></td><td>${b.tipo==='pago'?'Pago':'Gasto'}</td>
+  <td>${b.tipo==='pago'?esc(d.socio||nom[d.socio_id]||d.socio_id)+'<div class="help">'+esc(d.socio_id||'')+' · '+esc(d.medio||'')+'</div>':esc(d.concepto||'')+'<div class="help">'+esc([d.categoria,d.sale_de].filter(Boolean).join(' · '))+'</div>'}</td>
+  <td>${fD(d.fecha)}</td><td><b>${$p(d.importe)}</b></td><td>${b.adjunto?`<a href="${esc(b.adjunto)}" target="_blank" rel="noopener">Ver</a>`:'—'}</td>
+  <td><span class="gst ${e[1]==='ok'?'on':e[1]==='fu'?'off':''}" ${e[1]==='wa'?'style="color:var(--warn);background:var(--warn-bg)"':''}>${e[0]}</span>${b.estado==='en_planilla'&&b.fila?`<div class="help">${b.tipo==='pago'?'Pagos':'Gastos'}, fila ${b.fila}</div>`:''}</td>
+  <td>${b.estado==='pendiente'?`<button class="btn sm" data-tanu="${b.id}">Anular</button>`:''}</td></tr>`}).join('');
+ return`<div class="card"><h2 style="margin:0 0 6px">Cargas hechas desde el sistema</h2>
+  <p class="help">Cada carga pasa sola a la planilla (pestaña Pagos o Gastos, al final, con la marca [Sistema #n]) en hasta 15 minutos, o al instante desde la planilla con el menú Aguará Guazú → Traer pagos y gastos cargados en el sistema. Mientras espera se puede anular; una vez en la planilla, se corrige en la planilla.</p>
+  <div class="tablebox"><table class="tbl-g"><thead><tr><th>Cargado</th><th>Tipo</th><th>Socio / concepto</th><th>Fecha</th><th>Importe</th><th>Comprobante</th><th>Estado</th><th></th></tr></thead><tbody>${rows||'<tr><td colspan="8" class="help">Todavía no se cargó nada desde el sistema.</td></tr>'}</tbody></table></div></div>`}
+const CATS_DEF=['Limpieza','Mantenimiento y reparaciones','Sueldos y cargas sociales','Seguridad y guardia','Luz, agua e internet','Honorarios','Impuestos y tasas','Gastos bancarios','Insumos y herramientas','Obras','Combustible','Otros'];
+function tForm(tipo){const T=S.tes,hoy=hoyAR(),pago=tipo==='pago';
+ const cats=[...new Set(CATS_DEF.concat(T.gastos.map(g=>g.categoria).filter(Boolean)))].sort();
+ const opt=a=>a.map(x=>`<option>${esc(x)}</option>`).join('');
+ let box=$('#tfm');if(!box){box=document.createElement('div');box.id='tfm';document.body.appendChild(box)}
+ box.innerHTML=`<div class="scrim" data-tfx></div><div class="modal" role="dialog" aria-label="${pago?'Cargar pago':'Cargar gasto'}" style="width:min(620px,96vw)">
+ <form id="tf" class="gform" style="padding:18px 20px;margin:0" novalidate><b style="grid-column:1/-1;font-size:17px">${pago?'Cargar pago de un socio':'Cargar gasto'}</b>
+ ${pago?`<label style="grid-column:1/-1">Socio <span class="help" style="font-weight:400">(escribí nombre, apellido, ID o lote y elegí de la lista)</span><input id="tf_s" list="tf_sl" autocomplete="off" required>
+   <datalist id="tf_sl">${T.cc.slice().sort((a,b)=>a.socio.localeCompare(b.socio)).map(x=>`<option value="${esc(x.socio+' · '+x.socio_id)}">${esc((x.lotes||'')+(x.total>0?' · debe '+$p(x.total):''))}</option>`).join('')}</datalist></label>`
+ :`<label style="grid-column:1/-1">Concepto<input id="tf_c" maxlength="120" required placeholder="Ej.: corte de pasto espacios comunes"></label>
+   <label>Categoría<input id="tf_cat" list="tf_cl" autocomplete="off"><datalist id="tf_cl">${opt(cats)}</datalist></label><label>Proveedor / a quién se pagó<input id="tf_pr" maxlength="80"></label>`}
+ <label>Fecha<input id="tf_f" type="date" value="${hoy}" max="${hoy}" required></label>
+ <label>Importe ($)<input id="tf_i" inputmode="decimal" placeholder="60000" required></label>
+ ${pago?`<label>Medio de pago<select id="tf_m" required><option value="">Elegí…</option>${opt(['Efectivo','Transferencia','Depósito','Mercado Pago','Otro'])}</select></label>
+   <label>N° de comprobante / operación<input id="tf_n" maxlength="60"></label><label>Factura<input id="tf_fa" maxlength="60"></label>`
+ :`<label>Salió de<select id="tf_sd" required><option value="">Elegí…</option><option>Efectivo</option><option>Banco</option></select></label>
+   <label>Comprobante<select id="tf_t" required><option value="">Elegí…</option>${opt(['Factura','Ticket','Recibo','Transferencia','Vale'])}</select></label><label>N° de comprobante<input id="tf_n" maxlength="60"></label>`}
+ <label style="grid-column:1/-1">Observaciones<input id="tf_o" maxlength="200"></label>
+ <label style="grid-column:1/-1">Foto o PDF del comprobante <span class="help" style="font-weight:400">(opcional · desde el celular podés sacar la foto)</span><input id="tf_a" type="file" accept="image/*,application/pdf"></label>
+ <p class="note" style="grid-column:1/-1;margin:0">Esto pasa a la planilla de tesorería sola. <b>No lo cargues también a mano en la planilla</b>, porque quedaría duplicado.</p>
+ <div class="err" id="tf_e" style="grid-column:1/-1"></div>
+ <div class="gacts" style="grid-column:1/-1"><button class="btn primary" id="tf_b">Guardar</button><button type="button" class="btn" data-tfx>Cancelar</button></div></form></div>`;
+ box.dataset.tipo=tipo;(pago?$('#tf_s'):$('#tf_c')).focus()}
+async function tFoto(f){if(!/^image\/(jpeg|png|webp|heic|heif)/.test(f.type)||!window.createImageBitmap)return f;
+ try{const im=await createImageBitmap(f),k=Math.min(1,1600/Math.max(im.width,im.height)),c=document.createElement('canvas');c.width=Math.round(im.width*k);c.height=Math.round(im.height*k);
+  c.getContext('2d').drawImage(im,0,0,c.width,c.height);const b=await new Promise(r=>c.toBlob(r,'image/jpeg',.82));return b&&b.size<f.size?new File([b],'comprobante.jpg',{type:'image/jpeg'}):f}catch(_){return f}}
+async function tGuardar(){const tipo=$('#tfm').dataset.tipo,pago=tipo==='pago',E=$('#tf_e'),B=$('#tf_b'),v=id=>($(id)?$(id).value:'').trim();E.textContent='';
+ const imp=Number(v('#tf_i').replace(/\$|\s/g,'').replace(/\.(?=\d{3}(\D|$))/g,'').replace(',','.'));
+ const p={fecha:v('#tf_f'),importe:imp,obs:v('#tf_o')};
+ if(pago){const s=v('#tf_s'),x=S.tes.cc.find(y=>y.socio+' · '+y.socio_id===s)||S.tes.cc.find(y=>y.socio_id.toLowerCase()===s.toLowerCase());
+  if(!x){E.textContent='Elegí el socio de la lista que aparece al escribir.';return}Object.assign(p,{socio_id:x.socio_id,medio:v('#tf_m'),comprobante:v('#tf_n'),factura:v('#tf_fa')})}
+ else Object.assign(p,{concepto:v('#tf_c'),categoria:v('#tf_cat'),proveedor:v('#tf_pr'),sale_de:v('#tf_sd'),comprobante:v('#tf_t'),nro:v('#tf_n')});
+ if(!(imp>0)){E.textContent='Revisá el importe (solo números, por ejemplo 60000).';return}
+ B.disabled=true;B.textContent='Guardando…';let adj=null;
+ try{const f0=$('#tf_a').files[0];
+  if(f0){if(f0.size>10*1024*1024)throw new Error('El archivo pesa más de 10 MB.');const f=await tFoto(f0);B.textContent='Subiendo comprobante…';
+   const ext=f.type==='application/pdf'?'pdf':f.type==='image/png'?'png':'jpg',path=`${p.fecha.slice(0,7)}/${tipo}-${Date.now()}-${Math.random().toString(36).slice(2,8)}.${ext}`;
+   const up=await sb.storage.from('comprobantes').upload(path,f,{contentType:f.type,upsert:false});if(up.error)throw new Error('No se pudo subir el comprobante: '+up.error.message);
+   const su=await sb.storage.from('comprobantes').createSignedUrl(path,60*60*24*365*10);if(su.error)throw new Error(su.error.message);adj=su.data.signedUrl}
+  const r=await sb.rpc('tes_bandeja_cargar',{p_tipo:tipo,p,p_adjunto:adj});if(r.error)throw new Error(r.error.message);
+  $('#tfm').innerHTML='';S.tes=null;render()}
+ catch(err){E.textContent=err.message;B.disabled=false;B.textContent='Guardar'}}
+document.addEventListener('submit',e=>{if(e.target.id!=='tf')return;e.preventDefault();tGuardar()});
+document.addEventListener('click',async e=>{const t=e.target.closest('[data-tcar],[data-tfx],[data-tanu]');if(!t)return;const d=t.dataset;
+ if(d.tcar){tForm(d.tcar);return}
+ if(d.tfx!==undefined){$('#tfm').innerHTML='';return}
+ if(d.tanu){if(!confirm('¿Anular esta carga? No va a pasar a la planilla.'))return;t.disabled=true;const r=await sb.rpc('tes_bandeja_anular',{p_id:+d.tanu});if(r.error){alert(r.error.message);t.disabled=false;return}S.tes=null;render()}});
 document.addEventListener('click',e=>{const t=e.target.closest('[data-tsub],[data-tfe],[data-trel]');if(!t)return;const d=t.dataset;
  if(d.tsub){S.tsub=d.tsub;render()}if(d.tfe){S.tfe=d.tfe;render()}if(d.trel){S.tes=null;render()}});
 document.addEventListener('input',e=>{if(e.target.id!=='tq')return;S.tq=e.target.value;const p=e.target.selectionStart;render();const q=$('#tq');q.focus();q.setSelectionRange(p,p)});
