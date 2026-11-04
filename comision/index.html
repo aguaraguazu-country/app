@@ -189,7 +189,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 </head>
 <body>
 <div class="wrap">
-<header><div><div class="eyebrow">Asociación Civil Aguará Guazú Country · Comisión Directiva</div><h1>Panel de la comisión<span class="agver" aria-label="Versión del sistema" style="font:500 12px/1.2 system-ui,sans-serif;color:var(--muted,#5d6862);margin-left:10px;white-space:nowrap;vertical-align:middle;letter-spacing:0">v1.59 · 04/11/26 19:10</span></h1></div><div class="who" id="who"></div></header>
+<header><div><div class="eyebrow">Asociación Civil Aguará Guazú Country · Comisión Directiva</div><h1>Panel de la comisión<span class="agver" aria-label="Versión del sistema" style="font:500 12px/1.2 system-ui,sans-serif;color:var(--muted,#5d6862);margin-left:10px;white-space:nowrap;vertical-align:middle;letter-spacing:0">v1.60 · 04/11/26 19:12</span></h1></div><div class="who" id="who"></div></header>
 <div id="gsr" class="gsr" hidden><div class="cb" style="max-width:560px"><input id="gq" type="search" autocomplete="off" placeholder="Buscar propietario: nombre, DNI, N° de socio o lote (ej. S2-M-06)…" aria-label="Buscar propietario"><div class="cb-l" id="gq_l" hidden></div></div></div>
 <main id="main"><div class="empty">Cargando…</div></main>
 </div>
@@ -487,7 +487,7 @@ function miniMap(ids){const sel=new Set(ids),ls=MAPA.lots.filter(l=>sel.has(l[0]
  let g=mapBase();for(const [id,x,y,w,h] of MAPA.lots){const on=sel.has(id);g+=`<rect class="${on?'ms':'ml'}" x="${x}" y="${y}" width="${w}" height="${h}"/>`;if(on)g+=`<text class="mt" x="${x+w/2}" y="${y+h/2}">${+id.split('-')[2]}</text>`}
  return`<div class="som-map"><svg viewBox="${vb}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Ubicación en el plano">${g}</svg></div>`}
 const mesC=m=>{const d=new Date(String(m).slice(0,10)+'T12:00:00');return d.toLocaleDateString('es-AR',{month:'short',year:'2-digit'}).replace('.','')};
-async function tSocio(id){if(!S.som||S.som.id!==id){S.som={id,cargando:true};vSocio()}
+async function tSocio(id){if(!S.som||S.som.id!==id){S.som={id,cargando:true};vSocio()}if(!S.tes)loadTes().then(()=>{if(S.som&&S.som.id===id&&!S.som.cargando)vSocio()});
  const [r,g,rp,mi,au,cv]=await Promise.all([sb.rpc('tes_socio_detalle',{p_socio:id}),sb.from('tes_gestiones').select('*').eq('socio_id',id).order('creado',{ascending:false}).limit(60),
   sb.from('tes_responsables').select('user_id,nombre,desde').eq('socio_id',id).maybeSingle(),S.miem?Promise.resolve({data:S.miem}):sb.rpc('tes_miembros'),sb.rpc('tes_auditoria',{p_socio:id,p_limite:200}),sb.rpc('tes_convenios_estado',{p_socio:id})]);
  if(!mi.error)S.miem=mi.data||[];
@@ -767,7 +767,7 @@ document.addEventListener('click',e=>{const t=e.target.closest('[data-fpdf]');if
   if(!num){const sug=facN(f.name)||'';num=(prompt('N° de la factura de este pago ('+$p(p.importe)+' del '+fD(p.fecha)+'):',sug)||'').trim();if(!num)return}
   const tx=t.textContent;t.disabled=true;t.textContent='Subiendo…';
   try{if(!p.factura){const r=await sb.rpc('tes_factura_cargar',{p_socio:p.socio_id,p_orden:p.orden,p_factura:num});if(r.error)throw new Error(r.error.message)}
-   await fpSubir(p.socio_id,num,f);await fpRecargar();render();thToast('✔ Factura '+num+' guardada. El socio ya la puede descargar desde su app.')}
+   await fpSubir(p.socio_id,num,f);await fpRecargar();render();if(S.som&&S.som.id)vSocio();thToast('✔ Factura '+num+' guardada. El socio ya la puede descargar desde su app.')}
   catch(err){alert(err.message);t.disabled=false;t.textContent=tx}})},true);
 // Carga masiva: asigna cada PDF al pago cuyo N° de factura coincide con el número del nombre del archivo
 document.addEventListener('click',e=>{if(!e.target.closest('[data-fmas]'))return;
