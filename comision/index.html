@@ -189,7 +189,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 </head>
 <body>
 <div class="wrap">
-<header><div><div class="eyebrow">Asociación Civil Aguará Guazú Country · Comisión Directiva</div><h1>Panel de la comisión<span class="agver" aria-label="Versión del sistema" style="font:500 12px/1.2 system-ui,sans-serif;color:var(--muted,#5d6862);margin-left:10px;white-space:nowrap;vertical-align:middle;letter-spacing:0">v1.56 · 04/11/26 18:50</span></h1></div><div class="who" id="who"></div></header>
+<header><div><div class="eyebrow">Asociación Civil Aguará Guazú Country · Comisión Directiva</div><h1>Panel de la comisión<span class="agver" aria-label="Versión del sistema" style="font:500 12px/1.2 system-ui,sans-serif;color:var(--muted,#5d6862);margin-left:10px;white-space:nowrap;vertical-align:middle;letter-spacing:0">v1.57 · 04/11/26 18:53</span></h1></div><div class="who" id="who"></div></header>
 <div id="gsr" class="gsr" hidden><div class="cb" style="max-width:560px"><input id="gq" type="search" autocomplete="off" placeholder="Buscar propietario: nombre, DNI, N° de socio o lote (ej. S2-M-06)…" aria-label="Buscar propietario"><div class="cb-l" id="gq_l" hidden></div></div></div>
 <main id="main"><div class="empty">Cargando…</div></main>
 </div>
@@ -1088,8 +1088,9 @@ async function tConst(socio,orden,btn){if(btn)btn.disabled=true;const r=await sb
  <div><b>Qué cubre este pago</b><table class="cn-t"><tbody>${L.map(x=>row(x[0],x[1])).join('')}</tbody></table></div>
  <div><b>Cómo quedó la cuenta al ${fD(c.saldo.al)}</b><table class="cn-t"><tbody>${SA.map(x=>row(x[0],x[1])).join('')}<tr><td><b>${tot>0?'Total pendiente':tot<0?'Saldo a favor':'Sin deuda pendiente'}</b></td><td style="white-space:nowrap"><b>${$p(Math.abs(tot))}</b></td></tr></tbody></table></div>
  <label>Celular del socio para WhatsApp<input id="cn_cel" inputmode="tel" value="${esc(cel)}" placeholder="3794 123456"></label>
+ <label>Mensaje (lo podés cambiar antes de enviar)<textarea id="cn_msg" rows="7" style="font:inherit;font-size:14.5px;line-height:1.4">${esc(cTexto(c))}</textarea></label>
  <div class="gacts" style="flex-wrap:wrap"><button class="btn primary" data-cshare="1">Enviar por WhatsApp</button><button class="btn" data-cpdf="1">Descargar PDF</button><button type="button" class="btn" data-tfx>Cerrar</button></div>
- <p class="help" style="margin:0">En el celular, "Enviar por WhatsApp" adjunta el PDF. En la computadora abre WhatsApp en el chat del socio con el mensaje y un link para descargar el recibo (vale 90 días).</p>
+ <p class="help" style="margin:0">En el celular, "Enviar por WhatsApp" adjunta el PDF del recibo (y de la factura, si está cargada). En la computadora, WhatsApp no permite adjuntar archivos desde una página: se guarda el PDF en Descargas y se abre el chat con el mensaje; ahí tocás + → Documento, o arrastrás el PDF.</p>
  <div class="err" id="cn_e"></div></div></div>`}
 let JSPDF=null;
 async function cLib(){if(JSPDF)return JSPDF;await new Promise((ok,ko)=>{const sc=document.createElement('script');sc.src='https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';sc.onload=ok;sc.onerror=()=>ko(new Error('No se pudo cargar el generador de PDF. Revisá la conexión.'));document.head.appendChild(sc)});JSPDF=window.jspdf.jsPDF;return JSPDF}
@@ -1115,7 +1116,18 @@ async function cPDF(c){const J=await cLib(),d=new J({unit:'mm',format:'a4'}),{L,
  t('Este recibo detalla a qué se aplicó el pago. No reemplaza a la factura'+(c.pago.factura?' N° '+c.pago.factura:'')+'.',X,y);y+=5;
  t('Emitida el '+new Date().toLocaleString('es-AR',{dateStyle:'short',timeStyle:'short'})+(c.emitida_por?' por '+c.emitida_por:'')+' · Tesorería: WhatsApp '+AG.wa,X,y);
  return new File([d.output('blob')],'Recibo_'+cNum(c.numero)+'_'+so.nombre.normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^A-Za-z0-9]+/g,'_').replace(/^_|_$/g,'')+'.pdf',{type:'application/pdf'})}
-function cTexto(c,url,furl){const tot=c.saldo.total;return`Hola, te enviamos el recibo de tu pago de ${$p(c.pago.importe)} del ${fD(c.pago.fecha)}${c.pago.factura?' (factura N° '+c.pago.factura+')':''}. `+(tot>0?`Saldo pendiente al ${fD(c.saldo.al)}: ${$p(tot)}.`:tot<0?`Te quedó un saldo a favor de ${$p(-tot)}.`:'No tenés deuda pendiente. ¡Gracias!')+(url?`\n\nRecibo en PDF: ${url}\n`:'')+(furl?`${url?'':'\n\n'}Factura en PDF: ${furl}\n`:'')+` También podés ver y descargar tus recibos en la app de socios: https://aguaraguazu-country.github.io/app/socios/ · Comisión Directiva Aguará Guazú Country.`}
+// Mensaje de WhatsApp del recibo (se puede editar en la pantalla antes de enviar)
+const cNom=n=>{n=String(n||'').trim();const k=n.indexOf(',');return k>0?(n.slice(k+1).trim()+' '+n.slice(0,k).trim()):n};
+function cCorresponde(c){const im=c.imputacion||{},pm=c.pago.fecha.slice(0,7),M=[...(im.meses_anteriores||[]),...(im.meses||[])],ent=M.filter(x=>x.completo),par=M.filter(x=>!x.completo),o=[];
+ const lista=a=>a.length===1?a[0]:a.slice(0,-1).join(', ')+' y '+a[a.length-1];
+ if(ent.length)o.push((ent.length===1?'la cuota de ':'las cuotas de ')+lista(ent.map(x=>mesL(x.mes))));
+ if(par.length)o.push('parte de la cuota de '+lista(par.map(x=>mesL(x.mes))));
+ if(im.tipo_deuda==='Antigua'&&im.a_meses_anteriores>0)o.push('un pago a cuenta de la deuda anterior a noviembre 2026');
+ const ad=M.some(x=>x.mes.slice(0,7)>pm);return(o.length?lista(o):'su cuenta')+(ad?' (pago adelantado)':'')}
+function cTexto(c){const tot=c.saldo.total,p=c.pago;
+ return`Estimado/a ${cNom(c.socio.nombre)}:\n\nLe enviamos el recibo de pago ${cNum(c.numero)} correspondiente a ${cCorresponde(c)}, por ${$p(p.importe)}, abonado el ${fD(p.fecha)}${p.medio?' por '+p.medio.toLowerCase():''}${p.factura?' (factura N° '+p.factura+')':''}.\n\n`+
+  (tot>0?`Al ${fD(c.saldo.al)} el saldo pendiente de su cuenta es de ${$p(tot)}.`:tot<0?`Al ${fD(c.saldo.al)} su cuenta tiene un saldo a favor de ${$p(-tot)}.`:`Al ${fD(c.saldo.al)} su cuenta no registra deuda. ¡Muchas gracias!`)+
+  `\n\nSaludos cordiales,\nTesorería · Comisión Directiva Aguará Guazú Country`}
 function cWa(n){let g=String(n||'').replace(/\D/g,'');if(g.startsWith('549')&&g.length===13)g=g.slice(3);else if(g.startsWith('54')&&g.length===12)g=g.slice(2);g=g.replace(/^0/,'');return g.length===10?'https://wa.me/549'+g:null}
 document.addEventListener('click',async e=>{const t=e.target.closest('[data-tcon],[data-cshare],[data-cpdf]');if(!t)return;const d=t.dataset;
  if(d.tcon){tConst(d.tcon,+d.orden,t);return}
@@ -1126,18 +1138,20 @@ document.addEventListener('click',async e=>{const t=e.target.closest('[data-tcon
   // factura en PDF de este pago, si la tesorera la subió
   let fac=null;if(c.pago.factura){fac=S.tes&&S.tes.fpdf?facPdf({socio_id:c.socio.id,factura:c.pago.factura}):null;
    if(!fac&&!(S.tes&&S.tes.fpdf)){const q=await sb.from('tes_facturas_pdf').select('url,numero_norm').eq('socio_id',c.socio.id);if(!q.error)fac=(q.data||[]).find(x=>x.numero_norm===facN(c.pago.factura))||null}}
-  let ff=null;if(d.cshare&&movil&&fac){try{const bl=await (await fetch(fac.url)).blob();ff=new File([bl],'Factura_'+String(c.pago.factura).replace(/[^\w-]/g,'')+'.pdf',{type:bl.type||'application/pdf'})}catch(_){ff=null}}
-  if(d.cshare&&movil&&navigator.canShare&&navigator.canShare({files:ff?[f,ff]:[f]})){try{await navigator.share({files:ff?[f,ff]:[f],text:cTexto(c,null,fac&&!ff?fac.url:null)})}catch(err){if(err.name!=='AbortError')throw err}}
+  let ff=null;if(d.cshare&&fac&&(/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)||navigator.maxTouchPoints>1)){try{const bl=await (await fetch(fac.url)).blob();ff=new File([bl],'Factura_'+String(c.pago.factura).replace(/[^\w-]/g,'')+'.pdf',{type:bl.type||'application/pdf'})}catch(_){ff=null}}
+  const msg=(($('#cn_msg')||{}).value||cTexto(c)).trim(),files=ff?[f,ff]:[f];
+  const bajar=x=>{const a=document.createElement('a');a.href=URL.createObjectURL(x);a.download=x.name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},4000)};
+  if(d.cshare&&movil&&navigator.canShare&&navigator.canShare({files})){
+   // WhatsApp a veces no toma el texto cuando van archivos: queda copiado para pegarlo
+   try{await navigator.clipboard.writeText(msg)}catch(_){}
+   try{await navigator.share({files,text:msg})}catch(err){if(err.name!=='AbortError')throw err}
+   E.style.color='var(--fg)';E.textContent='Si el mensaje no apareció en WhatsApp, mantené apretado en el chat y tocá Pegar: quedó copiado.'}
   else if(d.cshare){
-   // Computadora: WhatsApp no acepta archivos desde una página. Se guarda el PDF en el depósito privado y se manda un link seguro (vence en 90 días).
-   t.textContent='Preparando…';const path=`recibos/${cNum(c.numero)}-${Date.now()}-${Math.random().toString(36).slice(2,10)}.pdf`;
-   const up=await sb.storage.from('comprobantes').upload(path,f,{contentType:'application/pdf',upsert:false});if(up.error)throw new Error('No se pudo preparar el recibo: '+up.error.message);
-   const su=await sb.storage.from('comprobantes').createSignedUrl(path,60*60*24*90);if(su.error)throw new Error(su.error.message);
-   const g=(cWa($('#cn_cel').value)||'').replace('https://wa.me/',''),txt=encodeURIComponent(cTexto(c,su.data.signedUrl,fac&&fac.url));
-   const app='whatsapp://send?'+(g?'phone='+g+'&':'')+'text='+txt,web='https://web.whatsapp.com/send?'+(g?'phone='+g+'&':'')+'text='+txt;
-   location.href=app;
-   E.style.color='var(--fg)';E.innerHTML=`${g?'':'<b>No hay un celular válido:</b> elegí el chat en WhatsApp. '}✔ Se abrió WhatsApp con el mensaje y el link al recibo${fac?' y a la factura':''}: solo tocá <b>Enviar</b>. ¿No se abrió? <a href="${web}" target="_blank" rel="noopener"><b>Abrir en WhatsApp Web</b></a>`}
-  else{const a=document.createElement('a');a.href=URL.createObjectURL(f);a.download=f.name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},4000)}}
+   bajar(f);if(fac){try{const bl=await (await fetch(fac.url)).blob();bajar(new File([bl],'Factura_'+String(c.pago.factura).replace(/[^\w-]/g,'')+'.pdf',{type:'application/pdf'}))}catch(_){}}
+   const g=(cWa($('#cn_cel').value)||'').replace('https://wa.me/',''),txt=encodeURIComponent(msg);
+   const web='https://web.whatsapp.com/send?'+(g?'phone='+g+'&':'')+'text='+txt;location.href='whatsapp://send?'+(g?'phone='+g+'&':'')+'text='+txt;
+   E.style.color='var(--fg)';E.innerHTML=`${g?'':'<b>No hay un celular válido:</b> elegí el chat en WhatsApp. '}✔ Se abrió WhatsApp con el mensaje y se guardó ${fac?'el recibo y la factura':'el recibo'} en <b>Descargas</b>. En el chat tocá <b>+ → Documento</b> y elegí ${fac?'los PDF':'el PDF'} (o arrastralo), después <b>Enviar</b>. ¿No se abrió WhatsApp? <a href="${web}" target="_blank" rel="noopener"><b>Abrir en WhatsApp Web</b></a>`}
+  else bajar(f)}
  catch(err){E.style.color='';E.textContent=err.message}finally{t.disabled=false;if(d.cshare)t.textContent='Enviar por WhatsApp'}});
 document.addEventListener('submit',e=>{if(e.target.id!=='tf')return;e.preventDefault();tGuardar()});
 document.addEventListener('click',async e=>{const t=e.target.closest('[data-tcar],[data-tfx],[data-tanu],[data-tpru],[data-tprn]');if(!t)return;const d=t.dataset;
