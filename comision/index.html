@@ -119,6 +119,7 @@ select{-webkit-appearance:none;appearance:none;padding-right:34px;background-ima
 .gform{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;align-items:end;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:12px}
 .gacts{display:flex;flex-wrap:wrap;gap:6px}.gst{font-weight:700;font-size:12px;border-radius:999px;padding:2px 9px}.gst.on{color:var(--good);background:var(--good-bg)}.gst.off{color:var(--crit);background:var(--crit-bg)}
 .tbl-g{min-width:640px}
+.cn-t{width:100%;min-width:0!important;table-layout:fixed;border-collapse:collapse;font-variant-numeric:tabular-nums}.cn-t td{padding:7px 4px;border-bottom:1px solid var(--line);vertical-align:top}.cn-t td:last-child{text-align:right;width:44%;overflow-wrap:anywhere}
 .gst{white-space:nowrap}.tbl-g td b,.tbl-g td{font-variant-numeric:tabular-nums}.tbl-g td:nth-child(n+3){white-space:nowrap}.tk{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px}.tk div{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px 12px}.tk small{display:block;color:var(--muted);font-size:12px}.tk b{font-size:20px;font-variant-numeric:tabular-nums}
 .mc{display:inline-block;min-width:22px;text-align:center;border-radius:5px;font-size:11px;font-weight:700;padding:1px 3px;margin:1px}.mc.ok{background:var(--good-bg);color:var(--good)}.mc.no{background:var(--crit-bg);color:var(--crit)}.mc.wa{background:var(--warn-bg);color:var(--warn)}.mc.fu{color:var(--muted)}
 .okline{border-radius:10px;padding:10px 12px;font-size:14px}.okline.ok{background:var(--good-bg);color:var(--good)}.okline.no{background:var(--crit-bg);color:var(--crit)}
@@ -129,7 +130,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 </head>
 <body>
 <div class="wrap">
-<header><div><div class="eyebrow">Asociación Civil Aguará Guazú Country · Comisión Directiva</div><h1>Panel de la comisión<span class="agver" aria-label="Versión del sistema" style="font:500 12px/1.2 system-ui,sans-serif;color:var(--muted,#5d6862);margin-left:10px;white-space:nowrap;vertical-align:middle;letter-spacing:0">v1.35 · 02/11/26 19:09</span></h1></div><div class="who" id="who"></div></header>
+<header><div><div class="eyebrow">Asociación Civil Aguará Guazú Country · Comisión Directiva</div><h1>Panel de la comisión<span class="agver" aria-label="Versión del sistema" style="font:500 12px/1.2 system-ui,sans-serif;color:var(--muted,#5d6862);margin-left:10px;white-space:nowrap;vertical-align:middle;letter-spacing:0">v1.36 · 04/11/26 09:40</span></h1></div><div class="who" id="who"></div></header>
 <main id="main"><div class="empty">Cargando…</div></main>
 </div>
 <div id="tip" hidden></div><div id="dr"></div>
@@ -276,8 +277,8 @@ function vTes(){const T=S.tes;if(!T){loadTes();return'<div class="card"><div cla
    <td><b>${x.total<0?'a favor '+$p(-x.total):$p(x.total)}</b></td><td><span class="gst ${x.estado==='Al día'?'on':x.estado==='A pagar'?'':'off'}" ${x.estado==='A pagar'?'style="color:var(--warn);background:var(--warn-bg)"':''}>${esc(x.estado)}</span></td><td>${x.ultimo_pago?fD(x.ultimo_pago):'—'}</td></tr>`).join('')||'<tr><td colspan="8" class="help">Sin resultados.</td></tr>'}</tbody></table></div>`}
  else if(sub==='pagos'){const nom={};T.cc.forEach(x=>nom[x.socio_id]=x.socio);
   const rs=T.pagos.filter(p=>!q||((nom[p.socio_id]||'')+' '+p.socio_id+' '+(p.comprobante||'')+' '+(p.factura||'')).toLowerCase().includes(q));
-  body=`<div class="tablebox"><table class="tbl-g"><thead><tr><th>Fecha</th><th>Socio</th><th>Importe</th><th>Medio</th><th>Comprobante</th><th>Factura</th><th>Tipo</th></tr></thead><tbody>
-  ${rs.map(p=>`<tr><td>${fD(p.fecha)}</td><td>${esc(nom[p.socio_id]||p.socio_id)}<div class="help">${esc(p.socio_id)}</div></td><td><b>${$p(p.importe)}</b></td><td>${esc(p.medio||'—')}</td><td>${p.adjunto?`<a href="${esc(p.adjunto)}" target="_blank" rel="noopener">${esc(p.comprobante||'ver')}</a>`:esc(p.comprobante||'—')}</td><td>${esc(p.factura||'—')}</td><td>${p.tipo==='Pago'?'Pago':'<span class="help">'+esc(p.tipo)+'</span>'}</td></tr>`).join('')||'<tr><td colspan="7" class="help">Sin pagos.</td></tr>'}</tbody></table></div>`}
+  body=`<div class="tablebox"><table class="tbl-g"><thead><tr><th>Fecha</th><th>Socio</th><th>Importe</th><th>Medio</th><th>Comprobante</th><th>Factura</th><th>Tipo</th><th></th></tr></thead><tbody>
+  ${rs.map(p=>`<tr><td>${fD(p.fecha)}</td><td>${esc(nom[p.socio_id]||p.socio_id)}<div class="help">${esc(p.socio_id)}</div></td><td><b>${$p(p.importe)}</b></td><td>${esc(p.medio||'—')}</td><td>${p.adjunto?`<a href="${esc(p.adjunto)}" target="_blank" rel="noopener">${esc(p.comprobante||'ver')}</a>`:esc(p.comprobante||'—')}</td><td>${esc(p.factura||'—')}</td><td>${p.tipo==='Pago'?'Pago':'<span class="help">'+esc(p.tipo)+'</span>'}</td><td>${p.tipo==='Pago'?`<button class="btn sm" data-tcon="${esc(p.socio_id)}" data-orden="${p.orden}">Constancia</button>`:''}</td></tr>`).join('')||'<tr><td colspan="8" class="help">Sin pagos.</td></tr>'}</tbody></table></div>`}
  else{const rs=T.gastos.filter(g=>!q||(g.concepto+' '+(g.categoria||'')+' '+(g.proveedor||'')).toLowerCase().includes(q));
   body=`<div class="tablebox"><table class="tbl-g"><thead><tr><th>Fecha</th><th>Concepto</th><th>Categoría</th><th>Proveedor</th><th>Importe</th><th>Sale de</th><th>Comprobante</th></tr></thead><tbody>
   ${rs.map(g=>`<tr><td>${fD(g.fecha)}</td><td>${esc(g.concepto)}</td><td>${esc(g.categoria||'—')}</td><td>${esc(g.proveedor||'—')}</td><td><b>${$p(g.importe)}</b></td><td>${esc(g.sale_de||'—')}</td><td>${g.adjunto?`<a href="${esc(g.adjunto)}" target="_blank" rel="noopener">${esc((g.comprobante||'')+' '+(g.vale||g.nro||''))||'ver'}</a>`:esc(((g.comprobante||'')+' '+(g.vale||g.nro||'')).trim()||'—')}</td></tr>`).join('')||'<tr><td colspan="7" class="help">Sin gastos.</td></tr>'}</tbody></table></div>`}
@@ -372,6 +373,72 @@ async function tGuardar(){const tipo=$('#tfm').dataset.tipo,pago=tipo==='pago',E
   const r=await sb.rpc('tes_bandeja_cargar',{p_tipo:tipo,p,p_adjunto:adj});if(r.error)throw new Error(r.error.message);
   $('#tfm').innerHTML='';S.tes=null;render()}
  catch(err){E.textContent=err.message;B.disabled=false;B.textContent='Guardar'}}
+// ---------- Constancia de pago para el propietario (PDF para descargar o mandar por WhatsApp) ----------
+const AG={nombre:'Asociación Civil Aguará Guazú Country',cuit:'30-71237749-2',dom:'Chacra 108, Ituzaingó, Corrientes',wa:'+54 9 3786 61-0915'};
+const mesL=m=>{const d=new Date(m.slice(0,10)+'T12:00:00');return d.toLocaleDateString('es-AR',{month:'long',year:'numeric'})};
+function cLineas(c){const im=c.imputacion,sa=c.saldo,L=[],pm=c.pago.fecha.slice(0,7);
+ (im.meses_anteriores||[]).forEach(x=>L.push(['Cuota '+mesL(x.mes)+(x.completo?'':' (parcial)'),x.importe]));
+ if(im.tipo_deuda==='Antigua'&&im.a_meses_anteriores>0)L.push(['A cuenta de la deuda anterior a noviembre 2026',im.a_meses_anteriores]);
+ (im.meses||[]).forEach(x=>L.push(['Cuota '+mesL(x.mes)+(x.completo?'':' (parcial)')+(x.mes.slice(0,7)>pm?' · adelanto':''),x.importe]));
+ const S=[];if(sa.deuda_anterior>0)S.push([sa.tipo_deuda==='Antigua'?'Deuda anterior a nov-2026 (en revisión)':'Meses anteriores impagos',sa.deuda_anterior]);
+ if(sa.cuotas_vencidas>0)S.push(['Cuotas vencidas impagas',sa.cuotas_vencidas]);
+ if(sa.a_pagar>0)S.push(['Cuota del mes a pagar (vence el '+sa.vence_dia+')',sa.a_pagar]);
+ if(sa.a_favor>0)S.push(['Saldo a favor (cuotas adelantadas)',-sa.a_favor]);
+ return{L,S}}
+const cNum=n=>'CP-'+String(n).padStart(4,'0');
+async function tConst(socio,orden,btn){if(btn)btn.disabled=true;const r=await sb.rpc('tes_constancia',{p_socio:socio,p_orden:orden});if(btn)btn.disabled=false;
+ if(r.error){alert(/function|schema cache/i.test(r.error.message)?'Falta ejecutar el script 16_constancia_pago.sql en Supabase.':r.error.message);return}
+ const c=r.data,{L,S:SA}=cLineas(c),so=c.socio,pa=c.pago,tot=c.saldo.total;
+ const cel=((S.padron||[]).find(x=>x.id===so.id)||{}).celular||'';S.cons=c;
+ const row=(a,b,cl)=>`<tr${cl?` class="${cl}"`:''}><td>${esc(a)}</td><td style="white-space:nowrap">${$p(b)}</td></tr>`;
+ let box=$('#tfm');if(!box){box=document.createElement('div');box.id='tfm';document.body.appendChild(box)}
+ box.innerHTML=`<div class="scrim" data-tfx></div><div class="modal" role="dialog" aria-label="Constancia de pago" style="width:min(620px,100vw)"><div style="padding:18px 20px;display:grid;grid-template-columns:minmax(0,1fr);gap:12px">
+ <div style="display:flex;justify-content:space-between;gap:10px;align-items:start"><div><b style="font-size:17px">Constancia de pago ${cNum(c.numero)}</b><div class="help">${esc(AG.nombre)} · CUIT ${AG.cuit}</div></div><button type="button" class="x" data-tfx aria-label="Cerrar">×</button></div>
+ ${pa.factura?'':'<p class="note" style="margin:0">⚠ Este pago no tiene número de factura en la planilla. Cargalo en Pagos (columna "N° de factura o recibo") y actualizá antes de enviar la constancia.</p>'}
+ <table class="cn-t"><tbody>
+  <tr><td>Socio</td><td><b>${esc(so.nombre)}</b> · ${esc(so.id)}</td></tr><tr><td>DNI / CUIT</td><td>${esc(so.documento||'—')}</td></tr>
+  <tr><td>Lote${so.cant_lotes>1?'s':''}</td><td>${esc(so.lotes||'—')}${so.cant_lotes>1?' ('+so.cant_lotes+' lotes)':''}</td></tr>
+  <tr><td>Fecha del pago</td><td>${fD(pa.fecha)}</td></tr><tr><td>Medio</td><td>${esc(pa.medio||'—')}${pa.comprobante?' · op. '+esc(pa.comprobante):''}</td></tr>
+  <tr><td>Factura</td><td>${pa.factura?'N° '+esc(pa.factura):'<span style="color:var(--crit)">sin cargar</span>'}</td></tr>
+  <tr><td><b>Importe pagado</b></td><td><b>${$p(pa.importe)}</b></td></tr></tbody></table>
+ <div><b>Qué cubre este pago</b><table class="cn-t"><tbody>${L.map(x=>row(x[0],x[1])).join('')}</tbody></table></div>
+ <div><b>Cómo quedó la cuenta al ${fD(c.saldo.al)}</b><table class="cn-t"><tbody>${SA.map(x=>row(x[0],x[1])).join('')}<tr><td><b>${tot>0?'Total pendiente':tot<0?'Saldo a favor':'Sin deuda pendiente'}</b></td><td style="white-space:nowrap"><b>${$p(Math.abs(tot))}</b></td></tr></tbody></table></div>
+ <label>Celular del socio para WhatsApp<input id="cn_cel" inputmode="tel" value="${esc(cel)}" placeholder="3794 123456"></label>
+ <div class="gacts" style="flex-wrap:wrap"><button class="btn primary" data-cshare="1">Enviar por WhatsApp</button><button class="btn" data-cpdf="1">Descargar PDF</button><button type="button" class="btn" data-tfx>Cerrar</button></div>
+ <p class="help" style="margin:0">En el celular, "Enviar por WhatsApp" adjunta el PDF directamente. En la computadora se descarga el PDF y se abre WhatsApp con el mensaje: arrastrá el PDF al chat.</p>
+ <div class="err" id="cn_e"></div></div></div>`}
+let JSPDF=null;
+async function cLib(){if(JSPDF)return JSPDF;await new Promise((ok,ko)=>{const sc=document.createElement('script');sc.src='https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';sc.onload=ok;sc.onerror=()=>ko(new Error('No se pudo cargar el generador de PDF. Revisá la conexión.'));document.head.appendChild(sc)});JSPDF=window.jspdf.jsPDF;return JSPDF}
+async function cPDF(c){const J=await cLib(),d=new J({unit:'mm',format:'a4'}),{L,S:SA}=cLineas(c),so=c.socio,pa=c.pago,W=210,X=18,R=W-18;let y=20;
+ const t=(s,x,yy,o)=>d.text(Array.isArray(s)?s:String(s),x,yy,o),money=n=>$p(n).replace('− ','-');
+ d.setFillColor(47,107,79);d.rect(0,0,W,6,'F');
+ d.setFont('helvetica','bold');d.setFontSize(15);t(AG.nombre,X,y);d.setFont('helvetica','normal');d.setFontSize(9.5);y+=6;t('CUIT '+AG.cuit+'  ·  '+AG.dom,X,y);
+ d.setFont('helvetica','bold');d.setFontSize(13);t('CONSTANCIA DE PAGO',R,20,{align:'right'});d.setFontSize(11);t('N° '+cNum(c.numero),R,26,{align:'right'});
+ y+=8;d.setDrawColor(200);d.line(X,y,R,y);y+=8;
+ const kv=(k,v,b)=>{d.setFont('helvetica','normal');d.setFontSize(10);d.setTextColor(90);t(k,X,y);d.setTextColor(20);d.setFont('helvetica',b?'bold':'normal');const ls=d.splitTextToSize(String(v),110);t(ls,R,y,{align:'right'});y+=6*ls.length};
+ kv('Socio',so.nombre+'  ('+so.id+')',true);kv('DNI / CUIT',so.documento||'-');kv(so.cant_lotes>1?'Lotes':'Lote',(so.lotes||'-')+(so.cant_lotes>1?'  ('+so.cant_lotes+' lotes)':''));
+ kv('Fecha del pago',fD(pa.fecha));kv('Medio de pago',(pa.medio||'-')+(pa.comprobante?'  ·  operación '+pa.comprobante:''));kv('Factura',pa.factura?'N° '+pa.factura:'(a emitir)');
+ y+=1;d.setFillColor(238,244,240);d.rect(X-2,y-5,R-X+4,9,'F');d.setFont('helvetica','bold');d.setFontSize(12);t('Importe pagado',X,y+1);t(money(pa.importe),R,y+1,{align:'right'});y+=12;
+ const tabla=(tit,rows,tot)=>{d.setFont('helvetica','bold');d.setFontSize(11);d.setTextColor(47,107,79);t(tit,X,y);d.setTextColor(20);y+=3;d.line(X,y,R,y);y+=6;d.setFontSize(10);
+  rows.forEach(r=>{d.setFont('helvetica','normal');t(r[0],X,y);t(money(r[1]),R,y,{align:'right'});y+=6});
+  if(tot){d.line(X,y-3,R,y-3);y+=2;d.setFont('helvetica','bold');d.setFontSize(11.5);t(tot[0],X,y);t(money(tot[1]),R,y,{align:'right'});y+=6}y+=6};
+ tabla('Qué cubre este pago',L);
+ const tot=c.saldo.total;tabla('Cómo quedó la cuenta al '+fD(c.saldo.al)+' (después de este pago)',SA,[tot>0?'Total pendiente':tot<0?'Saldo a favor':'Sin deuda pendiente',tot]);
+ if(c.saldo.tipo_deuda==='Antigua'&&c.saldo.deuda_anterior>0){d.setFont('helvetica','italic');d.setFontSize(9);d.setTextColor(90);const ls=d.splitTextToSize('La deuda anterior a noviembre 2026 está en revisión por la comisión. Se informará el detalle y las opciones para regularizarla.',R-X);t(ls,X,y);y+=5*ls.length+3;d.setTextColor(20)}
+ d.setFont('helvetica','normal');d.setFontSize(9);d.setTextColor(90);y=Math.max(y,250);d.line(X,y,R,y);y+=6;
+ t('Esta constancia informa la imputación del pago y no reemplaza a la factura.',X,y);y+=5;
+ t('Emitida el '+new Date().toLocaleString('es-AR',{dateStyle:'short',timeStyle:'short'})+(c.emitida_por?' por '+c.emitida_por:'')+' · Tesorería: WhatsApp '+AG.wa,X,y);
+ return new File([d.output('blob')],'Constancia_'+cNum(c.numero)+'_'+so.nombre.normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^A-Za-z0-9]+/g,'_').replace(/^_|_$/g,'')+'.pdf',{type:'application/pdf'})}
+function cTexto(c){const tot=c.saldo.total;return`Hola ${c.socio.nombre.split(/[ ,]/)[0]}, te enviamos la constancia de tu pago de ${$p(c.pago.importe)} del ${fD(c.pago.fecha)}${c.pago.factura?' (factura N° '+c.pago.factura+')':''}. `+(tot>0?`Saldo pendiente al ${fD(c.saldo.al)}: ${$p(tot)}.`:tot<0?`Te quedó un saldo a favor de ${$p(-tot)}.`:'No tenés deuda pendiente. ¡Gracias!')+` Comisión Directiva Aguará Guazú Country.`}
+function cWa(n){let g=String(n||'').replace(/\D/g,'');if(g.startsWith('549')&&g.length===13)g=g.slice(3);else if(g.startsWith('54')&&g.length===12)g=g.slice(2);g=g.replace(/^0/,'');return g.length===10?'https://wa.me/549'+g:null}
+document.addEventListener('click',async e=>{const t=e.target.closest('[data-tcon],[data-cshare],[data-cpdf]');if(!t)return;const d=t.dataset;
+ if(d.tcon){tConst(d.tcon,+d.orden,t);return}
+ const c=S.cons,E=$('#cn_e');if(!c)return;E.textContent='';t.disabled=true;
+ try{const f=await cPDF(c);
+  if(d.cshare&&navigator.canShare&&navigator.canShare({files:[f]})){try{await navigator.share({files:[f],text:cTexto(c)})}catch(err){if(err.name!=='AbortError')throw err}}
+  else{const a=document.createElement('a');a.href=URL.createObjectURL(f);a.download=f.name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},4000);
+   if(d.cshare){const w=cWa($('#cn_cel').value);if(!w){E.textContent='Cargá un celular válido para abrir WhatsApp (el PDF ya se descargó).'}else window.open(w+'?text='+encodeURIComponent(cTexto(c)),'_blank','noopener')}}}
+ catch(err){E.textContent=err.message}finally{t.disabled=false}});
 document.addEventListener('submit',e=>{if(e.target.id!=='tf')return;e.preventDefault();tGuardar()});
 document.addEventListener('click',async e=>{const t=e.target.closest('[data-tcar],[data-tfx],[data-tanu],[data-tpru],[data-tprn]');if(!t)return;const d=t.dataset;
  if(d.tpru!==undefined){$('#tf_pr').value=d.tpru;$('#tf_e').textContent='';tGuardar();return}
