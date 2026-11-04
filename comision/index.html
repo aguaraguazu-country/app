@@ -119,6 +119,18 @@ select{-webkit-appearance:none;appearance:none;padding-right:34px;background-ima
 .gform{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;align-items:end;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:12px}
 .gacts{display:flex;flex-wrap:wrap;gap:6px}.gst{font-weight:700;font-size:12px;border-radius:999px;padding:2px 9px}.gst.on{color:var(--good);background:var(--good-bg)}.gst.off{color:var(--crit);background:var(--crit-bg)}
 .tbl-g{min-width:640px}
+.sot{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums;font-size:13.5px}.sot td{padding:8px 8px;border-bottom:1px solid var(--line);vertical-align:top}.sot tr:last-child td{border-bottom:0}.sot td:nth-child(-n+3){white-space:nowrap}
+.tso{cursor:pointer}.tso:hover td{background:var(--bg)}
+.som{width:min(1120px,100vw)!important;max-height:94vh}.som-h{display:flex;gap:16px;align-items:flex-start;justify-content:space-between;padding:20px 22px 14px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.som-h h2{margin:2px 0 4px;font-size:24px}.som-b{display:grid;grid-template-columns:minmax(0,360px) minmax(0,1fr);gap:0}.som-side{padding:18px 20px;border-right:1px solid var(--line);display:grid;gap:14px;align-content:start}
+.som-main{padding:18px 22px;display:grid;grid-template-columns:minmax(0,1fr);gap:18px;align-content:start;min-width:0}.som h3{margin:0 0 8px;font-size:15px}.som-kpi{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px}
+.som-kpi div{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:8px 10px}.som-kpi small{display:block;color:var(--muted);font-size:12px}.som-kpi b{font-size:17px}
+.som-map{border:1px solid var(--line);border-radius:12px;background:var(--bg);overflow:hidden}.som-map svg{display:block;width:100%;height:auto}
+.som-map .ml{fill:var(--lot);stroke:var(--lotline);stroke-width:.35}.som-map .ms{fill:#d66224;stroke:#7a3210;stroke-width:.6}.som-map .mt{font:700 4.2px var(--body);fill:#fff;text-anchor:middle;dominant-baseline:middle}
+.mrow{display:grid;grid-template-columns:110px 90px 120px minmax(0,1fr) auto;gap:8px;align-items:center;padding:7px 4px;border-bottom:1px solid var(--line);font-variant-numeric:tabular-nums}
+.mrow.hd{font-size:12px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.03em}.mrow .pc{color:var(--muted);font-size:13px}
+.chip{display:inline-block;padding:2px 9px;border-radius:999px;font-size:12.5px;font-weight:600;white-space:nowrap}.chip.ok{background:var(--good-bg,#e3f1e7);color:var(--good)}.chip.no{background:var(--crit-bg,#fbe4e2);color:var(--crit)}.chip.wa{background:var(--warn-bg);color:var(--warn)}.chip.fu{background:var(--bg);color:var(--muted);border:1px solid var(--line)}
+@media (max-width:820px){.som-b{grid-template-columns:minmax(0,1fr)}.som-side{order:2;border-right:0;border-top:1px solid var(--line)}.som-kpi{grid-template-columns:1fr 1fr}.som-h{padding:16px}.som-main{padding:16px}.mrow{grid-template-columns:86px 1fr auto;row-gap:2px}.mrow .cu{display:none}.mrow .pc{grid-column:1/-1}.mrow.hd{display:none}}
 .cn-t{width:100%;min-width:0!important;table-layout:fixed;border-collapse:collapse;font-variant-numeric:tabular-nums}.cn-t td{padding:7px 4px;border-bottom:1px solid var(--line);vertical-align:top}.cn-t td:last-child{text-align:right;width:44%;overflow-wrap:anywhere}
 .gst{white-space:nowrap}.tbl-g td b,.tbl-g td{font-variant-numeric:tabular-nums}.tbl-g td:nth-child(n+3){white-space:nowrap}.tk{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px}.tk div{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px 12px}.tk small{display:block;color:var(--muted);font-size:12px}.tk b{font-size:20px;font-variant-numeric:tabular-nums}
 .mc{display:inline-block;min-width:22px;text-align:center;border-radius:5px;font-size:11px;font-weight:700;padding:1px 3px;margin:1px}.mc.ok{background:var(--good-bg);color:var(--good)}.mc.no{background:var(--crit-bg);color:var(--crit)}.mc.wa{background:var(--warn-bg);color:var(--warn)}.mc.fu{color:var(--muted)}
@@ -130,7 +142,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 </head>
 <body>
 <div class="wrap">
-<header><div><div class="eyebrow">Asociación Civil Aguará Guazú Country · Comisión Directiva</div><h1>Panel de la comisión<span class="agver" aria-label="Versión del sistema" style="font:500 12px/1.2 system-ui,sans-serif;color:var(--muted,#5d6862);margin-left:10px;white-space:nowrap;vertical-align:middle;letter-spacing:0">v1.38 · 04/11/26 10:19</span></h1></div><div class="who" id="who"></div></header>
+<header><div><div class="eyebrow">Asociación Civil Aguará Guazú Country · Comisión Directiva</div><h1>Panel de la comisión<span class="agver" aria-label="Versión del sistema" style="font:500 12px/1.2 system-ui,sans-serif;color:var(--muted,#5d6862);margin-left:10px;white-space:nowrap;vertical-align:middle;letter-spacing:0">v1.39 · 04/11/26 10:38</span></h1></div><div class="who" id="who"></div></header>
 <main id="main"><div class="empty">Cargando…</div></main>
 </div>
 <div id="tip" hidden></div><div id="dr"></div>
@@ -272,13 +284,13 @@ function vTes(){const T=S.tes;if(!T){loadTes();return'<div class="card"><div cla
   const chip=m=>{const e=m.estado||'',cl=e[0]==='✔'?'ok':e[0]==='✘'?'no':e[0]==='⏳'?'wa':'fu';const d=new Date(m.mes+'T12:00:00').toLocaleDateString('es-AR',{month:'short'});return`<span class="mc ${cl}" title="${esc(d+': '+e)}">${esc(d.slice(0,3))}</span>`};
   body=`<div class="tabs">${F.map(([k,l])=>`<button type="button" data-tfe="${k}" aria-pressed="${fe===k}">${l}${k==='todos'?'':' ('+(E[k]||0)+')'}</button>`).join('')}</div>
   <div class="tablebox"><table class="tbl-g"><thead><tr><th>Socio</th><th>Meses (nov-26 →)</th><th>Deuda antigua / meses ant.</th><th>Vencido</th><th>A pagar</th><th>Total</th><th>Estado</th><th>Último pago</th></tr></thead><tbody>
-  ${rs.map(x=>`<tr><td><b>${esc(x.socio)}</b><div class="help">${esc(x.socio_id)}${x.lotes?' · '+esc(x.lotes):''}${x.cant_lotes>1?' · '+x.cant_lotes+' lotes':''}</div></td><td style="white-space:nowrap">${(x.meses||[]).slice(0,8).map(chip).join('')}</td>
+  ${rs.map(x=>`<tr class="tso" data-tso="${esc(x.socio_id)}" tabindex="0" title="Ver ficha del socio"><td><b>${esc(x.socio)}</b><div class="help">${esc(x.socio_id)}${x.lotes?' · '+esc(x.lotes):''}${x.cant_lotes>1?' · '+x.cant_lotes+' lotes':''}</div></td><td style="white-space:nowrap">${(x.meses||[]).slice(0,8).map(chip).join('')}</td>
    <td>${x.deuda_antigua?$p(x.deuda_antigua):'—'}${x.deuda_antigua?`<div class="help">${x.tipo_deuda==='Antigua'?'antigua (plan de pagos)':'meses anteriores'}</div>`:''}</td><td>${x.cuotas_vencidas?$p(x.cuotas_vencidas):'—'}</td><td>${x.a_pagar?$p(x.a_pagar):'—'}</td>
    <td><b>${x.total<0?'a favor '+$p(-x.total):$p(x.total)}</b></td><td><span class="gst ${x.estado==='Al día'?'on':x.estado==='A pagar'?'':'off'}" ${x.estado==='A pagar'?'style="color:var(--warn);background:var(--warn-bg)"':''}>${esc(x.estado)}</span></td><td>${x.ultimo_pago?fD(x.ultimo_pago):'—'}</td></tr>`).join('')||'<tr><td colspan="8" class="help">Sin resultados.</td></tr>'}</tbody></table></div>`}
  else if(sub==='pagos'){const nom={};T.cc.forEach(x=>nom[x.socio_id]=x.socio);
   const rs=T.pagos.filter(p=>!q||((nom[p.socio_id]||'')+' '+p.socio_id+' '+(p.comprobante||'')+' '+(p.factura||'')).toLowerCase().includes(q));
   body=`<div class="tablebox"><table class="tbl-g"><thead><tr><th>Fecha</th><th>Socio</th><th>Importe</th><th>Medio</th><th>Comprobante</th><th>Factura</th><th>Tipo</th><th></th></tr></thead><tbody>
-  ${rs.map(p=>`<tr><td>${fD(p.fecha)}</td><td>${esc(nom[p.socio_id]||p.socio_id)}<div class="help">${esc(p.socio_id)}</div></td><td><b>${$p(p.importe)}</b></td><td>${esc(p.medio||'—')}</td><td>${p.adjunto?`<a href="${esc(p.adjunto)}" target="_blank" rel="noopener">${esc(p.comprobante||'ver')}</a>`:esc(p.comprobante||'—')}</td><td>${esc(p.factura||'—')}</td><td>${p.tipo==='Pago'?'Pago':'<span class="help">'+esc(p.tipo)+'</span>'}</td><td>${p.tipo==='Pago'?`<button class="btn sm" data-tcon="${esc(p.socio_id)}" data-orden="${p.orden}">Recibo</button>`:''}</td></tr>`).join('')||'<tr><td colspan="8" class="help">Sin pagos.</td></tr>'}</tbody></table></div>`}
+  ${rs.map(p=>`<tr><td>${fD(p.fecha)}</td><td><a href="#" data-tso="${esc(p.socio_id)}">${esc(nom[p.socio_id]||p.socio_id)}</a><div class="help">${esc(p.socio_id)}</div></td><td><b>${$p(p.importe)}</b></td><td>${esc(p.medio||'—')}</td><td>${p.adjunto?`<a href="${esc(p.adjunto)}" target="_blank" rel="noopener">${esc(p.comprobante||'ver')}</a>`:esc(p.comprobante||'—')}</td><td>${esc(p.factura||'—')}</td><td>${p.tipo==='Pago'?'Pago':'<span class="help">'+esc(p.tipo)+'</span>'}</td><td>${p.tipo==='Pago'?`<button class="btn sm" data-tcon="${esc(p.socio_id)}" data-orden="${p.orden}">Recibo</button>`:''}</td></tr>`).join('')||'<tr><td colspan="8" class="help">Sin pagos.</td></tr>'}</tbody></table></div>`}
  else{const rs=T.gastos.filter(g=>!q||(g.concepto+' '+(g.categoria||'')+' '+(g.proveedor||'')).toLowerCase().includes(q));
   body=`<div class="tablebox"><table class="tbl-g"><thead><tr><th>Fecha</th><th>Concepto</th><th>Categoría</th><th>Proveedor</th><th>Importe</th><th>Sale de</th><th>Comprobante</th></tr></thead><tbody>
   ${rs.map(g=>`<tr><td>${fD(g.fecha)}</td><td>${esc(g.concepto)}</td><td>${esc(g.categoria||'—')}</td><td>${esc(g.proveedor||'—')}</td><td><b>${$p(g.importe)}</b></td><td>${esc(g.sale_de||'—')}</td><td>${g.adjunto?`<a href="${esc(g.adjunto)}" target="_blank" rel="noopener">${esc((g.comprobante||'')+' '+(g.vale||g.nro||''))||'ver'}</a>`:esc(((g.comprobante||'')+' '+(g.vale||g.nro||'')).trim()||'—')}</td></tr>`).join('')||'<tr><td colspan="7" class="help">Sin gastos.</td></tr>'}</tbody></table></div>`}
@@ -290,7 +302,7 @@ function vTes(){const T=S.tes;if(!T){loadTes();return'<div class="card"><div cla
   ${r.pagos_sin_medio?`<p class="note">${r.pagos_sin_medio} pago(s) sin medio de pago cargado: no entran en los saldos de caja ni banco.</p>`:''}</div>${vBand(T)}
   <div class="card"><div class="tabs" style="justify-content:space-between;align-items:center"><span style="display:flex;gap:6px"><button type="button" data-tsub="cc" aria-pressed="${sub==='cc'}">Cuenta corriente</button><button type="button" data-tsub="pagos" aria-pressed="${sub==='pagos'}">Pagos (${T.pagos.length})</button><button type="button" data-tsub="gastos" aria-pressed="${sub==='gastos'}">Gastos (${T.gastos.length})</button></span>
   <input type="search" id="tq" placeholder="Buscar socio, lote, comprobante…" value="${esc(S.tq||'')}" style="flex:1 1 220px;max-width:340px"></div>
-  <p class="help">Estos datos vienen de la planilla de tesorería, que es la que cuenta. Lo que se carga con "+ Cargar pago / gasto" pasa primero a la planilla y recién ahí aparece acá.</p>${body}</div>`}
+  <p class="help">Tocá un socio para ver su ficha, su cuenta mes a mes y sus recibos. Estos datos vienen de la planilla de tesorería, que es la que cuenta. Lo que se carga con "+ Cargar pago / gasto" pasa primero a la planilla y recién ahí aparece acá.</p>${body}</div>`}
 // ---------- Carga de pagos y gastos desde el panel (bandeja → planilla) ----------
 const BEST={pendiente:['Esperando pasar a la planilla','wa'],en_planilla:['En la planilla','ok'],anulado:['Anulada','fu']};
 function vBand(T){if(!T.band)return'';const nom={};T.cc.forEach(x=>nom[x.socio_id]=x.socio);
@@ -373,6 +385,65 @@ async function tGuardar(){const tipo=$('#tfm').dataset.tipo,pago=tipo==='pago',E
   const r=await sb.rpc('tes_bandeja_cargar',{p_tipo:tipo,p,p_adjunto:adj});if(r.error)throw new Error(r.error.message);
   $('#tfm').innerHTML='';S.tes=null;render()}
  catch(err){E.textContent=err.message;B.disabled=false;B.textContent='Guardar'}}
+// ---------- Ficha del socio en tesorería (datos, plano, cuenta mes a mes, pagos y recibos) ----------
+function miniMap(ids){const sel=new Set(ids),ls=MAPA.lots.filter(l=>sel.has(l[0]));let vb='-12 -14 314 320';
+ if(ls.length){let x0=Math.min(...ls.map(l=>l[1])),y0=Math.min(...ls.map(l=>l[2])),x1=Math.max(...ls.map(l=>l[1]+l[3])),y1=Math.max(...ls.map(l=>l[2]+l[4]));
+  const cx=(x0+x1)/2,cy=(y0+y1)/2,w=Math.min(314,Math.max(110,(x1-x0)+70)),h=w*0.8;vb=`${Math.max(-12,Math.min(302-w,cx-w/2))} ${Math.max(-14,Math.min(306-h,cy-h/2))} ${w} ${h}`}
+ let g=mapBase();for(const [id,x,y,w,h] of MAPA.lots){const on=sel.has(id);g+=`<rect class="${on?'ms':'ml'}" x="${x}" y="${y}" width="${w}" height="${h}"/>`;if(on)g+=`<text class="mt" x="${x+w/2}" y="${y+h/2}">${+id.split('-')[2]}</text>`}
+ return`<div class="som-map"><svg viewBox="${vb}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Ubicación en el plano">${g}</svg></div>`}
+const mesC=m=>{const d=new Date(String(m).slice(0,10)+'T12:00:00');return d.toLocaleDateString('es-AR',{month:'short',year:'2-digit'}).replace('.','')};
+async function tSocio(id){S.som={id,cargando:true};vSocio();const r=await sb.rpc('tes_socio_detalle',{p_socio:id});
+ if(!S.som||S.som.id!==id)return;S.som=r.error?{id,err:r.error.message}:{id,...r.data};vSocio()}
+function vSocio(){const o=S.som;let box=$('#som');if(!box){box=document.createElement('div');box.id='som';document.body.appendChild(box)}
+ if(!o){box.innerHTML='';return}
+ const shell=b=>`<div class="scrim" data-somx></div><div class="modal som" role="dialog" aria-label="Ficha del socio">${b}</div>`;
+ if(o.cargando){box.innerHTML=shell('<div style="padding:28px" class="empty">Cargando ficha del socio…</div>');return}
+ if(o.err){box.innerHTML=shell(`<div style="padding:24px">${/function|schema cache/i.test(o.err)?'Falta ejecutar el script <b>17_ficha_socio_tesoreria.sql</b> en Supabase.':'No se pudo cargar: '+esc(o.err)}<div class="gacts" style="margin-top:12px"><button class="btn" data-somx>Cerrar</button></div></div>`);return}
+ const so=o.socio,cc=o.cc||{},pagos=o.pagos||[],rec=o.recibos||[],ids=[...new Set(lotIds(so.lotes))];
+ const pad=(S.padron||[]).find(x=>x.id===so.socio_id)||{},dk=docKey(so.documento);
+ const fi=(S.fichas||[]).find(f=>f.estado==='verificada'&&dk&&docKey(f.titular_documento)===dk);
+ const cel=(fi&&fi.celular)||pad.celular||'',mail=(fi&&fi.email)||pad.email||'',wa=cWa(cel);
+ const recPor={};rec.forEach(r=>recPor[r.huella]=r);
+ // qué pago cubrió cada mes
+ const cub={};pagos.forEach(p=>[...(p.meses_anteriores||[]),...(p.meses||[])].forEach(m=>{(cub[m.mes]=cub[m.mes]||[]).push({p,importe:m.importe,completo:m.completo})}));
+ const hoyM=hoyAR().slice(0,7)+'-01';
+ const antM=[...new Set(pagos.flatMap(p=>(p.meses_anteriores||[]).map(m=>m.mes)))];
+ const filas=[];
+ if(cc.tipo_deuda==='Reciente'&&cc.meses_anteriores>0){const ini=new Date((cc.meses&&cc.meses[0]?cc.meses[0].mes:hoyM)+'T12:00:00');
+  for(let i=cc.meses_anteriores;i>=1;i--){const d=new Date(ini);d.setMonth(d.getMonth()-i);const k=d.toLocaleDateString('sv').slice(0,8)+'01';filas.push({mes:k,ant:true})}}
+ (cc.meses||[]).forEach(m=>{if(m.mes<=hoyM||(cub[m.mes]))filas.push({mes:m.mes,estado:m.estado})});
+ const cuotaMes=cc.cuota_mes||0;
+ const chipE=f=>{const c=cub[f.mes]||[],tot=c.reduce((a,x)=>a+ +x.importe,0),full=c.some(x=>x.completo);
+  if(f.ant){return full?'<span class="chip ok">Pagado</span>':tot>0?'<span class="chip wa">Pago parcial</span>':'<span class="chip no">Debe</span>'}
+  const e=f.estado||'';return e[0]==='✔'?'<span class="chip ok">'+(f.mes>hoyM?'Adelantado':'Pagado')+'</span>':e[0]==='⏳'?'<span class="chip wa">A pagar (vence el 10)</span>':e[0]==='✘'?(tot>0?'<span class="chip wa">Pago parcial</span>':'<span class="chip no">Debe</span>'):'<span class="chip fu">—</span>'};
+ const btnR=p=>p.tipo==='Pago'?`<button class="btn sm" data-tcon="${esc(so.socio_id)}" data-orden="${p.orden}">${recPor[p.huella]?'Recibo '+cNum(recPor[p.huella].numero):'Recibo'}</button>`:'<span class="help">'+(p.tipo==='Ajuste de deuda antigua'?'ajuste':'planilla vieja')+'</span>';
+ const mrows=filas.map(f=>{const c=cub[f.mes]||[];return`<div class="mrow"><b>${mesL(f.mes)}</b><span class="cu">${f.ant?'mes anterior':$p(cuotaMes)}</span><span>${chipE(f)}</span>
+  <span class="pc">${c.map(x=>`${fD(x.p.fecha)} · ${$p(x.importe)}${x.p.factura?' · F '+esc(x.p.factura):''}${x.completo?'':' (parcial)'}`).join('<br>')||'—'}</span>
+  <span style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end">${[...new Set(c.map(x=>x.p))].map(btnR).join('')}</span></div>`}).join('');
+ const apl=p=>[...(p.meses_anteriores||[]).map(m=>mesC(m.mes)),cc.tipo_deuda==='Antigua'&&+p.a_meses_anteriores>0?'deuda anterior '+$p(p.a_meses_anteriores):'',...(p.meses||[]).map(m=>mesC(m.mes)+(m.completo?'':' (parcial)'))].filter(Boolean).join(', ');
+ const prows=pagos.slice().reverse().map(p=>`<tr><td>${fD(p.fecha)}</td><td><b>${$p(p.importe)}</b></td><td>${esc(p.medio||'—')}${p.comprobante?'<div class="help">op. '+esc(p.comprobante)+'</div>':''}</td><td>${p.factura?esc(p.factura):'<span style="color:var(--crit)">sin factura</span>'}</td><td>${esc(apl(p))}</td><td>${p.adjunto?`<a href="${esc(p.adjunto)}" target="_blank" rel="noopener">Ver</a>`:'—'}</td><td style="text-align:right">${btnR(p)}</td></tr>`).join('');
+ const est=cc.estado||'—',ec=est==='Al día'?'ok':est==='A pagar'?'wa':'no';
+ const K=(t,v,c)=>`<div><small>${t}</small><b ${c?`style="color:${c}"`:''}>${v}</b></div>`;
+ box.innerHTML=shell(`<header class="som-h"><div style="display:flex;gap:14px;align-items:center;min-width:0"><img src="${LOGO_AG}" alt="" style="height:52px;border-radius:8px"><div style="min-width:0"><div class="help">Ficha del socio · ${esc(so.socio_id)}</div><h2>${esc(so.socio)}</h2>
+   <div class="help">DNI/CUIT <span class="mono">${esc(so.documento||'—')}</span> · ${so.cant_lotes} lote${so.cant_lotes>1?'s':''} · Ficha ${esc(so.ficha||'—')}</div></div></div>
+   <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><span class="chip ${ec}" style="font-size:14px;padding:5px 12px">${esc(est)}</span>
+   ${wa?`<a class="btn sm" href="${wa}" target="_blank" rel="noopener">WhatsApp</a>`:''}${fi?`<button class="btn sm" data-sofi="${fi.id}">Ver ficha completa</button>`:''}<button type="button" class="x" data-somx aria-label="Cerrar">×</button></div></header>
+  <div class="som-b"><aside class="som-side">${miniMap(ids)}
+   <div>${ids.length?ids.map(id=>{const i=lotInfo(id);return`<div style="margin-bottom:6px"><b>${esc(i.nom)}</b><div class="help mono">${esc(i.partida)}${i.sup!=null?' · '+i.sup.toLocaleString('es-AR')+' m²':''}</div></div>`}).join(''):`<p class="help">Lote: ${esc(so.lotes||'sin dato')}</p>`}</div>
+   <div><h3>Contacto</h3><div class="help">Celular</div><div class="mono">${esc(tel(cel)||'—')}</div><div class="help" style="margin-top:6px">Email</div><div>${esc(mail||'—')}</div></div>
+  </aside><div class="som-main">
+   <div class="som-kpi">${K('Total pendiente',cc.total<0?'a favor '+$p(-cc.total):$p(cc.total),cc.total>0?'var(--crit)':'var(--good)')}${K(cc.tipo_deuda==='Antigua'?'Deuda anterior (en revisión)':'Meses anteriores',$p(cc.deuda_antigua))}${K('Cuotas vencidas',$p(cc.cuotas_vencidas))}${K('A pagar este mes',$p(cc.a_pagar))}${K('Cuota mensual',$p(cuotaMes))}${K('Último pago',cc.ultimo_pago?fD(cc.ultimo_pago):'—')}</div>
+   <section><h3>Cuenta corriente mes a mes</h3><div class="mrow hd"><span>Mes</span><span class="cu">Cuota</span><span>Estado</span><span>Pagado con</span><span></span></div>${mrows||'<p class="help">Sin meses para mostrar.</p>'}
+    ${cc.tipo_deuda==='Antigua'&&cc.deuda_antigua>0?`<p class="note" style="margin-top:8px">Además tiene <b>${$p(cc.deuda_antigua)}</b> de deuda anterior a noviembre 2026 (en revisión, se regulariza con plan de pagos).</p>`:''}</section>
+   <section><h3>Pagos (${pagos.length})</h3><div class="tablebox"><table class="sot" style="min-width:640px"><tbody><tr class="help"><td>Fecha</td><td>Importe</td><td>Medio</td><td>Factura</td><td>Se aplicó a</td><td>Comprob.</td><td></td></tr>${prows||'<tr><td colspan="7" class="help">Todavía no tiene pagos cargados en la planilla.</td></tr>'}</tbody></table></div></section>
+   <section><h3>Recibos emitidos (${rec.length})</h3>${rec.length?`<div class="tablebox"><table class="sot" style="min-width:520px"><tbody>${rec.map(r=>{const p=pagos.find(x=>x.huella===r.huella);return`<tr><td><b>${cNum(r.numero)}</b></td><td>Pago del ${fD(r.fecha)}</td><td>${$p(r.importe)}</td><td>${r.factura?'F '+esc(r.factura):'—'}</td><td class="help">emitido ${fdt(r.emitida)}${r.veces>1?' · '+r.veces+' veces':''}</td><td style="text-align:right">${p?btnR(p):'<span class="help">el pago ya no está en la planilla</span>'}</td></tr>`}).join('')}</tbody></table></div>`:'<p class="help">Todavía no se emitió ningún recibo.</p>'}</section>
+  </div></div>`)}
+document.addEventListener('click',e=>{const t=e.target.closest('[data-tso],[data-somx],[data-sofi]');if(!t)return;
+ if(t.dataset.tso){e.preventDefault();tSocio(t.dataset.tso);return}
+ if(t.dataset.somx!==undefined){S.som=null;vSocio();return}
+ if(t.dataset.sofi){S.som=null;vSocio();S.open={ficha:+t.dataset.sofi};render()}});
+document.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.dataset&&e.target.dataset.tso){tSocio(e.target.dataset.tso);return}
+ if(e.key==='Escape'&&!e.defaultPrevented&&S.som){const tf=$('#tfm');if(tf&&tf.innerHTML)return;e.preventDefault();S.som=null;vSocio()}});
 // ---------- Constancia de pago para el propietario (PDF para descargar o mandar por WhatsApp) ----------
 const AG={nombre:'Asociación Civil Aguará Guazú Country',cuit:'30-71237749-2',dom:'Chacra 108, Ituzaingó, Corrientes',wa:'+54 9 3786 61-0915'};
 const mesL=m=>{const d=new Date(m.slice(0,10)+'T12:00:00');return d.toLocaleDateString('es-AR',{month:'long',year:'numeric'})};
@@ -392,7 +463,8 @@ async function tConst(socio,orden,btn){if(btn)btn.disabled=true;const r=await sb
  const c=r.data,{L,S:SA}=cLineas(c),so=c.socio,pa=c.pago,tot=c.saldo.total;
  const cel=((S.padron||[]).find(x=>x.id===so.id)||{}).celular||'';S.cons=c;
  const row=(a,b,cl)=>`<tr${cl?` class="${cl}"`:''}><td>${esc(a)}</td><td style="white-space:nowrap">${$p(b)}</td></tr>`;
- let box=$('#tfm');if(!box){box=document.createElement('div');box.id='tfm';document.body.appendChild(box)}
+ let box=$('#tfm');if(!box){box=document.createElement('div');box.id='tfm'}document.body.appendChild(box);
+ if(S.som&&S.som.id===socio&&!S.som.cargando)setTimeout(()=>{if(S.som&&S.som.id===socio)sb.rpc('tes_socio_detalle',{p_socio:socio}).then(r=>{if(!r.error&&S.som&&S.som.id===socio){S.som={id:socio,...r.data};vSocio()}})},50);
  box.innerHTML=`<div class="scrim" data-tfx></div><div class="modal" role="dialog" aria-label="Recibo de pago" style="width:min(620px,100vw)"><div style="padding:18px 20px;display:grid;grid-template-columns:minmax(0,1fr);gap:12px">
  <div style="display:flex;justify-content:space-between;gap:10px;align-items:start"><div style="display:flex;gap:12px;align-items:center"><img src="${LOGO_AG}" alt="" style="height:46px;border-radius:6px"><div><b style="font-size:17px">Recibo de pago ${cNum(c.numero)}</b><div class="help">${esc(AG.nombre)} · CUIT ${AG.cuit}</div></div></div><button type="button" class="x" data-tfx aria-label="Cerrar">×</button></div>
  ${pa.factura?'':'<p class="note" style="margin:0">⚠ Este pago no tiene número de factura en la planilla. Cargalo en Pagos (columna "N° de factura o recibo") y actualizá antes de enviar el recibo.</p>'}
