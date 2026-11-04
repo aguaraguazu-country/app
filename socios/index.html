@@ -48,7 +48,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
 </head>
 <body>
 <div class="wrap">
-<header><div class="eyebrow">Aguará Guazú Country</div><h1>App de socios<span class="agver" aria-label="Versión del sistema" style="font:500 12px/1.2 system-ui,sans-serif;color:var(--muted,#5d6862);margin-left:10px;white-space:nowrap;vertical-align:middle;letter-spacing:0">v1.55 · 04/11/26 18:43</span></h1></header>
+<header><div class="eyebrow">Aguará Guazú Country</div><h1>App de socios<span class="agver" aria-label="Versión del sistema" style="font:500 12px/1.2 system-ui,sans-serif;color:var(--muted,#5d6862);margin-left:10px;white-space:nowrap;vertical-align:middle;letter-spacing:0">v1.56 · 04/11/26 18:50</span></h1></header>
 <main id="main"><p class="help">Cargando…</p></main>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.3/dist/umd/supabase.js"></script>
@@ -127,7 +127,7 @@ function vCuenta(){const e=S.ec,y=S.yo;
    const nn=(aj||ad)?0:(vistos[kk]=(vistos[kk]||0)+1);
    const tit=aj?(p.a_antigua<0?'Corrección: suma a la deuda anterior':'Corrección: baja la deuda anterior'):ad?'Pago adelantado (registro anterior)':'Pago'+(p.medio?' · '+esc(p.medio):'');
    const det=aj?'':[p.a_cuotas?$$(p.a_cuotas)+' a cuotas':'',p.a_antigua?$$(p.a_antigua)+((!c.tipo_deuda||c.tipo_deuda==='Antigua')?' a deuda anterior':' a meses anteriores'):''].filter(Boolean).join(' · ');
-   return `<div class="pay"><div>${esc(tit)}<small>${FEC(p.fecha)}${p.factura?' · Factura '+esc(p.factura):''}${det?' · '+det:''}</small></div><div style="text-align:right"><b>${aj?(p.a_antigua<0?'+ ':'− ')+$$(p.a_antigua):$$(p.importe)}</b>${nn?`<button class="btn sm rec" data-rec="${esc(c.id)}" data-f="${esc(p.fecha)}" data-i="${p.importe}" data-n="${nn}">Recibo</button>`:''}</div></div>`}).join('');
+   return `<div class="pay"><div>${esc(tit)}<small>${FEC(p.fecha)}${p.factura?' · Factura '+esc(p.factura):''}${det?' · '+det:''}</small></div><div style="text-align:right"><b>${aj?(p.a_antigua<0?'+ ':'− ')+$$(p.a_antigua):$$(p.importe)}</b>${nn?`<button class="btn sm rec" data-rec="${esc(c.id)}" data-f="${esc(p.fecha)}" data-i="${p.importe}" data-n="${nn}">Recibo</button>`:''}${(()=>{const fx=p.factura&&facDe(c.id,p.factura);return fx?`<a class="btn sm rec" href="${esc(fx.url)}" target="_blank" rel="noopener" style="text-decoration:none;text-align:center;width:max-content">Factura</a>`:''})()}</div></div>`}).join('');
   const act=c.actualizado?(d=>d.toLocaleDateString('es-AR',{day:'2-digit',month:'2-digit'})+' a las '+d.toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit',hour12:false})+' hs')(new Date(c.actualizado)):'';
   const cv=(S.conv||[]).find(x=>x.socio_id===c.id);
   const cvH=cv?`<h2 style="font-size:16px;margin-top:14px">Tu convenio de pago</h2><div class="rows"><div class="row"><span>Total del convenio (${cv.cuotas} cuotas)</span><b>${$$(cv.total)}</b></div><div class="row"><span>Pagado</span><b>${$$(cv.pagado)}</b></div><div class="row"><span>Saldo del convenio</span><b>${$$(cv.saldo)}</b></div></div>
@@ -180,6 +180,8 @@ async function cPDF(c){const J=await cLib(),d=new J({unit:'mm',format:'a4'}),{L,
  t('Emitida el '+new Date().toLocaleString('es-AR',{dateStyle:'short',timeStyle:'short'})+(c.emitida_por?' por '+c.emitida_por:'')+' · Tesorería: WhatsApp '+AG.wa,X,y);
  return new File([d.output('blob')],'Recibo_'+cNum(c.numero)+'_'+so.nombre.normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^A-Za-z0-9]+/g,'_').replace(/^_|_$/g,'')+'.pdf',{type:'application/pdf'})}
 
+const facN=t=>{const m=String(t||'').match(/(\d+)\D*$/);return m?(m[1].replace(/^0+/,'')||null):null};
+const facDe=(id,num)=>{const n=facN(num);return n?(S.fac||[]).find(x=>x.socio_id===id&&x.n===n)||null:null};
 async function miRecibo(socio,fecha,importe,n,btn){const t0=btn.textContent;btn.disabled=true;btn.textContent='Preparando…';
  try{const r=await sb.rpc('socio_recibo',{p_token:S.tok,p_socio:socio,p_fecha:fecha,p_importe:importe,p_n:n});if(r.error)throw new Error(/function|schema cache/i.test(r.error.message)?'Todavía no está habilitado. Probá más tarde.':r.error.message);
   const f=await cPDF(r.data);
@@ -205,7 +207,7 @@ ${vCuenta()}
  <p class="help">Al menos 6 caracteres. No uses tu DNI, ni 123456, ni el mismo número repetido.</p><div class="err" id="cperr"></div><button class="btn primary" type="submit" id="cpb">Guardar contraseña nueva</button></form></div>
  <button class="btn" id="out" type="button">Salir</button>`}
 async function cargar(){const {data,error}=await sb.rpc('socio_yo',{p_token:S.tok});if(error){tokSet(null);return vLogin(/venci/i.test(error.message)?'Tu sesión venció. Volvé a ingresar.':'')}S.yo=data;S.ec=null;vHome();
- cargarAccesos();const [r,cvr]=await Promise.all([sb.rpc('socio_estado_cuenta',{p_token:S.tok}),sb.rpc('socio_convenio',{p_token:S.tok})]);S.ec=r.error?{error:true}:r.data;S.conv=cvr.error?[]:(cvr.data||[]);if(S.yo&&!S.form)vHome()}
+ cargarAccesos();const [r,cvr,fr]=await Promise.all([sb.rpc('socio_estado_cuenta',{p_token:S.tok}),sb.rpc('socio_convenio',{p_token:S.tok}),sb.rpc('socio_facturas',{p_token:S.tok})]);S.ec=r.error?{error:true}:r.data;S.conv=cvr.error?[]:(cvr.data||[]);S.fac=fr.error?[]:(fr.data||[]);if(S.yo&&!S.form)vHome()}
 async function start(){if(!sb){$('#main').innerHTML='<div class="card">No se pudo cargar la app. Revisá tu conexión y recargá.</div>';return}S.tok=tokGet();if(S.tok)return cargar();vLogin()}
 document.addEventListener('input',e=>{if(e.target.id==='dni')e.target.value=e.target.value.replace(/\D/g,'')});
 document.addEventListener('change',e=>{if(e.target.id==='show'){S.show=e.target.checked;$('#pw').type=S.show?'text':'password'}});

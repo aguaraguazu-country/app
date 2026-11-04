@@ -189,7 +189,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 </head>
 <body>
 <div class="wrap">
-<header><div><div class="eyebrow">Asociación Civil Aguará Guazú Country · Comisión Directiva</div><h1>Panel de la comisión<span class="agver" aria-label="Versión del sistema" style="font:500 12px/1.2 system-ui,sans-serif;color:var(--muted,#5d6862);margin-left:10px;white-space:nowrap;vertical-align:middle;letter-spacing:0">v1.55 · 04/11/26 18:43</span></h1></div><div class="who" id="who"></div></header>
+<header><div><div class="eyebrow">Asociación Civil Aguará Guazú Country · Comisión Directiva</div><h1>Panel de la comisión<span class="agver" aria-label="Versión del sistema" style="font:500 12px/1.2 system-ui,sans-serif;color:var(--muted,#5d6862);margin-left:10px;white-space:nowrap;vertical-align:middle;letter-spacing:0">v1.56 · 04/11/26 18:50</span></h1></div><div class="who" id="who"></div></header>
 <div id="gsr" class="gsr" hidden><div class="cb" style="max-width:560px"><input id="gq" type="search" autocomplete="off" placeholder="Buscar propietario: nombre, DNI, N° de socio o lote (ej. S2-M-06)…" aria-label="Buscar propietario"><div class="cb-l" id="gq_l" hidden></div></div></div>
 <main id="main"><div class="empty">Cargando…</div></main>
 </div>
@@ -314,14 +314,20 @@ document.addEventListener('input',e=>{if(e.target.id!=='axq')return;S.axq=e.targ
 
 
 // ---------- Tesorería (etapa 1: espejo de la planilla, solo lectura) ----------
-async function loadTes(){const [r,c,p,g]=await Promise.all([sb.rpc('tes_resumen'),sb.rpc('tes_cuenta_corriente'),
-  sb.from('tes_pagos').select('orden,socio_id,fecha,importe,medio,comprobante,factura,tipo,obs,adjunto').order('fecha',{ascending:false}).order('orden',{ascending:false}).limit(300),
-  sb.from('tes_gastos').select('fecha,concepto,categoria,proveedor,importe,sale_de,comprobante,nro,vale,adjunto').order('fecha',{ascending:false}).limit(300)]);
+// Trae todas las filas (Supabase entrega de a 1000)
+async function todas(mk){let out=[];for(let i=0;i<50;i++){const r=await mk().range(i*1000,i*1000+999);if(r.error)return r;out=out.concat(r.data||[]);if(!r.data||r.data.length<1000)break}return{data:out,error:null}}
+async function loadTes(){const [r,c,p,g,fp]=await Promise.all([sb.rpc('tes_resumen'),sb.rpc('tes_cuenta_corriente'),
+  todas(()=>sb.from('tes_pagos').select('orden,socio_id,fecha,importe,medio,comprobante,factura,tipo,obs,adjunto').order('fecha',{ascending:false}).order('orden',{ascending:false})),
+  todas(()=>sb.from('tes_gastos').select('orden,fecha,concepto,categoria,proveedor,importe,sale_de,comprobante,nro,vale,adjunto').order('fecha',{ascending:false}).order('orden',{ascending:false})),
+  sb.from('tes_facturas_pdf').select('id,socio_id,numero,numero_norm,url,nombre_archivo,subido_por_nombre,creado')]);
  const lc=await sb.from('tes_config').select('listas').maybeSingle();
  const cb=await sb.rpc('tes_cobranza');const cob={};(cb.error?[]:(cb.data||[])).forEach(x=>cob[x.socio_id]=x);
  const cv=await sb.rpc('tes_convenios_estado',{p_socio:null});const conv={};(cv.error?[]:(cv.data||[])).forEach(x=>conv[x.socio_id]=x);
  const b=await sb.from('tes_bandeja').select('id,tipo,datos,adjunto,estado,fila,cargado_nombre,creado,procesado').order('id',{ascending:false}).limit(60);
- const err=r.error||c.error||p.error||g.error;S.tes={err:err?err.message:null,r:r.data,cc:c.data||[],pagos:p.data||[],gastos:g.data||[],band:b.error?null:(b.data||[]),cats:(!lc.error&&lc.data&&lc.data.listas&&lc.data.listas.categorias)||null,cob:cb.error?null:cob,conv:cv.error?null:conv};if(S.v==='tesoreria'||modoTes())render()}
+ const err=r.error||c.error||p.error||g.error;S.tes={err:err?err.message:null,r:r.data,cc:c.data||[],pagos:p.data||[],gastos:g.data||[],band:b.error?null:(b.data||[]),cats:(!lc.error&&lc.data&&lc.data.listas&&lc.data.listas.categorias)||null,cob:cb.error?null:cob,conv:cv.error?null:conv,fpdf:fp.error?null:Object.fromEntries((fp.data||[]).map(x=>[x.socio_id+'|'+x.numero_norm,x]))};if(S.v==='tesoreria'||modoTes())render()}
+// N° de factura normalizado: último grupo de dígitos sin ceros adelante ("F34", "00002-00000034" y "34" son la misma)
+const facN=t=>{const m=String(t||'').match(/(\d+)\D*$/);return m?(m[1].replace(/^0+/,'')||null):null};
+const facPdf=p=>{const F=S.tes&&S.tes.fpdf,n=facN(p.factura);return F&&n?F[p.socio_id+'|'+n]||null:null};
 const $p=n=>(n<0?'− ':'')+'$ '+Math.abs(Math.round(+n||0)).toLocaleString('es-AR');
 function vTes(){const T=S.tes;if(!T){loadTes();return'<div class="card"><div class="empty">Cargando tesorería…</div></div>'}
  if(T.err)return`<div class="card">${/function|does not exist|schema cache|relation/i.test(T.err)?'Para ver la tesorería en el sistema, ejecutá el script <b>12_tesoreria.sql</b> en Supabase y después actualizá la planilla (menú Aguará Guazú → Actualizar socios).':'No se pudo cargar: '+esc(T.err)}</div>`;
@@ -578,7 +584,7 @@ const ICO={
  recibo:'<svg viewBox="0 0 24 24"><path d="M6 2h12v20l-3-2-3 2-3-2-3 2z"/><path d="m9 11 2 2 4-4"/></svg>'};
 const ICC={cobrar:['#e3f1e7','#2f7d4f'],gasto:['#fbe4e2','#b42318'],socio:['#e3edf8','#1d4f86'],caja:['#efe7f8','#5b3a8c'],arqueo:['#fbf0d9','#9a6400'],factura:['#fbe4e2','#b42318'],cuentas:['#e3edf8','#1d4f86'],cobranza:['#fbf0d9','#9a6400'],convenio:['#efe7f8','#5b3a8c'],mover:['#e6f2f1','#1c6b66'],reportes:['#e3f1e7','#2f7d4f'],recibo:['#e3f1e7','#2f7d4f']};
 const tile=(k,ic,t,sub,badge)=>`<button type="button" class="th-t" data-th="${k}"><span class="th-ic" style="background:${ICC[ic][0]};color:${ICC[ic][1]}">${ICO[ic]}</span><span><b>${t}</b><span>${sub||''}</span></span>${badge?`<span class="th-badge">${badge}</span>`:''}</button>`;
-const TV={caja:['Caja','caja','caja','Lo que hay en la caja y en el banco, y todo lo que entró y salió.'],sinf:['Facturas pendientes','pagos','factura','Pagos que todavía no tienen el número de factura. Tocá "Cargar N° de factura" cuando la hagas.'],pagos:['Pagos cobrados','pagos','recibo','Todos los cobros. Desde acá mandás el recibo al socio.'],cc:['Cuentas de los socios','cc','cuentas','Cuánto debe cada socio. Tocá un socio para ver su cuenta completa.'],cobranza:['Cobranza','cc','cobranza','Socios que deben. Arriba los que nadie está gestionando.'],convenios:['Convenios de pago','cc','convenio','Socios que están pagando su deuda vieja en cuotas.'],gastos:['Gastos cargados','gastos','gasto','Todos los gastos con su comprobante.'],reg:['Registro de cambios','reg','socio','Quién cambió qué y cuándo, en la planilla y en el sistema.'],cobros:['Cobranza del mes','pagos','cobrar','Cuánto se cobró, qué días, por qué medio y comparado con el mes anterior.'],hoy:['Cobrado hoy','pagos','cobrar','Los pagos registrados hoy.'],gmes:['Gastos del mes','gastos','gasto','En qué se gastó, a quién se le pagó y qué comprobantes faltan.']};
+const TV={caja:['Caja','caja','caja','Lo que hay en la caja y en el banco, y todo lo que entró y salió.'],sinf:['Facturas','pagos','factura','Cargá el N° de cada factura y subí el PDF: el socio la descarga desde su app y vos la podés reenviar con el recibo.'],pagos:['Pagos cobrados','pagos','recibo','Todos los cobros. Desde acá mandás el recibo al socio.'],cc:['Cuentas de los socios','cc','cuentas','Cuánto debe cada socio. Tocá un socio para ver su cuenta completa.'],cobranza:['Cobranza','cc','cobranza','Socios que deben. Arriba los que nadie está gestionando.'],convenios:['Convenios de pago','cc','convenio','Socios que están pagando su deuda vieja en cuotas.'],gastos:['Gastos cargados','gastos','gasto','Todos los gastos con su comprobante.'],reg:['Registro de cambios','reg','socio','Quién cambió qué y cuándo, en la planilla y en el sistema.'],cobros:['Cobranza del mes','pagos','cobrar','Cuánto se cobró, qué días, por qué medio y comparado con el mes anterior.'],hoy:['Cobrado hoy','pagos','cobrar','Los pagos registrados hoy.'],gmes:['Gastos del mes','gastos','gasto','En qué se gastó, a quién se le pagó y qué comprobantes faltan.']};
 // Vista de cada pantalla de la tesorera: encabezado grande con ícono, buscador y tarjetas en lugar de tablas
 function thVista(tv){const [tit,sub,ic,expl]=TV[tv]||['','','socio',''];S.v='tesoreria';S.tsub=sub;
  const head=`<div class="th-back"><button class="btn" data-th="inicio">← Volver al inicio</button></div><div class="th-head"><span class="th-ic" style="background:${ICC[ic][0]};color:${ICC[ic][1]}">${ICO[ic]}</span><div><h2>${esc(tit)}</h2><p>${esc(expl)}</p></div></div>`;
@@ -592,15 +598,17 @@ function thVista(tv){const [tit,sub,ic,expl]=TV[tv]||['','','socio',''];S.v='tes
  const chips=(L,cur,attr)=>`<div class="th-chips">${L.map(([k,l,n])=>`<button type="button" ${attr}="${k}" aria-pressed="${cur===k}">${l}${n!=null?` <span>${n}</span>`:''}</button>`).join('')}</div>`;
  const MAX=120,mas=(n)=>n>MAX?`<div class="th-empty">Se muestran ${MAX} de ${n}. Escribí en el buscador para encontrar al socio.</div>`:'';
  const vacio=t=>`<div class="th-empty">${t}</div>`;
- if(tv==='sinf'||tv==='pagos'){const FP=fpend(),sinF=p=>p.tipo==='Pago'&&!p.factura&&!FP[p.socio_id+'|'+p.orden];
-  const rs=T.pagos.filter(p=>tv==='pagos'||sinF(p)).filter(p=>!q||((nom[p.socio_id]||'')+' '+p.socio_id+' '+(lot[p.socio_id])+' '+(p.comprobante||'')+' '+(p.factura||'')).toLowerCase().includes(q)).sort((a,b)=>(b.fecha+String(b.orden).padStart(5,'0')).localeCompare(a.fecha+String(a.orden).padStart(5,'0')));
+ if(tv==='sinf'||tv==='pagos'){const FP=fpend(),sinF=p=>p.tipo==='Pago'&&!p.factura&&!FP[p.socio_id+'|'+p.orden],sinPdf=p=>p.tipo==='Pago'&&!!p.factura&&!facPdf(p);
+  const ff=['sinnum','sinpdf','todas'].includes(S.tfe)?S.tfe:'sinnum',okF=p=>tv==='pagos'||(ff==='sinnum'?sinF(p):ff==='sinpdf'?sinPdf(p):p.tipo==='Pago');
+  const top=tv==='sinf'?chips([['sinnum','Sin N° de factura',T.pagos.filter(sinF).length]].concat(T.fpdf?[['sinpdf','Sin el PDF de la factura',T.pagos.filter(sinPdf).length]]:[]).concat([['todas','Todos los pagos',null]]),ff,'data-thf')+(T.fpdf?`<div class="th-per"><button type="button" class="btn primary" data-fmas="1">📄 Subir varias facturas en PDF</button><span class="help">Elegí los PDF que bajaste de ARCA: el sistema los asigna solos por el número de factura.</span></div>`:`<p class="help">Para subir los PDF de las facturas falta ejecutar el script 27_facturas_pdf.sql.</p>`):'';
+  const rs=T.pagos.filter(okF).filter(p=>!q||((nom[p.socio_id]||'')+' '+p.socio_id+' '+(lot[p.socio_id])+' '+(p.comprobante||'')+' '+(p.factura||'')).toLowerCase().includes(q)).sort((a,b)=>(b.fecha+String(b.orden).padStart(5,'0')).localeCompare(a.fecha+String(a.orden).padStart(5,'0')));
   const tot=rs.reduce((a,p)=>a+ +p.importe,0);
-  return head+srch('Buscar por apellido, N° de socio, lote o comprobante…')+`<div class="th-sum">${rs.length} pago${rs.length===1?'':'s'} · total ${$p(tot)}</div><div class="th-list">${rs.slice(0,MAX).map(p=>{const pago=p.tipo==='Pago';
+  return head+top+srch('Buscar por apellido, N° de socio, lote o comprobante…')+`<div class="th-sum">${rs.length} pago${rs.length===1?'':'s'} · total ${$p(tot)}</div><div class="th-list">${rs.slice(0,MAX).map(p=>{const pago=p.tipo==='Pago';
    return`<div class="th-row"><div class="th-who"><button type="button" class="th-name" data-tso="${esc(p.socio_id)}">${esc(nom[p.socio_id]||p.socio_id)}</button><small>${esc(p.socio_id)}${lot[p.socio_id]?' · '+esc(lot[p.socio_id]):''}</small>
     <div class="th-det">${fD(p.fecha)} · ${esc(p.medio||'sin medio')}${p.comprobante?' · '+(p.adjunto?`<a href="${esc(p.adjunto)}" target="_blank" rel="noopener">${esc(p.comprobante)}</a>`:esc(p.comprobante)):''}${pago?'':' · '+esc(p.tipo)}</div>
-    ${pago?`<div class="th-fac">${p.factura?'Factura '+esc(p.factura):FP[p.socio_id+'|'+p.orden]?'⏳ Factura '+esc(FP[p.socio_id+'|'+p.orden])+' pasando a la planilla':'<span class="falta">Falta la factura</span>'}</div>`:''}</div>
+    ${pago?`<div class="th-fac">${p.factura?'Factura '+esc(p.factura)+(facPdf(p)?` · <a href="${esc(facPdf(p).url)}" target="_blank" rel="noopener">📄 ver PDF</a>`:T.fpdf?' · <span class="falta" style="display:inline">falta el PDF</span>':''):FP[p.socio_id+'|'+p.orden]?'⏳ Factura '+esc(FP[p.socio_id+'|'+p.orden])+' pasando a la planilla':'<span class="falta">Falta la factura</span>'}</div>`:''}</div>
     <div class="th-amt">${$p(p.importe)}</div>
-    <div class="th-acts">${pago&&!p.factura&&!FP[p.socio_id+'|'+p.orden]?`<button class="btn primary" data-fac="${esc(p.socio_id)}" data-orden="${p.orden}" data-act="">Cargar N° de factura</button>`:''}${pago&&p.factura?`<button class="btn" data-fac="${esc(p.socio_id)}" data-orden="${p.orden}" data-act="${esc(p.factura)}">Corregir factura</button>`:''}${pago?`<button class="btn" data-tcon="${esc(p.socio_id)}" data-orden="${p.orden}">Recibo</button>`:''}${tv==='pagos'&&!p.adjunto?adjBtn('Pagos',p.orden,p.socio_id,'','📷 Subir comprobante'):''}</div></div>`}).join('')||vacio(tv==='sinf'?'✔ No hay pagos sin factura.':'No hay pagos.')}</div>`+mas(rs.length)}
+    <div class="th-acts">${pago&&!p.factura&&!FP[p.socio_id+'|'+p.orden]?`<button class="btn primary" data-fac="${esc(p.socio_id)}" data-orden="${p.orden}" data-act="">Cargar N° de factura</button>`:''}${pago&&p.factura?`<button class="btn" data-fac="${esc(p.socio_id)}" data-orden="${p.orden}" data-act="${esc(p.factura)}">Corregir factura</button>`:''}${pago&&T.fpdf?`<button class="btn${p.factura&&!facPdf(p)&&tv==='sinf'?' primary':''}" data-fpdf="${esc(p.socio_id)}" data-orden="${p.orden}">${facPdf(p)?'Reemplazar PDF':'📄 Subir PDF de la factura'}</button>`:''}${pago?`<button class="btn" data-tcon="${esc(p.socio_id)}" data-orden="${p.orden}">Recibo</button>`:''}${tv==='pagos'&&!p.adjunto?adjBtn('Pagos',p.orden,p.socio_id,'','📷 Subir comprobante'):''}</div></div>`}).join('')||vacio(tv==='sinf'?(ff==='sinpdf'?'✔ Todas las facturas cargadas tienen su PDF.':'✔ No hay pagos sin N° de factura.'):'No hay pagos.')}</div>`+mas(rs.length)}
  if(tv==='gastos'){const AP=apend(),sf=g=>!g.adjunto&&!AP['Gastos||'+g.orden],ns=T.gastos.filter(sf).length,gf=S.tfe==='sinfoto'?'sinfoto':'todos';const rs=T.gastos.filter(g=>gf==='todos'||sf(g)).filter(g=>!q||(g.concepto+' '+(g.categoria||'')+' '+(g.proveedor||'')).toLowerCase().includes(q)).sort((a,b)=>String(b.fecha).localeCompare(String(a.fecha)));
   return head+chips([['todos','Todos',T.gastos.length],['sinfoto','Sin foto del comprobante',ns]],gf,'data-thf')+srch('Buscar por concepto, categoría o proveedor…')+`<div class="th-sum">${rs.length} gasto${rs.length===1?'':'s'} · total ${$p(rs.reduce((a,g)=>a+ +g.importe,0))}</div><div class="th-list">${rs.slice(0,MAX).map(g=>`<div class="th-row"><div class="th-who"><b class="th-name0">${esc(g.concepto)}</b><small>${esc(g.categoria||'Sin categoría')}${g.proveedor?' · '+esc(g.proveedor):''}</small><div class="th-det">${fD(g.fecha)} · sale de ${esc(g.sale_de||'—')}</div></div><div class="th-amt" style="color:var(--crit)">${$p(g.importe)}</div><div class="th-acts">${g.adjunto?`<a class="btn" href="${esc(g.adjunto)}" target="_blank" rel="noopener">Ver comprobante</a>`:adjBtn('Gastos',g.orden,'','primary')}</div></div>`).join('')||vacio(gf==='sinfoto'?'✔ Todos los gastos tienen la foto del comprobante.':'No hay gastos.')}</div>`+mas(rs.length)}
  // cuentas, cobranza y convenios: una tarjeta por socio
@@ -630,6 +638,7 @@ function vTesorera(){const ban=S.miembro.rol!=='tesorero'?`<div class="th-banner
  const r=(C&&C.r)||(T&&T.r)||{},hoy=hoyAR(),nom=(S.miembro.nombre||'').split(' ')[0];
  const mesA=hoy.slice(0,7),pM=T?T.pagos.filter(p=>p.tipo==='Pago'&&String(p.fecha).slice(0,7)===mesA):[],cobMes=pM.reduce((a,p)=>a+ +p.importe,0),nHoy=pM.filter(p=>p.fecha===hoy).length,gasMes=T?T.gastos.filter(g=>String(g.fecha).slice(0,7)===mesA).reduce((a,g)=>a+ +g.importe,0):0;
  const AP=T?apend():{},sinFoto=T?T.gastos.filter(g=>!g.adjunto&&!AP['Gastos||'+g.orden]).length:0;
+ const sinPdfN=T&&T.fpdf?T.pagos.filter(p=>p.tipo==='Pago'&&p.factura&&!facPdf(p)).length:0;
  const FPn=T?fpend():{},sinF=T?T.pagos.filter(p=>p.tipo==='Pago'&&!p.factura&&!FPn[p.socio_id+'|'+p.orden]).length:0,cobHoy=T?T.pagos.filter(p=>p.tipo==='Pago'&&p.fecha===hoy).reduce((a,p)=>a+ +p.importe,0):0;
  const cob=(T&&T.cob)||{},venc=Object.values(cob).filter(c=>c.compromiso&&c.compromiso.fecha<hoy).length,conv=Object.keys((T&&T.conv)||{}).length;
  const sing=T?T.cc.filter(x=>(x.estado==='Debe'||x.estado==='Deuda antigua')&&!((T.conv||{})[x.socio_id])&&!(cob[x.socio_id]&&(cob[x.socio_id].responsable||cob[x.socio_id].compromiso))).length:0;
@@ -642,7 +651,7 @@ function vTesorera(){const ban=S.miembro.rol!=='tesorero'?`<div class="th-banner
   ${tile('buscar','socio','Buscar un socio','Ver su cuenta, recibos y pagos')}
   ${tile('caja','caja','Caja','Saldos y movimientos de caja y banco')}
   ${tile('arqueo','arqueo','Arqueo de caja','Contar la plata y comparar')}
-  ${tile('sinf','factura','Facturas pendientes',sinF?sinF+' pago(s) sin N° de factura':'Todo facturado ✔',sinF||'')}
+  ${tile('sinf','factura','Facturas',(sinF?sinF+' sin N° de factura':'Todo facturado ✔')+(sinPdfN?' · '+sinPdfN+' sin PDF':''),sinF||'')}
   ${tile('mover','mover','Mover plata','Depositar, extraer u otro ingreso')}
   ${tile('cobranza','cobranza','Cobranza',sing+' deben y nadie los gestiona'+(venc?' · '+venc+' compromiso(s) vencidos':''),venc||'')}
   ${tile('convenios','convenio','Convenios',conv?conv+' convenio(s) activos':'Planes de pago de deuda vieja')}
@@ -744,6 +753,35 @@ document.addEventListener('click',e=>{const t=e.target.closest('[data-thx]');if(
   else thExcel('Gastos_'+m+'.xlsx',[['Gastos',D.G.map(g=>({Fecha:g.fecha,Concepto:g.concepto,Categoria:g.categoria||'',Proveedor:g.proveedor||'',Importe:+g.importe,'Sale de':g.sale_de||'',Comprobante:g.comprobante||'',Numero:g.nro||g.vale||'','Foto del comprobante':g.adjunto?'Sí':'No'}))],['Por categoria',Object.entries(D.cat).map(([k,v])=>({Categoria:k,Importe:v,'Mes anterior':D.catP[k]||0}))],['Por proveedor',Object.entries(D.prov).map(([k,v])=>({Proveedor:k,Importe:v}))]]);return}
  const D=cobrosDatos(m,dia);if(t.dataset.thx==='pdf')thPrint(dia?'Cobrado el '+fD(dia):'Cobranza de '+MESN(m),cobrosHTML(D,true));
  else thExcel('Cobranza_'+(dia||m)+'.xlsx',[['Pagos',D.L.map(p=>({Fecha:p.fecha,Socio:D.nom[p.socio_id]||'','N socio':p.socio_id,Importe:+p.importe,Medio:p.medio||'',Comprobante:p.comprobante||'',Factura:p.factura||''}))],['Por dia',Object.entries(D.porDia).sort().map(([k,v])=>({Fecha:k,Dia:DIAS[new Date(k+'T12:00').getDay()],Importe:v.t,Pagos:v.n}))],['Por medio',Object.entries(D.porMed).map(([k,v])=>({Medio:k,Importe:v}))]])});
+
+// ---------- Facturas en PDF ----------
+async function fpSubir(socio,numero,file){const url=await subirAdj(file,'factura',hoyAR());
+ const r=await sb.rpc('tes_factura_pdf_guardar',{p_socio:socio,p_numero:numero,p_url:url,p_nombre:file.name});
+ if(r.error)throw new Error(/function|schema cache/i.test(r.error.message)?'Falta ejecutar el script 27_facturas_pdf.sql en Supabase.':r.error.message)}
+async function fpRecargar(){const fp=await sb.from('tes_facturas_pdf').select('id,socio_id,numero,numero_norm,url,nombre_archivo,subido_por_nombre,creado');if(!fp.error&&S.tes)S.tes.fpdf=Object.fromEntries((fp.data||[]).map(x=>[x.socio_id+'|'+x.numero_norm,x]));
+ const b=await sb.from('tes_bandeja').select('id,tipo,datos,adjunto,estado,fila,cargado_nombre,creado,procesado').order('id',{ascending:false}).limit(60);if(!b.error&&S.tes)S.tes.band=b.data||[]}
+const pickFiles=(multi,cb)=>{const i=document.createElement('input');i.type='file';i.accept='application/pdf,image/*';i.multiple=!!multi;i.style.display='none';document.body.appendChild(i);i.onchange=()=>{const f=[...i.files];i.remove();if(f.length)cb(f)};i.click()};
+document.addEventListener('click',e=>{const t=e.target.closest('[data-fpdf]');if(!t)return;e.preventDefault();e.stopPropagation();
+ const p=S.tes.pagos.find(x=>x.socio_id===t.dataset.fpdf&&x.orden===+t.dataset.orden);if(!p)return;
+ pickFiles(false,async([f])=>{let num=p.factura||'';
+  if(!num){const sug=facN(f.name)||'';num=(prompt('N° de la factura de este pago ('+$p(p.importe)+' del '+fD(p.fecha)+'):',sug)||'').trim();if(!num)return}
+  const tx=t.textContent;t.disabled=true;t.textContent='Subiendo…';
+  try{if(!p.factura){const r=await sb.rpc('tes_factura_cargar',{p_socio:p.socio_id,p_orden:p.orden,p_factura:num});if(r.error)throw new Error(r.error.message)}
+   await fpSubir(p.socio_id,num,f);await fpRecargar();render();thToast('✔ Factura '+num+' guardada. El socio ya la puede descargar desde su app.')}
+  catch(err){alert(err.message);t.disabled=false;t.textContent=tx}})},true);
+// Carga masiva: asigna cada PDF al pago cuyo N° de factura coincide con el número del nombre del archivo
+document.addEventListener('click',e=>{if(!e.target.closest('[data-fmas]'))return;
+ pickFiles(true,files=>{const T=S.tes,nom={};T.cc.forEach(x=>nom[x.socio_id]=x.socio);
+  const L=files.map(f=>{const n=facN(f.name),m=n?T.pagos.filter(p=>p.tipo==='Pago'&&facN(p.factura)===n):[],soc=[...new Set(m.map(p=>p.socio_id))];
+   return{f,n,p:soc.length===1?m[0]:null,motivo:!n?'el nombre del archivo no tiene número':!m.length?'ningún pago tiene la factura N° '+n+' (cargá primero el N° en el pago)':soc.length>1?'la factura N° '+n+' figura en más de un socio':'',ya:soc.length===1&&!!T.fpdf[soc[0]+'|'+n]}});
+  S.fmas=L;const ok=L.filter(x=>x.p);
+  cjModal(`<b style="font-size:18px">Subir ${files.length} factura${files.length>1?'s':''}</b><p class="help" style="margin:0">Revisá que cada factura vaya al socio correcto.</p>
+   <div style="overflow-x:auto;max-height:55vh"><table class="th-tbl"><thead><tr><th>Archivo</th><th>Factura</th><th>Socio y pago</th></tr></thead><tbody>${L.map(x=>`<tr><td>${esc(x.f.name)}</td><td>${esc(x.n||'—')}</td><td>${x.p?`✔ <b>${esc(nom[x.p.socio_id]||x.p.socio_id)}</b> <span class="help">${esc(x.p.socio_id)} · ${$p(x.p.importe)} del ${fD(x.p.fecha)}${x.ya?' · reemplaza el PDF que ya estaba':''}</span>`:`<span style="color:var(--crit)">✘ No se sube: ${esc(x.motivo)}</span>`}</td></tr>`).join('')}</tbody></table></div>
+   <div class="err" id="fm_e"></div><div class="gacts"><button type="button" class="btn primary" id="fm_b" ${ok.length?'':'disabled'}>Subir ${ok.length} factura${ok.length===1?'':'s'}</button><button type="button" class="btn" data-tfx>Cancelar</button></div>`,'Subir facturas')})});
+document.addEventListener('click',async e=>{const b=e.target.closest('#fm_b');if(!b)return;const L=(S.fmas||[]).filter(x=>x.p);b.disabled=true;let ok=0;const errs=[];
+ for(const x of L){b.textContent=`Subiendo ${ok+errs.length+1} de ${L.length}…`;try{await fpSubir(x.p.socio_id,x.p.factura,x.f);ok++}catch(err){errs.push(x.f.name+': '+err.message);if(/27_facturas/.test(err.message))break}}
+ await fpRecargar();if(errs.length){$('#fm_e').textContent=errs.join(' · ');b.textContent='Listo: '+ok+' subida(s)';render();return}
+ $('#tfm').innerHTML='';render();thToast('✔ '+ok+' factura'+(ok===1?'':'s')+' subida'+(ok===1?'':'s')+'. Los socios ya las pueden descargar.')});
 function thMenu(tit,items){cjModal(`<b style="font-size:18px">${tit}</b><div class="th-menu">${items.map(([k,ic,t,sub])=>tile(k,ic,t,sub)).join('')}</div><div class="gacts"><button type="button" class="btn" data-tfx>Cerrar</button></div>`,tit)}
 document.addEventListener('click',async e=>{const f=e.target.closest('[data-thf],[data-thcob]');if(!f)return;
  if(f.dataset.thf){S.tfe=f.dataset.thf;render();return}if(!S.tes)await loadTes();tForm('pago',f.dataset.thcob)});
@@ -1077,7 +1115,7 @@ async function cPDF(c){const J=await cLib(),d=new J({unit:'mm',format:'a4'}),{L,
  t('Este recibo detalla a qué se aplicó el pago. No reemplaza a la factura'+(c.pago.factura?' N° '+c.pago.factura:'')+'.',X,y);y+=5;
  t('Emitida el '+new Date().toLocaleString('es-AR',{dateStyle:'short',timeStyle:'short'})+(c.emitida_por?' por '+c.emitida_por:'')+' · Tesorería: WhatsApp '+AG.wa,X,y);
  return new File([d.output('blob')],'Recibo_'+cNum(c.numero)+'_'+so.nombre.normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^A-Za-z0-9]+/g,'_').replace(/^_|_$/g,'')+'.pdf',{type:'application/pdf'})}
-function cTexto(c,url){const tot=c.saldo.total;return`Hola, te enviamos el recibo de tu pago de ${$p(c.pago.importe)} del ${fD(c.pago.fecha)}${c.pago.factura?' (factura N° '+c.pago.factura+')':''}. `+(tot>0?`Saldo pendiente al ${fD(c.saldo.al)}: ${$p(tot)}.`:tot<0?`Te quedó un saldo a favor de ${$p(-tot)}.`:'No tenés deuda pendiente. ¡Gracias!')+(url?`\n\nRecibo en PDF: ${url}\n`:'')+` También podés ver y descargar tus recibos en la app de socios: https://aguaraguazu-country.github.io/app/socios/ · Comisión Directiva Aguará Guazú Country.`}
+function cTexto(c,url,furl){const tot=c.saldo.total;return`Hola, te enviamos el recibo de tu pago de ${$p(c.pago.importe)} del ${fD(c.pago.fecha)}${c.pago.factura?' (factura N° '+c.pago.factura+')':''}. `+(tot>0?`Saldo pendiente al ${fD(c.saldo.al)}: ${$p(tot)}.`:tot<0?`Te quedó un saldo a favor de ${$p(-tot)}.`:'No tenés deuda pendiente. ¡Gracias!')+(url?`\n\nRecibo en PDF: ${url}\n`:'')+(furl?`${url?'':'\n\n'}Factura en PDF: ${furl}\n`:'')+` También podés ver y descargar tus recibos en la app de socios: https://aguaraguazu-country.github.io/app/socios/ · Comisión Directiva Aguará Guazú Country.`}
 function cWa(n){let g=String(n||'').replace(/\D/g,'');if(g.startsWith('549')&&g.length===13)g=g.slice(3);else if(g.startsWith('54')&&g.length===12)g=g.slice(2);g=g.replace(/^0/,'');return g.length===10?'https://wa.me/549'+g:null}
 document.addEventListener('click',async e=>{const t=e.target.closest('[data-tcon],[data-cshare],[data-cpdf]');if(!t)return;const d=t.dataset;
  if(d.tcon){tConst(d.tcon,+d.orden,t);return}
@@ -1085,16 +1123,20 @@ document.addEventListener('click',async e=>{const t=e.target.closest('[data-tcon
  try{const f=await cPDF(c);
   const movil=/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)||(/Macintosh/.test(navigator.userAgent)&&navigator.maxTouchPoints>1);
   // En computadora el menú "Compartir" del sistema no suele traer WhatsApp: se descarga el PDF y se abre WhatsApp con el mensaje
-  if(d.cshare&&movil&&navigator.canShare&&navigator.canShare({files:[f]})){try{await navigator.share({files:[f],text:cTexto(c)})}catch(err){if(err.name!=='AbortError')throw err}}
+  // factura en PDF de este pago, si la tesorera la subió
+  let fac=null;if(c.pago.factura){fac=S.tes&&S.tes.fpdf?facPdf({socio_id:c.socio.id,factura:c.pago.factura}):null;
+   if(!fac&&!(S.tes&&S.tes.fpdf)){const q=await sb.from('tes_facturas_pdf').select('url,numero_norm').eq('socio_id',c.socio.id);if(!q.error)fac=(q.data||[]).find(x=>x.numero_norm===facN(c.pago.factura))||null}}
+  let ff=null;if(d.cshare&&movil&&fac){try{const bl=await (await fetch(fac.url)).blob();ff=new File([bl],'Factura_'+String(c.pago.factura).replace(/[^\w-]/g,'')+'.pdf',{type:bl.type||'application/pdf'})}catch(_){ff=null}}
+  if(d.cshare&&movil&&navigator.canShare&&navigator.canShare({files:ff?[f,ff]:[f]})){try{await navigator.share({files:ff?[f,ff]:[f],text:cTexto(c,null,fac&&!ff?fac.url:null)})}catch(err){if(err.name!=='AbortError')throw err}}
   else if(d.cshare){
    // Computadora: WhatsApp no acepta archivos desde una página. Se guarda el PDF en el depósito privado y se manda un link seguro (vence en 90 días).
    t.textContent='Preparando…';const path=`recibos/${cNum(c.numero)}-${Date.now()}-${Math.random().toString(36).slice(2,10)}.pdf`;
    const up=await sb.storage.from('comprobantes').upload(path,f,{contentType:'application/pdf',upsert:false});if(up.error)throw new Error('No se pudo preparar el recibo: '+up.error.message);
    const su=await sb.storage.from('comprobantes').createSignedUrl(path,60*60*24*90);if(su.error)throw new Error(su.error.message);
-   const g=(cWa($('#cn_cel').value)||'').replace('https://wa.me/',''),txt=encodeURIComponent(cTexto(c,su.data.signedUrl));
+   const g=(cWa($('#cn_cel').value)||'').replace('https://wa.me/',''),txt=encodeURIComponent(cTexto(c,su.data.signedUrl,fac&&fac.url));
    const app='whatsapp://send?'+(g?'phone='+g+'&':'')+'text='+txt,web='https://web.whatsapp.com/send?'+(g?'phone='+g+'&':'')+'text='+txt;
    location.href=app;
-   E.style.color='var(--fg)';E.innerHTML=`${g?'':'<b>No hay un celular válido:</b> elegí el chat en WhatsApp. '}✔ Se abrió WhatsApp con el mensaje y el link al recibo: solo tocá <b>Enviar</b>. ¿No se abrió? <a href="${web}" target="_blank" rel="noopener"><b>Abrir en WhatsApp Web</b></a>`}
+   E.style.color='var(--fg)';E.innerHTML=`${g?'':'<b>No hay un celular válido:</b> elegí el chat en WhatsApp. '}✔ Se abrió WhatsApp con el mensaje y el link al recibo${fac?' y a la factura':''}: solo tocá <b>Enviar</b>. ¿No se abrió? <a href="${web}" target="_blank" rel="noopener"><b>Abrir en WhatsApp Web</b></a>`}
   else{const a=document.createElement('a');a.href=URL.createObjectURL(f);a.download=f.name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},4000)}}
  catch(err){E.style.color='';E.textContent=err.message}finally{t.disabled=false;if(d.cshare)t.textContent='Enviar por WhatsApp'}});
 document.addEventListener('submit',e=>{if(e.target.id!=='tf')return;e.preventDefault();tGuardar()});
