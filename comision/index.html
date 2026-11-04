@@ -149,7 +149,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 </head>
 <body>
 <div class="wrap">
-<header><div><div class="eyebrow">Asociación Civil Aguará Guazú Country · Comisión Directiva</div><h1>Panel de la comisión<span class="agver" aria-label="Versión del sistema" style="font:500 12px/1.2 system-ui,sans-serif;color:var(--muted,#5d6862);margin-left:10px;white-space:nowrap;vertical-align:middle;letter-spacing:0">v1.43 · 04/11/26 16:27</span></h1></div><div class="who" id="who"></div></header>
+<header><div><div class="eyebrow">Asociación Civil Aguará Guazú Country · Comisión Directiva</div><h1>Panel de la comisión<span class="agver" aria-label="Versión del sistema" style="font:500 12px/1.2 system-ui,sans-serif;color:var(--muted,#5d6862);margin-left:10px;white-space:nowrap;vertical-align:middle;letter-spacing:0">v1.44 · 04/11/26 16:57</span></h1></div><div class="who" id="who"></div></header>
 <div id="gsr" class="gsr" hidden><div class="cb" style="max-width:560px"><input id="gq" type="search" autocomplete="off" placeholder="Buscar propietario: nombre, DNI, N° de socio o lote (ej. S2-M-06)…" aria-label="Buscar propietario"><div class="cb-l" id="gq_l" hidden></div></div></div>
 <main id="main"><div class="empty">Cargando…</div></main>
 </div>
@@ -312,6 +312,7 @@ function vTes(){const T=S.tes;if(!T){loadTes();return'<div class="card"><div cla
   const rs=T.pagos.filter(p=>!TKP[tk]||TKP[tk][1](p)).filter(p=>!q||((nom[p.socio_id]||'')+' '+p.socio_id+' '+(p.comprobante||'')+' '+(p.factura||'')).toLowerCase().includes(q));
   body=(TKP[tk]?tfil(rs.length)+`<p class="help">Total: <b>${$p(rs.reduce((a,p)=>a+ +p.importe,0))}</b></p>`:'')+`<div class="tablebox"><table class="tbl-g"><thead><tr><th>Fecha</th><th>Socio</th><th>Importe</th><th>Medio</th><th>Comprobante</th><th>Factura</th><th>Tipo</th><th></th></tr></thead><tbody>
   ${rs.map(p=>`<tr><td>${fD(p.fecha)}</td><td><a href="#" data-tso="${esc(p.socio_id)}">${esc(nom[p.socio_id]||p.socio_id)}</a><div class="help">${esc(p.socio_id)}</div></td><td><b>${$p(p.importe)}</b></td><td>${esc(p.medio||'—')}</td><td>${p.adjunto?`<a href="${esc(p.adjunto)}" target="_blank" rel="noopener">${esc(p.comprobante||'ver')}</a>`:esc(p.comprobante||'—')}</td><td>${esc(p.factura||'—')}</td><td>${p.tipo==='Pago'?'Pago':'<span class="help">'+esc(p.tipo)+'</span>'}</td><td>${p.tipo==='Pago'?`<button class="btn sm" data-tcon="${esc(p.socio_id)}" data-orden="${p.orden}">Recibo</button>`:''}</td></tr>`).join('')||'<tr><td colspan="8" class="help">Sin pagos.</td></tr>'}</tbody></table></div>`}
+ else if(sub==='reg'){body=regHTML(q)}
  else{const rs=T.gastos.filter(g=>!TKG[tk]||TKG[tk][1](g)).filter(g=>!q||(g.concepto+' '+(g.categoria||'')+' '+(g.proveedor||'')).toLowerCase().includes(q));
   body=(TKG[tk]?tfil(rs.length)+`<p class="help">Total: <b>${$p(rs.reduce((a,g)=>a+ +g.importe,0))}</b></p>`:'')+`<div class="tablebox"><table class="tbl-g"><thead><tr><th>Fecha</th><th>Concepto</th><th>Categoría</th><th>Proveedor</th><th>Importe</th><th>Sale de</th><th>Comprobante</th></tr></thead><tbody>
   ${rs.map(g=>`<tr><td>${fD(g.fecha)}</td><td>${esc(g.concepto)}</td><td>${esc(g.categoria||'—')}</td><td>${esc(g.proveedor||'—')}</td><td><b>${$p(g.importe)}</b></td><td>${esc(g.sale_de||'—')}</td><td>${g.adjunto?`<a href="${esc(g.adjunto)}" target="_blank" rel="noopener">${esc((g.comprobante||'')+' '+(g.vale||g.nro||''))||'ver'}</a>`:esc(((g.comprobante||'')+' '+(g.vale||g.nro||'')).trim()||'—')}</td></tr>`).join('')||'<tr><td colspan="7" class="help">Sin gastos.</td></tr>'}</tbody></table></div>`}
@@ -321,7 +322,7 @@ function vTes(){const T=S.tes;if(!T){loadTes();return'<div class="card"><div cla
    ${K('Cobrado este mes · efectivo',$p(r.cobrado_mes_efectivo),'var(--good)','efe')}${K('Cobrado este mes · banco',$p(r.cobrado_mes_banco),'var(--good)','ban')}${K('Gastos del mes',$p(r.gastos_mes),'var(--crit)','gmes')}${K('Saldo caja / banco',$p(r.saldo_efectivo)+' / '+$p(r.saldo_banco),'','mov')}
    ${K('Pagaron o adelantaron',E['Al día']||0,'var(--good)','aldia')}${K('A pagar (vence el '+(r.vencimiento_dia||10)+')',E['A pagar']||0,'var(--warn)','apag')}${K('Deben',(E['Debe']||0)+' + '+(E['Deuda antigua']||0)+' con deuda antigua','var(--crit)','deben')}</div>
   ${r.pagos_sin_medio?`<p class="note">${r.pagos_sin_medio} pago(s) sin medio de pago cargado: no entran en los saldos de caja ni banco.</p>`:''}</div>${vBand(T)}
-  <div class="card"><div class="tabs" style="justify-content:space-between;align-items:center"><span style="display:flex;gap:6px"><button type="button" data-tsub="cc" aria-pressed="${sub==='cc'}">Cuenta corriente</button><button type="button" data-tsub="pagos" aria-pressed="${sub==='pagos'}">Pagos (${T.pagos.length})</button><button type="button" data-tsub="gastos" aria-pressed="${sub==='gastos'}">Gastos (${T.gastos.length})</button></span>
+  <div class="card"><div class="tabs" style="justify-content:space-between;align-items:center"><span style="display:flex;gap:6px"><button type="button" data-tsub="cc" aria-pressed="${sub==='cc'}">Cuenta corriente</button><button type="button" data-tsub="pagos" aria-pressed="${sub==='pagos'}">Pagos (${T.pagos.length})</button><button type="button" data-tsub="gastos" aria-pressed="${sub==='gastos'}">Gastos (${T.gastos.length})</button><button type="button" data-tsub="reg" aria-pressed="${sub==='reg'}">Registro de cambios</button></span>
   <input type="search" id="tq" placeholder="Buscar socio, lote, comprobante…" value="${esc(S.tq||'')}" style="flex:1 1 220px;max-width:340px"></div>
   <p class="help">Tocá un socio para ver su ficha, su cuenta mes a mes y sus recibos. Estos datos vienen de la planilla de tesorería, que es la que cuenta. Lo que se carga con "+ Cargar pago / gasto" pasa primero a la planilla y recién ahí aparece acá.</p>${body}</div>`}
 // ---------- Carga de pagos y gastos desde el panel (bandeja → planilla) ----------
@@ -434,10 +435,10 @@ function miniMap(ids){const sel=new Set(ids),ls=MAPA.lots.filter(l=>sel.has(l[0]
  return`<div class="som-map"><svg viewBox="${vb}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Ubicación en el plano">${g}</svg></div>`}
 const mesC=m=>{const d=new Date(String(m).slice(0,10)+'T12:00:00');return d.toLocaleDateString('es-AR',{month:'short',year:'2-digit'}).replace('.','')};
 async function tSocio(id){if(!S.som||S.som.id!==id){S.som={id,cargando:true};vSocio()}
- const [r,g,rp,mi]=await Promise.all([sb.rpc('tes_socio_detalle',{p_socio:id}),sb.from('tes_gestiones').select('*').eq('socio_id',id).order('creado',{ascending:false}).limit(60),
-  sb.from('tes_responsables').select('user_id,nombre,desde').eq('socio_id',id).maybeSingle(),S.miem?Promise.resolve({data:S.miem}):sb.rpc('tes_miembros')]);
+ const [r,g,rp,mi,au]=await Promise.all([sb.rpc('tes_socio_detalle',{p_socio:id}),sb.from('tes_gestiones').select('*').eq('socio_id',id).order('creado',{ascending:false}).limit(60),
+  sb.from('tes_responsables').select('user_id,nombre,desde').eq('socio_id',id).maybeSingle(),S.miem?Promise.resolve({data:S.miem}):sb.rpc('tes_miembros'),sb.rpc('tes_auditoria',{p_socio:id,p_limite:200})]);
  if(!mi.error)S.miem=mi.data||[];
- if(!S.som||S.som.id!==id)return;S.som=r.error?{id,err:r.error.message}:{id,...r.data,gest:g.error?null:(g.data||[]),resp:rp.error?null:rp.data};vSocio()}
+ if(!S.som||S.som.id!==id)return;S.som=r.error?{id,err:r.error.message}:{id,...r.data,gest:g.error?null:(g.data||[]),resp:rp.error?null:rp.data,aud:au.error?null:(au.data||[])};vSocio()}
 function vSocio(){const o=S.som;let box=$('#som');if(!box){box=document.createElement('div');box.id='som';document.body.appendChild(box)}
  if(!o){box.innerHTML='';return}
  const shell=b=>`<div class="scrim" data-somx></div><div class="modal som" role="dialog" aria-label="Ficha del socio">${b}</div>`;
@@ -482,6 +483,7 @@ function vSocio(){const o=S.som;let box=$('#som');if(!box){box=document.createEl
    <section><h3>Cuenta corriente mes a mes</h3><div class="mrow hd"><span>Mes</span><span class="cu">Cuota</span><span>Estado</span><span>Pagado con</span><span></span></div>${mrows||'<p class="help">Sin meses para mostrar.</p>'}
     ${cc.tipo_deuda==='Antigua'&&cc.deuda_antigua>0?`<p class="note" style="margin-top:8px">Además tiene <b>${$p(cc.deuda_antigua)}</b> de deuda anterior a noviembre 2026 (en revisión, se regulariza con plan de pagos).</p>`:''}</section>
    <section><h3>Pagos (${pagos.length})</h3><div class="tablebox"><table class="sot" style="min-width:640px"><tbody><tr class="help"><td>Fecha</td><td>Importe</td><td>Medio</td><td>Factura</td><td>Se aplicó a</td><td>Comprob.</td><td></td></tr>${prows||'<tr><td colspan="7" class="help">Todavía no tiene pagos cargados en la planilla.</td></tr>'}</tbody></table></div></section>
+   ${o.aud?`<section><h3>Historial de cambios (${o.aud.length})</h3>${o.aud.length?`<details><summary class="btn sm" style="display:inline-block">Ver quién hizo qué y cuándo</summary><div class="tablebox" style="margin-top:8px"><table class="sot" style="min-width:600px"><tbody>${audRows(o.aud,false)}</tbody></table></div></details>`:'<p class="help">Sin cambios registrados.</p>'}</section>`:''}
    <section><h3>Recibos emitidos (${rec.length})</h3>${rec.length?`<div class="tablebox"><table class="sot" style="min-width:520px"><tbody>${rec.map(r=>{const p=pagos.find(x=>x.huella===r.huella);return`<tr><td><b>${cNum(r.numero)}</b></td><td>Pago del ${fD(r.fecha)}</td><td>${$p(r.importe)}</td><td>${r.factura?'F '+esc(r.factura):'—'}</td><td class="help">emitido ${fdt(r.emitida)}${r.veces>1?' · '+r.veces+' veces':''}</td><td style="text-align:right">${p?btnR(p):'<span class="help">el pago ya no está en la planilla</span>'}</td></tr>`}).join('')}</tbody></table></div>`:'<p class="help">Todavía no se emitió ningún recibo.</p>'}</section>
   </div></div>`)}
 document.addEventListener('click',async e=>{const t=e.target.closest('[data-tso],[data-somx],[data-sofi],[data-socar]');if(!t)return;
@@ -491,6 +493,19 @@ document.addEventListener('click',async e=>{const t=e.target.closest('[data-tso]
  if(t.dataset.sofi){S.som=null;vSocio();S.open={ficha:+t.dataset.sofi};render()}});
 document.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.dataset&&e.target.dataset.tso){tSocio(e.target.dataset.tso);return}
  if(e.key==='Escape'&&!e.defaultPrevented&&S.som){const tf=$('#tfm');if(tf&&tf.innerHTML)return;e.preventDefault();S.som=null;vSocio()}});
+// ---------- Registro de cambios (planilla + panel) ----------
+const audF=t=>esc(String(t??'')).replace(/\$(-?\d+)(\.\d+)?/g,(m,a)=>$p(+a)).replace(/(\d{4})-(\d{2})-(\d{2})(?!T)/g,'$3/$2/$1');
+function audRows(rs,conSocio){const nom={};((S.tes&&S.tes.cc)||[]).forEach(x=>nom[x.socio_id]=x.socio);
+ return rs.map(a=>`<tr><td style="white-space:nowrap">${fdt(a.en)}</td><td><span class="chip ${a.origen==='Panel'?'ok':a.origen==='Planilla'?'wa':'fu'}">${esc(a.origen)}</span></td><td>${esc(a.quien||'—')}</td>
+ ${conSocio?`<td>${a.socio_id?`<a href="#" data-tso="${esc(a.socio_id)}">${esc(nom[a.socio_id]||a.socio_id)}</a>`:'—'}</td>`:''}<td><b>${esc(a.que)}</b>${a.antes||a.despues?`<div class="help">${a.antes?'Antes: <s>'+audF(a.antes)+'</s>':''}${a.antes&&a.despues?' → ':''}${a.despues?(a.antes?'Ahora: ':'')+audF(a.despues):''}</div>`:''}</td></tr>`).join('')}
+async function loadAud(){const r=await sb.rpc('tes_auditoria',{p_socio:null,p_limite:600});S.aud=r.error?{err:r.error.message}:{rs:r.data||[]};if(S.v==='tesoreria'&&S.tsub==='reg')render()}
+function regHTML(q){const A=S.aud;if(!A){loadAud();return'<p class="help">Cargando registro…</p>'}
+ if(A.err)return`<p class="help">${/function|schema cache/i.test(A.err)?'Falta ejecutar el script <b>22_registro_cambios.sql</b> en Supabase.':'No se pudo cargar: '+esc(A.err)}</p>`;
+ const f=S.audf||'todo',rs=A.rs.filter(a=>f==='todo'||(f==='planilla'?a.origen.startsWith('Planilla'):a.origen==='Panel')).filter(a=>!q||JSON.stringify(a).toLowerCase().includes(q));
+ return`<div class="tabs" style="justify-content:space-between"><span style="display:flex;gap:6px;flex-wrap:wrap">${[['todo','Todo'],['planilla','Cambios en la planilla'],['panel','Acciones en el panel']].map(([k,l])=>`<button type="button" data-audf="${k}" aria-pressed="${f===k}">${l}</button>`).join('')}</span><button class="btn sm" data-audr="1">Actualizar</button></div>
+ <p class="help">Todo lo que se cambia queda registrado y no se puede borrar. "Planilla": ediciones hechas a mano (con el usuario de Google, si Google lo informa). "Sincronización": pagos o gastos que aparecieron o dejaron de figurar. "Panel": lo hecho en el sistema. Últimos 600 movimientos.</p>
+ <div class="tablebox"><table class="sot" style="min-width:760px"><tbody><tr class="help"><td>Cuándo</td><td>Origen</td><td>Quién</td><td>Socio</td><td>Qué</td></tr>${audRows(rs,true)||'<tr><td colspan="5" class="help">Sin movimientos.</td></tr>'}</tbody></table></div>`}
+document.addEventListener('click',e=>{const t=e.target.closest('[data-audf],[data-audr]');if(!t)return;if(t.dataset.audr){S.aud=null;render();return}S.audf=t.dataset.audf;render()});
 // ---------- Seguimiento de cobranza (dentro de la ficha del socio) ----------
 function cobHTML(o){if(o.gest==null)return'';const yo=S.user&&S.user.id,rp=o.resp,hoyD=hoyAR(),so=o.socio;
  const abiertos=o.gest.filter(g=>g.tipo==='Compromiso de pago'&&g.estado==='abierto');
