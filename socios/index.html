@@ -48,7 +48,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
 </head>
 <body>
 <div class="wrap">
-<header><div class="eyebrow">Aguará Guazú Country</div><h1>App de socios<span class="agver" aria-label="Versión del sistema" style="font:500 12px/1.2 system-ui,sans-serif;color:var(--muted,#5d6862);margin-left:10px;white-space:nowrap;vertical-align:middle;letter-spacing:0">v1.44 · 04/11/26 16:57</span></h1></header>
+<header><div class="eyebrow">Aguará Guazú Country</div><h1>App de socios<span class="agver" aria-label="Versión del sistema" style="font:500 12px/1.2 system-ui,sans-serif;color:var(--muted,#5d6862);margin-left:10px;white-space:nowrap;vertical-align:middle;letter-spacing:0">v1.45 · 04/11/26 17:32</span></h1></header>
 <main id="main"><p class="help">Cargando…</p></main>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.3/dist/umd/supabase.js"></script>
@@ -115,7 +115,8 @@ function vCuenta(){const e=S.ec,y=S.yo;
   if(c.deuda_mes)rows.push(`<div class="row"><span>Cuotas vencidas sin pagar</span><b>${$$(c.deuda_mes)}</b></div>`);
   if(ap)rows.push(`<div class="row"><span>Cuota de ${mesAct} (vence el ${vt})</span><b>${$$(ap)}</b></div>`);
   if(!ant&&c.deuda_antigua>0)rows.push(`<div class="row"><span>Meses anteriores sin pagar</span><b>${$$(c.deuda_antigua)}</b></div>`);
-  if(ant&&(c.deuda_antigua_inicial||c.deuda_antigua))rows.push(`<div class="row"><span class="lbl">Deuda anterior a nov-2026<span class="tag">en revisión</span></span><b>${$$(c.deuda_antigua)}</b></div>`);
+  const enCv=(S.conv||[]).some(x=>x.socio_id===c.id);
+  if(ant&&(c.deuda_antigua_inicial||c.deuda_antigua))rows.push(`<div class="row"><span class="lbl">Deuda anterior a nov-2026${enCv?'<span class="tag">en convenio</span>':'<span class="tag">en revisión</span>'}</span><b>${$$(c.deuda_antigua)}</b></div>`);
   if(c.a_favor>0)rows.push(`<div class="row"><span>Pagado por adelantado</span><b>− ${$$(c.a_favor)}</b></div>`);
   if(c.cuota_mes)rows.push(`<div class="row"><span>Tu cuota mensual${c.cant_lotes>1?` (${c.cant_lotes} lotes)`:''}</span><b>${$$(c.cuota_mes)}</b></div>`);
   const hoy=new Date().toLocaleDateString('sv').slice(0,7),fut=(c.meses||[]).filter(m=>m.mes>hoy),ult=fut.length?fut[fut.length-1].mes:null;
@@ -128,12 +129,16 @@ function vCuenta(){const e=S.ec,y=S.yo;
    const det=aj?'':[p.a_cuotas?$$(p.a_cuotas)+' a cuotas':'',p.a_antigua?$$(p.a_antigua)+((!c.tipo_deuda||c.tipo_deuda==='Antigua')?' a deuda anterior':' a meses anteriores'):''].filter(Boolean).join(' · ');
    return `<div class="pay"><div>${esc(tit)}<small>${FEC(p.fecha)}${p.factura?' · Factura '+esc(p.factura):''}${det?' · '+det:''}</small></div><div style="text-align:right"><b>${aj?(p.a_antigua<0?'+ ':'− ')+$$(p.a_antigua):$$(p.importe)}</b>${nn?`<button class="btn sm rec" data-rec="${esc(c.id)}" data-f="${esc(p.fecha)}" data-i="${p.importe}" data-n="${nn}">Recibo</button>`:''}</div></div>`}).join('');
   const act=c.actualizado?(d=>d.toLocaleDateString('es-AR',{day:'2-digit',month:'2-digit'})+' a las '+d.toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit',hour12:false})+' hs')(new Date(c.actualizado)):'';
-  return `<div class="card"><h2>Mi cuenta${e.cuentas.length>1?' · '+esc(c.lotes||c.id):''}</h2>${head}<div class="rows">${rows.join('')}</div>
-   ${ant&&c.deuda_antigua?'<p class="help">La deuda anterior a noviembre 2026 sale de los registros anteriores de la asociación y la comisión la está revisando. Si no coincide con lo que pagaste, consultá con tus comprobantes.</p>':''}
+  const cv=(S.conv||[]).find(x=>x.socio_id===c.id);
+  const cvH=cv?`<h2 style="font-size:16px;margin-top:14px">Tu convenio de pago</h2><div class="rows"><div class="row"><span>Total del convenio (${cv.cuotas} cuotas)</span><b>${$$(cv.total)}</b></div><div class="row"><span>Pagado</span><b>${$$(cv.pagado)}</b></div><div class="row"><span>Saldo del convenio</span><b>${$$(cv.saldo)}</b></div></div>
+   <div class="months">${cv.cuotas_detalle.map(q=>`<div class="mo ${q.estado==='pagada'?'ok':q.estado==='atrasada'?'bad':q.estado==='parcial'?'warn':''}"><span>Cuota ${q.n} · ${FEC(q.vto)}</span><b>${q.estado==='pagada'?'✔ Pagada':q.estado==='atrasada'?'✘ Atrasada':q.estado==='parcial'?'Parcial':$$(q.importe)}</b></div>`).join('')}</div>
+   <p class="help">Cada mes pagás tu cuota mensual más la cuota del convenio (${$$(cv.cuotas_detalle[0].importe)}). Lo que pagás de más sobre la cuota del mes va cubriendo estas cuotas en orden.</p>`:'';
+  return `<div class="card"><h2>Mi cuenta${e.cuentas.length>1?' · '+esc(c.lotes||c.id):''}</h2>${head}<div class="rows">${rows.join('')}</div>${cvH}
+   ${ant&&c.deuda_antigua&&!enCv?'<p class="help">La deuda anterior a noviembre 2026 sale de los registros anteriores de la asociación y la comisión la está revisando. Si no coincide con lo que pagaste, consultá con tus comprobantes.</p>':''}
    ${meses?`<h2 style="font-size:16px">Mes a mes</h2><div class="months">${meses}</div>`:''}
    ${ult?`<p class="help" style="color:var(--good);font-weight:600">✔ Cuotas pagadas por adelantado hasta ${MES(ult)}</p>`:''}
    ${pagos?`<h2 style="font-size:16px">Últimos pagos registrados</h2><p class="help" style="margin-top:-4px">Tocá "Recibo" para descargar el recibo de cada pago.</p><div>${pagos}</div>`:''}
-   <p class="help">Cada pago cubre primero el mes más viejo que debés${ant?' (la deuda anterior a noviembre se arregla aparte con tesorería)':''}. Actualizado al ${act}. Los pagos aparecen cuando tesorería los registra.</p>${wa(base+(c.lotes?' (lote '+c.lotes+')':''))}</div>`}).join('')}
+   <p class="help">Cada pago cubre primero el mes más viejo que debés${enCv?' (lo que pagás de más va a tu convenio)':ant?' (la deuda anterior a noviembre se arregla aparte con tesorería)':''}. Actualizado al ${act}. Los pagos aparecen cuando tesorería los registra.</p>${wa(base+(c.lotes?' (lote '+c.lotes+')':''))}</div>`}).join('')}
 
 // ---------- Recibo de pago (el mismo que emite la comisión) ----------
 const $m=n=>(n<0?'− ':'')+'$ '+Math.abs(Math.round(+n||0)).toLocaleString('es-AR');
@@ -200,7 +205,7 @@ ${vCuenta()}
  <p class="help">Al menos 6 caracteres. No uses tu DNI, ni 123456, ni el mismo número repetido.</p><div class="err" id="cperr"></div><button class="btn primary" type="submit" id="cpb">Guardar contraseña nueva</button></form></div>
  <button class="btn" id="out" type="button">Salir</button>`}
 async function cargar(){const {data,error}=await sb.rpc('socio_yo',{p_token:S.tok});if(error){tokSet(null);return vLogin(/venci/i.test(error.message)?'Tu sesión venció. Volvé a ingresar.':'')}S.yo=data;S.ec=null;vHome();
- cargarAccesos();const r=await sb.rpc('socio_estado_cuenta',{p_token:S.tok});S.ec=r.error?{error:true}:r.data;if(S.yo&&!S.form)vHome()}
+ cargarAccesos();const [r,cvr]=await Promise.all([sb.rpc('socio_estado_cuenta',{p_token:S.tok}),sb.rpc('socio_convenio',{p_token:S.tok})]);S.ec=r.error?{error:true}:r.data;S.conv=cvr.error?[]:(cvr.data||[]);if(S.yo&&!S.form)vHome()}
 async function start(){if(!sb){$('#main').innerHTML='<div class="card">No se pudo cargar la app. Revisá tu conexión y recargá.</div>';return}S.tok=tokGet();if(S.tok)return cargar();vLogin()}
 document.addEventListener('input',e=>{if(e.target.id==='dni')e.target.value=e.target.value.replace(/\D/g,'')});
 document.addEventListener('change',e=>{if(e.target.id==='show'){S.show=e.target.checked;$('#pw').type=S.show?'text':'password'}});
