@@ -153,7 +153,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 </head>
 <body>
 <div class="wrap">
-<header><div><div class="eyebrow">Asociación Civil Aguará Guazú Country · Comisión Directiva</div><h1>Panel de la comisión<span class="agver" aria-label="Versión del sistema" style="font:500 12px/1.2 system-ui,sans-serif;color:var(--muted,#5d6862);margin-left:10px;white-space:nowrap;vertical-align:middle;letter-spacing:0">v1.48 · 04/11/26 17:51</span></h1></div><div class="who" id="who"></div></header>
+<header><div><div class="eyebrow">Asociación Civil Aguará Guazú Country · Comisión Directiva</div><h1>Panel de la comisión<span class="agver" aria-label="Versión del sistema" style="font:500 12px/1.2 system-ui,sans-serif;color:var(--muted,#5d6862);margin-left:10px;white-space:nowrap;vertical-align:middle;letter-spacing:0">v1.49 · 04/11/26 17:54</span></h1></div><div class="who" id="who"></div></header>
 <div id="gsr" class="gsr" hidden><div class="cb" style="max-width:560px"><input id="gq" type="search" autocomplete="off" placeholder="Buscar propietario: nombre, DNI, N° de socio o lote (ej. S2-M-06)…" aria-label="Buscar propietario"><div class="cb-l" id="gq_l" hidden></div></div></div>
 <main id="main"><div class="empty">Cargando…</div></main>
 </div>
@@ -300,7 +300,7 @@ function vTes(){const T=S.tes;if(!T){loadTes();return'<div class="card"><div cla
  const tkL=(TKF[tk]||TKP[tk]||TKG[tk]||[''])[0];
  const tfil=n=>tk?`<div class="tfil">Filtro: <b>${esc(tkL)}</b> · ${n} resultado${n===1?'':'s'}<button class="btn sm" data-tk="">Quitar filtro</button></div>`:'';
  let body='';
- if(sub==='cc'){const CB=T.cob||{},hoyD=hoyAR();const F=[['todos','Todos'],['Debe','Deben'],['Deuda antigua','Deuda antigua'],['A pagar','A pagar'],['Al día','Al día']].concat(T.cob?[['gest','En gestión'],['singest','Deben y nadie los gestiona']]:[]).concat(T.conv?[['conv','En convenio']]:[]);const CV=T.conv||{};
+ if(sub==='cc'){const CB=T.cob||{},hoyD=hoyAR();const F=[['todos','Todos'],['Debe','Atrasados'],['Deuda antigua','Deuda antigua'],['A pagar','Solo cuota del mes'],['Al día','Al día']].concat(T.cob?[['gest','En gestión'],['singest','Deben y nadie los gestiona']]:[]).concat(T.conv?[['conv','En convenio']]:[]);const CV=T.conv||{};
   const enG=x=>!!CV[x.socio_id]||(!!CB[x.socio_id]&&(!!CB[x.socio_id].responsable||!!CB[x.socio_id].compromiso)),sinG=x=>(x.estado==='Debe'||x.estado==='Deuda antigua')&&!enG(x);
   E.gest=T.cc.filter(enG).length;E.singest=T.cc.filter(sinG).length;E.conv=Object.keys(CV).length;
   const gTag=x=>{const v=CV[x.socio_id],c=CB[x.socio_id];const cvT=v?`<div class="gtag ${v.cuotas_atrasadas?'venc':'conv'}">Convenio ${v.cuotas_pagadas}/${v.cuotas} cuotas${v.cuotas_atrasadas?' · '+v.cuotas_atrasadas+' atrasada'+(v.cuotas_atrasadas>1?'s':''):' · al día'}</div>`:'';if(!c)return cvT;const cp=c.compromiso;return cvT+(
@@ -309,11 +309,11 @@ function vTes(){const T=S.tes;if(!T){loadTes();return'<div class="card"><div cla
   const rs=T.cc.filter(x=>TKF[tk]?TKF[tk][1](x):(fe==='todos'||(fe==='gest'?enG(x):fe==='singest'?sinG(x):fe==='conv'?!!CV[x.socio_id]:x.estado===fe))).filter(x=>!q||(x.socio+' '+x.socio_id+' '+(x.lotes||'')).toLowerCase().includes(q));
   const rs2=ordenar('cc',rs,{socio:x=>x.socio,deuda_antigua:x=>+x.deuda_antigua,cuotas_vencidas:x=>+x.cuotas_vencidas,a_pagar:x=>+x.a_pagar,total:x=>+x.total,estado:x=>x.estado,ultimo_pago:x=>x.ultimo_pago||''});rs.length=0;rs.push(...rs2);
   const chip=m=>{const e=m.estado||'',cl=e[0]==='✔'?'ok':e[0]==='✘'?'no':e[0]==='⏳'?'wa':'fu';const d=new Date(m.mes+'T12:00:00').toLocaleDateString('es-AR',{month:'short'});return`<span class="mc ${cl}" title="${esc(d+': '+e)}">${esc(d.slice(0,3))}</span>`};
-  body=tfil(rs.length)+`<div class="tabs">${F.map(([k,l])=>`<button type="button" data-tfe="${k}" aria-pressed="${!TKF[tk]&&fe===k}">${l}${k==='todos'?'':' ('+(E[k]||0)+')'}</button>`).join('')}</div>
+  body=tfil(rs.length)+`<div class="tabs">${F.map(([k,l])=>`<button type="button" data-tfe="${k}" aria-pressed="${!TKF[tk]&&fe===k}" title="${esc(({'Debe':'Cuotas vencidas sin pagar desde nov-2026, o 1-2 meses atrasados de antes','Deuda antigua':'3 meses o más de antes de nov-2026 (comisión anterior, en revisión)','A pagar':'No tiene nada atrasado: solo le falta la cuota del mes, que todavía no venció','Al día':'No debe nada o pagó por adelantado'})[k]||'')}">${l}${k==='todos'?'':' ('+(E[k]||0)+')'}</button>`).join('')}</div>
   <div class="tablebox"><table class="tbl-g"><thead><tr>${thS('cc','Socio','socio')}<th>Meses (nov-26 →)</th>${thS('cc','Deuda antigua / meses ant.','deuda_antigua')}${thS('cc','Vencido','cuotas_vencidas')}${thS('cc','A pagar','a_pagar')}${thS('cc','Total','total')}${thS('cc','Estado','estado')}${thS('cc','Último pago','ultimo_pago')}</tr></thead><tbody>
   ${rs.map(x=>`<tr class="tso${CB[x.socio_id]&&CB[x.socio_id].compromiso?' tcomp':''}" data-tso="${esc(x.socio_id)}" tabindex="0" title="Ver ficha del socio"><td><b>${esc(x.socio)}</b><div class="help">${esc(x.socio_id)}${x.lotes?' · '+esc(x.lotes):''}${x.cant_lotes>1?' · '+x.cant_lotes+' lotes':''}</div>${gTag(x)}</td><td style="white-space:nowrap">${(x.meses||[]).slice(0,8).map(chip).join('')}</td>
    <td>${x.deuda_antigua?$p(x.deuda_antigua):'—'}${x.deuda_antigua?`<div class="help">${CV[x.socio_id]?'en convenio':x.tipo_deuda==='Antigua'?'antigua (plan de pagos)':'meses anteriores'}</div>`:''}</td><td>${x.cuotas_vencidas?$p(x.cuotas_vencidas):'—'}</td><td>${x.a_pagar?$p(x.a_pagar):'—'}</td>
-   <td><b>${x.total<0?'a favor '+$p(-x.total):$p(x.total)}</b></td><td><span class="gst ${x.estado==='Al día'?'on':x.estado==='A pagar'?'':'off'}" ${x.estado==='A pagar'?'style="color:var(--warn);background:var(--warn-bg)"':''}>${esc(x.estado)}</span></td><td>${x.ultimo_pago?fD(x.ultimo_pago):'—'}</td></tr>`).join('')||'<tr><td colspan="8" class="help">Sin resultados.</td></tr>'}</tbody></table></div>`}
+   <td><b>${x.total<0?'a favor '+$p(-x.total):$p(x.total)}</b></td><td><span class="gst ${x.estado==='Al día'?'on':x.estado==='A pagar'?'':'off'}" ${x.estado==='A pagar'?'style="color:var(--warn);background:var(--warn-bg)"':''}>${esc(estN(x.estado))}</span></td><td>${x.ultimo_pago?fD(x.ultimo_pago):'—'}</td></tr>`).join('')||'<tr><td colspan="8" class="help">Sin resultados.</td></tr>'}</tbody></table></div>`}
  else if(sub==='pagos'){const nom={};T.cc.forEach(x=>nom[x.socio_id]=x.socio);
   const FP=fpend(),sinF=p=>p.tipo==='Pago'&&!p.factura&&!FP[p.socio_id+'|'+p.orden],nSin=T.pagos.filter(sinF).length,pf=S.tpf||'todos';
   const rs=T.pagos.filter(p=>!TKP[tk]||TKP[tk][1](p)).filter(p=>pf!=='sinf'||sinF(p)).filter(p=>!q||((nom[p.socio_id]||'')+' '+p.socio_id+' '+(p.comprobante||'')+' '+(p.factura||'')).toLowerCase().includes(q));
@@ -329,7 +329,7 @@ function vTes(){const T=S.tes;if(!T){loadTes();return'<div class="card"><div cla
   <div class="okline ${dif.length?'no':'ok'}">${dif.length?`⚠ El sistema y la planilla no coinciden en ${dif.length} socio${dif.length>1?'s':''}: ${dif.slice(0,6).map(d=>esc(d.socio)+' (sistema '+$p(d.sistema)+' · planilla '+$p(d.planilla)+')').join(' · ')}`:`✔ El cálculo del sistema coincide con la planilla en los ${r.socios||0} socios.`}</div>
   <div class="tk">${K('Deuda total',$p(r.deuda_total),'var(--crit)','total')}${K('Deuda antigua y meses anteriores',$p(r.deuda_antigua),'','ant')}${K('Cuotas vencidas impagas',$p(r.cuotas_vencidas),'','venc')}${K('A cobrar este mes (no vencido)',$p(r.a_pagar),'var(--warn)','apagar')}
    ${K('Cobrado este mes · efectivo',$p(r.cobrado_mes_efectivo),'var(--good)','efe')}${K('Cobrado este mes · banco',$p(r.cobrado_mes_banco),'var(--good)','ban')}${K('Gastos del mes',$p(r.gastos_mes),'var(--crit)','gmes')}${K('Saldo caja / banco',$p(r.saldo_efectivo)+' / '+$p(r.saldo_banco),'','mov')}
-   ${K('Pagaron o adelantaron',E['Al día']||0,'var(--good)','aldia')}${K('A pagar (vence el '+(r.vencimiento_dia||10)+')',E['A pagar']||0,'var(--warn)','apag')}${K('Deben',(E['Debe']||0)+' + '+(E['Deuda antigua']||0)+' con deuda antigua','var(--crit)','deben')}</div>
+   ${K('Al día (pagaron o adelantaron)',E['Al día']||0,'var(--good)','aldia')}${K('Solo deben la cuota del mes (vence el '+(r.vencimiento_dia||10)+')',E['A pagar']||0,'var(--warn)','apag')}${K('Atrasados + con deuda antigua',(E['Debe']||0)+' + '+(E['Deuda antigua']||0),'var(--crit)','deben')}</div>
   ${r.pagos_sin_medio?`<p class="note">${r.pagos_sin_medio} pago(s) sin medio de pago cargado: no entran en los saldos de caja ni banco.</p>`:''}</div>${vBand(T)}
   <div class="card"><div class="tabs" style="justify-content:space-between;align-items:center"><span style="display:flex;gap:6px"><button type="button" data-tsub="cc" aria-pressed="${sub==='cc'}">Cuenta corriente</button><button type="button" data-tsub="pagos" aria-pressed="${sub==='pagos'}">Pagos (${T.pagos.length})</button><button type="button" data-tsub="gastos" aria-pressed="${sub==='gastos'}">Gastos (${T.gastos.length})</button><button type="button" data-tsub="reg" aria-pressed="${sub==='reg'}">Registro de cambios</button></span>
   <input type="search" id="tq" placeholder="Buscar socio, lote, comprobante…" value="${esc(S.tq||'')}" style="flex:1 1 220px;max-width:340px"></div>
@@ -480,7 +480,7 @@ function vSocio(){const o=S.som;let box=$('#som');if(!box){box=document.createEl
  const K=(t,v,c)=>`<div><small>${t}</small><b ${c?`style="color:${c}"`:''}>${v}</b></div>`;
  box.innerHTML=shell(`<header class="som-h"><div style="display:flex;gap:14px;align-items:center;min-width:0"><img src="${LOGO_AG}" alt="" style="height:52px;border-radius:8px"><div style="min-width:0"><div class="help">Ficha del socio · ${esc(so.socio_id)}</div><h2>${esc(so.socio)}</h2>
    <div class="help">DNI/CUIT <span class="mono">${esc(so.documento||'—')}</span> · ${so.cant_lotes} lote${so.cant_lotes>1?'s':''} · Ficha ${esc(so.ficha||'—')}</div></div></div>
-   <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><span class="chip ${ec}" style="font-size:14px;padding:5px 12px">${esc(est)}</span>
+   <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><span class="chip ${ec}" style="font-size:14px;padding:5px 12px">${esc(estN(est))}</span>
    <button class="btn sm primary" data-socar="${esc(so.socio_id)}">+ Cargar pago</button>${wa?`<a class="btn sm" href="${wa}" target="_blank" rel="noopener">WhatsApp</a>`:''}${fi?`<button class="btn sm" data-sofi="${fi.id}">Ver ficha completa</button>`:''}<button type="button" class="x" data-somx aria-label="Cerrar">×</button></div></header>
   <div class="som-b"><aside class="som-side">${miniMap(ids)}
    <div>${ids.length?ids.map(id=>{const i=lotInfo(id);return`<div style="margin-bottom:6px"><b>${esc(i.nom)}</b><div class="help mono">${esc(i.partida)}${i.sup!=null?' · '+i.sup.toLocaleString('es-AR')+' m²':''}</div></div>`}).join(''):`<p class="help">Lote: ${esc(so.lotes||'sin dato')}</p>`}</div>
@@ -529,7 +529,7 @@ async function repDatos(){if(!S.tes)await loadTes();const T=S.tes;
  const [cv,cb,pg,gs]=await Promise.all([sb.rpc('tes_convenios_estado',{p_socio:null}),sb.rpc('tes_cobranza'),
   sb.from('tes_pagos').select('orden,socio_id,fecha,importe,medio,comprobante,factura,tipo').order('fecha',{ascending:false}),sb.from('tes_gastos').select('fecha,concepto,categoria,proveedor,importe,sale_de,comprobante,nro,vale').order('fecha',{ascending:false})]);
  return{T,r:T.r||{},cc:T.cc,conv:cv.error?[]:(cv.data||[]),cob:cb.error?[]:(cb.data||[]),pagos:pg.error?T.pagos:(pg.data||[]),gastos:gs.error?T.gastos:(gs.data||[])}}
-function hbar(rows,color,fmt){const mx=Math.max(1,...rows.map(r=>r[1])),W=230,rh=26,lw=150;
+function hbar(rows,color,fmt){const mx=Math.max(1,...rows.map(r=>r[1])),W=230,rh=26,lw=180;
  return`<svg viewBox="0 0 ${W+lw+150} ${rows.length*rh+4}" width="100%" role="img" style="max-width:640px">${rows.map((r,i)=>{const w=Math.max(r[1]>0?3:0,(r[1]/mx)*W);
   return`<g><title>${esc(r[0])}: ${fmt(r[1])}${r[2]!=null?' · '+r[2]:''}</title><text x="${lw-8}" y="${i*rh+17}" text-anchor="end" font-size="12" fill="#3b4540">${esc(r[0])}</text>
   <rect x="${lw}" y="${i*rh+5}" width="${w}" height="16" rx="4" fill="${r[3]||color}"/><text x="${lw+w+6}" y="${i*rh+17}" font-size="12" fill="#1d2420" font-weight="600">${fmt(r[1])}${r[2]!=null?` <tspan fill="#6b756f" font-weight="400">· ${r[2]}</tspan>`:''}</text></g>`}).join('')}</svg>`}
@@ -549,7 +549,7 @@ async function abrirReporte(btn){const w=window.open('','_blank');if(!w){alert('
  const pct=n?Math.round((E['Al día']||0)/n*1000)/10:0;
  const K=(t,v,sub,c)=>`<div class="k"><small>${t}</small><b ${c?`style="color:${c}"`:''}>${v}</b>${sub?`<span>${sub}</span>`:''}</div>`;
  const tb=(h,rows)=>`<table><thead><tr>${h.map(x=>`<th>${x}</th>`).join('')}</tr></thead><tbody>${rows.join('')||`<tr><td colspan="${h.length}" class="m">Sin datos.</td></tr>`}</tbody></table>`;
- const est=x=>`<span class="e ${x==='Al día'?'ok':x==='A pagar'?'wa':'no'}">${esc(x)}</span>`;
+ const ESTN={'Al día':'Al día','A pagar':'Solo cuota del mes','Debe':'Atrasado','Deuda antigua':'Deuda antigua'};const est=x=>`<span class="e ${x==='Al día'?'ok':x==='A pagar'?'wa':'no'}">${esc(ESTN[x]||x)}</span>`;
  const html=`<!doctype html><html lang="es"><head><meta charset="utf-8"><title>Reporte de tesorería · ${esc(mesTxt)}</title><style>
  @page{size:A4;margin:14mm}*{box-sizing:border-box}body{font:13px/1.45 -apple-system,Segoe UI,Roboto,Arial,sans-serif;color:#1d2420;margin:0;background:#fff}
  .wrap{max-width:1000px;margin:0 auto;padding:24px}header{display:flex;gap:16px;align-items:center;border-bottom:3px solid #04483a;padding-bottom:14px;margin-bottom:18px}
@@ -564,10 +564,15 @@ async function abrirReporte(btn){const w=window.open('','_blank');if(!w){alert('
  <div class="bar"><button onclick="opener&&opener.repExcel&&opener.repExcel()">Descargar Excel</button><button class="p" onclick="print()">Imprimir / Guardar PDF</button></div><div class="wrap">
  <header><img src="${LOGO_AG}" alt=""><div><div class="m">Asociación Civil Aguará Guazú Country · CUIT ${AG.cuit}</div><h1>Reporte de tesorería<\/h1><div class="m">Al ${fD(hoyD)} · datos de la planilla sincronizados ${r.sincronizado?fdt(r.sincronizado):'—'} · generado por ${esc((S.miembro||{}).nombre||'')}</div></div></header>
  <h2>Resumen</h2><div class="ks">
-  ${K('Deuda total',$p(r.deuda_total),deben.length+' socios con saldo','#b42318')}${K('Deuda antigua y meses anteriores',$p(r.deuda_antigua))}${K('Cuotas vencidas impagas',$p(r.cuotas_vencidas))}${K('A cobrar este mes',$p(r.a_pagar),'vence el '+(r.vencimiento_dia||10),'#9a6400')}
+  ${K('Deuda total',$p(r.deuda_total),deben.length+' socios con saldo (incluye la cuota del mes)','#b42318')}${K('Deuda antigua y meses anteriores',$p(r.deuda_antigua),'de antes de nov-2026')}${K('Cuotas vencidas impagas',$p(r.cuotas_vencidas),'desde nov-2026, ya vencidas')}${K('A cobrar este mes',$p(r.a_pagar),'cuotas de '+esc(mesTxt)+' sin vencer (vencen el '+(r.vencimiento_dia||10)+')','#9a6400')}
   ${K('Cobrado en '+mesTxt,$p(efe+ban),'efectivo '+$p(efe)+' · banco '+$p(ban),'#2f7d4f')}${K('Gastos de '+mesTxt,$p(r.gastos_mes),gMes.length+' gastos','#b42318')}${K('Saldo caja',$p(r.saldo_efectivo))}${K('Saldo banco',$p(r.saldo_banco))}
   ${K('Socios al día',(E['Al día']||0)+' de '+n,pct+'%','#2f7d4f')}${K('Convenios activos',conv.length,conv.filter(c=>c.cuotas_atrasadas).length+' con cuotas atrasadas')}${K('Compromisos de pago abiertos',compAb.length,compVen.length+' vencidos')}${K('Pagos sin factura',sinF.length,$p(sinF.reduce((a,p)=>a+ +p.importe,0)),sinF.length?'#b42318':'')}</div>
- <div><div><h2>Socios por estado</h2>${hbar([['Al día',E['Al día']||0,null,'#2f7d4f'],['A pagar (mes en curso)',E['A pagar']||0,null,'#c98a12'],['Deben',E['Debe']||0,null,'#d0532f'],['Deuda antigua',E['Deuda antigua']||0,null,'#b42318']],'#04483a',v=>v+' socios')}</div>
+ <div><div><h2>Socios por estado</h2>${hbar([['Al día',E['Al día']||0,null,'#2f7d4f'],['Solo la cuota del mes',E['A pagar']||0,null,'#c98a12'],['Atrasados (deuda reciente)',E['Debe']||0,null,'#d0532f'],['Con deuda antigua',E['Deuda antigua']||0,null,'#b42318']],'#04483a',v=>v+' socios')}
+  <div class="nota" style="margin-top:6px"><b>Cómo leerlo:</b> cada socio está en un solo grupo.<br>
+  <b>Al día:</b> no debe nada o pagó por adelantado.<br>
+  <b>Solo la cuota del mes:</b> no tiene nada atrasado; le falta pagar la cuota de ${esc(mesTxt)}, que vence el ${r.vencimiento_dia||10}. Si no paga, el día ${(r.vencimiento_dia||10)+1} pasa a "Atrasados".<br>
+  <b>Atrasados (deuda reciente):</b> tiene cuotas vencidas sin pagar desde noviembre 2026, o 1 o 2 meses atrasados de antes.<br>
+  <b>Con deuda antigua:</b> arrastra 3 meses o más de antes de noviembre 2026 (registros de la comisión anterior, en revisión); se regulariza con convenio. Puede deber además la cuota del mes.</div></div>
   <div><h2>Antigüedad de la deuda</h2>${hbar(buck.slice(1),'#04483a',v=>$p(v))}<p class="m" style="font-size:11.5px">Meses de atraso aproximados (deuda ÷ cuota del mes). Barras: monto adeudado.</p></div></div>
  <h2>Cobranza</h2><div class="nota">${compAb.length} compromiso(s) de pago abiertos (${compVen.length} vencidos) · ${conv.length} convenio(s) activos · <b>${singest.length} socios deben y nadie los está gestionando</b>.</div>
  ${compAb.length?tb(['Socio','Responsable','Se comprometió a pagar','Monto','Estado'],compAb.sort((a,b)=>a.compromiso.fecha.localeCompare(b.compromiso.fecha)).map(c=>`<tr><td>${esc(nom[c.socio_id]||c.socio_id)}</td><td>${esc(c.responsable||c.compromiso.por||'—')}</td><td>${fD(c.compromiso.fecha)}</td><td class="n">${c.compromiso.monto?$p(c.compromiso.monto):'—'}</td><td>${c.compromiso.fecha<hoyD?'<span class="e no">Vencido</span>':'<span class="e wa">Pendiente</span>'}</td></tr>`)):''}
@@ -756,6 +761,7 @@ document.addEventListener('input',e=>{if(e.target.id!=='tq')return;S.tq=e.target
 
 
 // ---------- Usuarios del panel (solo administradores) + cambiar mi contraseña ----------
+const estN=e=>({'A pagar':'Solo cuota del mes','Debe':'Atrasado'})[e]||e;
 const ROLES={admin:'Administrador (todo + usuarios)',comision:'Comisión',tesorero:'Tesorería'};
 async function loadUsr(){const r=await sb.rpc('admin_usuarios');S.us={err:r.error?r.error.message:null,lista:r.data||[]};if(S.v==='usuarios')render()}
 function vUsr(){const U=S.us;if(!U){loadUsr();return'<div class="card"><div class="empty">Cargando usuarios…</div></div>'}
