@@ -123,6 +123,7 @@ select{-webkit-appearance:none;appearance:none;padding-right:34px;background-ima
 .gsr{margin:0 0 12px}.gsr input{font-size:15px;padding:11px 14px;border-radius:10px}.gsr .cb-l{max-height:380px}.gsr .cb-l b{font-weight:600}
 .tk button{all:unset;box-sizing:border-box;display:block;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px 12px;cursor:pointer}.tk button:hover{border-color:var(--fg)}.tk button[aria-pressed="true"]{outline:2px solid var(--accent,#2f6b4f);outline-offset:-1px;background:var(--card)}
 .tk button small{display:block;color:var(--muted);font-size:12px}.tk button b{font-size:20px;font-variant-numeric:tabular-nums}.tfil{display:flex;gap:8px;align-items:center;flex-wrap:wrap;background:var(--warn-bg);border-radius:10px;padding:8px 12px;margin:0 0 10px;font-size:14px}
+body.mlock{overflow:hidden}.modal,.drawer{overscroll-behavior:contain}
 .tso{cursor:pointer}.tso:hover td{background:var(--bg)}
 .som{width:min(1120px,100vw)!important;max-height:94vh}.som-h{display:flex;gap:16px;align-items:flex-start;justify-content:space-between;padding:20px 22px 14px;border-bottom:1px solid var(--line);flex-wrap:wrap}
 .som-h h2{margin:2px 0 4px;font-size:24px}.som-b{display:grid;grid-template-columns:minmax(0,360px) minmax(0,1fr);gap:0}.som-side{padding:18px 20px;border-right:1px solid var(--line);display:grid;gap:14px;align-content:start}
@@ -145,7 +146,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 </head>
 <body>
 <div class="wrap">
-<header><div><div class="eyebrow">Asociación Civil Aguará Guazú Country · Comisión Directiva</div><h1>Panel de la comisión<span class="agver" aria-label="Versión del sistema" style="font:500 12px/1.2 system-ui,sans-serif;color:var(--muted,#5d6862);margin-left:10px;white-space:nowrap;vertical-align:middle;letter-spacing:0">v1.40 · 04/11/26 10:50</span></h1></div><div class="who" id="who"></div></header>
+<header><div><div class="eyebrow">Asociación Civil Aguará Guazú Country · Comisión Directiva</div><h1>Panel de la comisión<span class="agver" aria-label="Versión del sistema" style="font:500 12px/1.2 system-ui,sans-serif;color:var(--muted,#5d6862);margin-left:10px;white-space:nowrap;vertical-align:middle;letter-spacing:0">v1.41 · 04/11/26 11:02</span></h1></div><div class="who" id="who"></div></header>
 <div id="gsr" class="gsr" hidden><div class="cb" style="max-width:560px"><input id="gq" type="search" autocomplete="off" placeholder="Buscar propietario: nombre, DNI, N° de socio o lote (ej. S2-M-06)…" aria-label="Buscar propietario"><div class="cb-l" id="gq_l" hidden></div></div></div>
 <main id="main"><div class="empty">Cargando…</div></main>
 </div>
@@ -397,6 +398,8 @@ async function tGuardar(){const tipo=$('#tfm').dataset.tipo,pago=tipo==='pago',E
   const r=await sb.rpc('tes_bandeja_cargar',{p_tipo:tipo,p,p_adjunto:adj});if(r.error)throw new Error(r.error.message);
   $('#tfm').innerHTML='';S.tes=null;render();if(S.som&&S.som.id)tSocio(S.som.id)}
  catch(err){E.textContent=err.message;B.disabled=false;B.textContent='Guardar'}}
+// Con una ventana abierta, la página de atrás no se mueve: el scroll queda en la ventana del frente
+new MutationObserver(()=>{const on=!!document.querySelector('.modal,.drawer');if(document.body.classList.contains('mlock')!==on)document.body.classList.toggle('mlock',on)}).observe(document.body,{childList:true,subtree:true});
 // ---------- Buscador general de propietarios ----------
 async function gsLoad(){const r=await sb.from('tes_socios').select('socio_id,socio,documento,lotes,cant_lotes');S.gso=r.error?[]:(r.data||[])}
 function gsBuscar(q){const w=nrm(q).split(' ').filter(Boolean);if(!w.length)return[];
