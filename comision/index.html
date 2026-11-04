@@ -120,6 +120,9 @@ select{-webkit-appearance:none;appearance:none;padding-right:34px;background-ima
 .gacts{display:flex;flex-wrap:wrap;gap:6px}.gst{font-weight:700;font-size:12px;border-radius:999px;padding:2px 9px}.gst.on{color:var(--good);background:var(--good-bg)}.gst.off{color:var(--crit);background:var(--crit-bg)}
 .tbl-g{min-width:640px}
 .sot{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums;font-size:13.5px}.sot td{padding:8px 8px;border-bottom:1px solid var(--line);vertical-align:top}.sot tr:last-child td{border-bottom:0}.sot td:nth-child(-n+3){white-space:nowrap}
+.gsr{margin:0 0 12px}.gsr input{font-size:15px;padding:11px 14px;border-radius:10px}.gsr .cb-l{max-height:380px}.gsr .cb-l b{font-weight:600}
+.tk button{all:unset;box-sizing:border-box;display:block;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px 12px;cursor:pointer}.tk button:hover{border-color:var(--fg)}.tk button[aria-pressed="true"]{outline:2px solid var(--accent,#2f6b4f);outline-offset:-1px;background:var(--card)}
+.tk button small{display:block;color:var(--muted);font-size:12px}.tk button b{font-size:20px;font-variant-numeric:tabular-nums}.tfil{display:flex;gap:8px;align-items:center;flex-wrap:wrap;background:var(--warn-bg);border-radius:10px;padding:8px 12px;margin:0 0 10px;font-size:14px}
 .tso{cursor:pointer}.tso:hover td{background:var(--bg)}
 .som{width:min(1120px,100vw)!important;max-height:94vh}.som-h{display:flex;gap:16px;align-items:flex-start;justify-content:space-between;padding:20px 22px 14px;border-bottom:1px solid var(--line);flex-wrap:wrap}
 .som-h h2{margin:2px 0 4px;font-size:24px}.som-b{display:grid;grid-template-columns:minmax(0,360px) minmax(0,1fr);gap:0}.som-side{padding:18px 20px;border-right:1px solid var(--line);display:grid;gap:14px;align-content:start}
@@ -142,7 +145,8 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 </head>
 <body>
 <div class="wrap">
-<header><div><div class="eyebrow">Asociación Civil Aguará Guazú Country · Comisión Directiva</div><h1>Panel de la comisión<span class="agver" aria-label="Versión del sistema" style="font:500 12px/1.2 system-ui,sans-serif;color:var(--muted,#5d6862);margin-left:10px;white-space:nowrap;vertical-align:middle;letter-spacing:0">v1.39 · 04/11/26 10:38</span></h1></div><div class="who" id="who"></div></header>
+<header><div><div class="eyebrow">Asociación Civil Aguará Guazú Country · Comisión Directiva</div><h1>Panel de la comisión<span class="agver" aria-label="Versión del sistema" style="font:500 12px/1.2 system-ui,sans-serif;color:var(--muted,#5d6862);margin-left:10px;white-space:nowrap;vertical-align:middle;letter-spacing:0">v1.40 · 04/11/26 10:50</span></h1></div><div class="who" id="who"></div></header>
+<div id="gsr" class="gsr" hidden><div class="cb" style="max-width:560px"><input id="gq" type="search" autocomplete="off" placeholder="Buscar propietario: nombre, DNI, N° de socio o lote (ej. S2-M-06)…" aria-label="Buscar propietario"><div class="cb-l" id="gq_l" hidden></div></div></div>
 <main id="main"><div class="empty">Cargando…</div></main>
 </div>
 <div id="tip" hidden></div><div id="dr"></div>
@@ -166,7 +170,7 @@ async function start(){if(!sb){$('#main').innerHTML='<div class="card">No se pud
  const {data:{session}}=await sb.auth.getSession();if(!session)return vLogin();S.user=session.user;await loadApp()}
 async function loadApp(){const {data:m,error}=await sb.from('miembros').select('nombre,rol').eq('user_id',S.user.id).maybeSingle();
  if(error||!m||!['admin','comision','tesorero'].includes(m.rol)){await sb.auth.signOut();return vLogin('Tu usuario no tiene acceso al panel. Pedile a la comisión que te habilite.')}
- S.miembro=m;$('#who').innerHTML=`<span>${esc(m.nombre)} · ${esc(m.rol)}</span><button class="btn sm" data-mipass="1">Mi contraseña</button><button class="btn sm" id="out">Salir</button>`;await loadData()}
+ S.miembro=m;$('#gsr').hidden=false;gsLoad();$('#who').innerHTML=`<span>${esc(m.nombre)} · ${esc(m.rol)}</span><button class="btn sm" data-mipass="1">Mi contraseña</button><button class="btn sm" id="out">Salir</button>`;await loadData()}
 async function loadData(){$('#main').innerHTML='<div class="empty">Cargando fichas…</div>';
  const {data,error}=await sb.from('fichas').select('id,tramite,creado,estado,es_prueba,titular_nombre,titular_documento,email,celular,cantidad_lotes,lote_sin_identificar,datos,nota_comision,revisado_en,ficha_lotes(lote_id,reclamo)').order('creado',{ascending:false});
  if(error){$('#main').innerHTML=`<div class="card">No se pudieron leer las fichas: ${esc(error.message)}</div>`;return}
@@ -277,28 +281,35 @@ function vTes(){const T=S.tes;if(!T){loadTes();return'<div class="card"><div cla
  const r=T.r||{},sub=S.tsub||'cc',q=(S.tq||'').trim().toLowerCase(),fe=S.tfe||'todos',E=r.estados||{};
  const sync=r.sincronizado?new Date(r.sincronizado):null,min=sync?Math.round((Date.now()-sync)/60000):null;
  const dif=r.diferencias||[];
- const K=(t,v,c)=>`<div><small>${t}</small><b style="${c?'color:'+c:''}">${v}</b></div>`;
+ const tk=S.tk||'',K=(t,v,c,k)=>`<button type="button" data-tk="${k}" aria-pressed="${tk===k}" title="Ver el detalle"><small>${t}</small><b style="${c?'color:'+c:''}">${v}</b></button>`;
+ const mesA=hoyAR().slice(0,7),BAN=['Transferencia','Depósito','Mercado Pago'];
+ const TKF={total:['Deben algo (deuda total)',x=>x.total>0],ant:['Con deuda antigua o meses anteriores',x=>x.deuda_antigua>0],venc:['Con cuotas vencidas impagas',x=>x.cuotas_vencidas>0],
+  apagar:['Tienen la cuota de este mes por pagar',x=>x.a_pagar>0],aldia:['Pagaron o adelantaron',x=>x.estado==='Al día'],apag:['A pagar (vence el '+(r.vencimiento_dia||10)+')',x=>x.estado==='A pagar'],deben:['Deben (incluye deuda antigua)',x=>x.estado==='Debe'||x.estado==='Deuda antigua']};
+ const TKP={efe:['Cobrado este mes en efectivo',p=>p.tipo==='Pago'&&p.medio==='Efectivo'&&String(p.fecha).slice(0,7)===mesA],ban:['Cobrado este mes por banco',p=>p.tipo==='Pago'&&BAN.includes(p.medio)&&String(p.fecha).slice(0,7)===mesA],mov:['Cobros de este mes (caja y banco)',p=>p.tipo==='Pago'&&!!p.medio&&String(p.fecha).slice(0,7)===mesA]};
+ const TKG={gmes:['Gastos de este mes',g=>String(g.fecha).slice(0,7)===mesA]};
+ const tkL=(TKF[tk]||TKP[tk]||TKG[tk]||[''])[0];
+ const tfil=n=>tk?`<div class="tfil">Filtro: <b>${esc(tkL)}</b> · ${n} resultado${n===1?'':'s'}<button class="btn sm" data-tk="">Quitar filtro</button></div>`:'';
  let body='';
  if(sub==='cc'){const F=[['todos','Todos'],['Debe','Deben'],['Deuda antigua','Deuda antigua'],['A pagar','A pagar'],['Al día','Al día']];
-  const rs=T.cc.filter(x=>fe==='todos'||x.estado===fe).filter(x=>!q||(x.socio+' '+x.socio_id+' '+(x.lotes||'')).toLowerCase().includes(q)).sort((a,b)=>b.total-a.total);
+  const rs=T.cc.filter(x=>TKF[tk]?TKF[tk][1](x):(fe==='todos'||x.estado===fe)).filter(x=>!q||(x.socio+' '+x.socio_id+' '+(x.lotes||'')).toLowerCase().includes(q)).sort((a,b)=>b.total-a.total);
   const chip=m=>{const e=m.estado||'',cl=e[0]==='✔'?'ok':e[0]==='✘'?'no':e[0]==='⏳'?'wa':'fu';const d=new Date(m.mes+'T12:00:00').toLocaleDateString('es-AR',{month:'short'});return`<span class="mc ${cl}" title="${esc(d+': '+e)}">${esc(d.slice(0,3))}</span>`};
-  body=`<div class="tabs">${F.map(([k,l])=>`<button type="button" data-tfe="${k}" aria-pressed="${fe===k}">${l}${k==='todos'?'':' ('+(E[k]||0)+')'}</button>`).join('')}</div>
+  body=tfil(rs.length)+`<div class="tabs">${F.map(([k,l])=>`<button type="button" data-tfe="${k}" aria-pressed="${!TKF[tk]&&fe===k}">${l}${k==='todos'?'':' ('+(E[k]||0)+')'}</button>`).join('')}</div>
   <div class="tablebox"><table class="tbl-g"><thead><tr><th>Socio</th><th>Meses (nov-26 →)</th><th>Deuda antigua / meses ant.</th><th>Vencido</th><th>A pagar</th><th>Total</th><th>Estado</th><th>Último pago</th></tr></thead><tbody>
   ${rs.map(x=>`<tr class="tso" data-tso="${esc(x.socio_id)}" tabindex="0" title="Ver ficha del socio"><td><b>${esc(x.socio)}</b><div class="help">${esc(x.socio_id)}${x.lotes?' · '+esc(x.lotes):''}${x.cant_lotes>1?' · '+x.cant_lotes+' lotes':''}</div></td><td style="white-space:nowrap">${(x.meses||[]).slice(0,8).map(chip).join('')}</td>
    <td>${x.deuda_antigua?$p(x.deuda_antigua):'—'}${x.deuda_antigua?`<div class="help">${x.tipo_deuda==='Antigua'?'antigua (plan de pagos)':'meses anteriores'}</div>`:''}</td><td>${x.cuotas_vencidas?$p(x.cuotas_vencidas):'—'}</td><td>${x.a_pagar?$p(x.a_pagar):'—'}</td>
    <td><b>${x.total<0?'a favor '+$p(-x.total):$p(x.total)}</b></td><td><span class="gst ${x.estado==='Al día'?'on':x.estado==='A pagar'?'':'off'}" ${x.estado==='A pagar'?'style="color:var(--warn);background:var(--warn-bg)"':''}>${esc(x.estado)}</span></td><td>${x.ultimo_pago?fD(x.ultimo_pago):'—'}</td></tr>`).join('')||'<tr><td colspan="8" class="help">Sin resultados.</td></tr>'}</tbody></table></div>`}
  else if(sub==='pagos'){const nom={};T.cc.forEach(x=>nom[x.socio_id]=x.socio);
-  const rs=T.pagos.filter(p=>!q||((nom[p.socio_id]||'')+' '+p.socio_id+' '+(p.comprobante||'')+' '+(p.factura||'')).toLowerCase().includes(q));
-  body=`<div class="tablebox"><table class="tbl-g"><thead><tr><th>Fecha</th><th>Socio</th><th>Importe</th><th>Medio</th><th>Comprobante</th><th>Factura</th><th>Tipo</th><th></th></tr></thead><tbody>
+  const rs=T.pagos.filter(p=>!TKP[tk]||TKP[tk][1](p)).filter(p=>!q||((nom[p.socio_id]||'')+' '+p.socio_id+' '+(p.comprobante||'')+' '+(p.factura||'')).toLowerCase().includes(q));
+  body=(TKP[tk]?tfil(rs.length)+`<p class="help">Total: <b>${$p(rs.reduce((a,p)=>a+ +p.importe,0))}</b></p>`:'')+`<div class="tablebox"><table class="tbl-g"><thead><tr><th>Fecha</th><th>Socio</th><th>Importe</th><th>Medio</th><th>Comprobante</th><th>Factura</th><th>Tipo</th><th></th></tr></thead><tbody>
   ${rs.map(p=>`<tr><td>${fD(p.fecha)}</td><td><a href="#" data-tso="${esc(p.socio_id)}">${esc(nom[p.socio_id]||p.socio_id)}</a><div class="help">${esc(p.socio_id)}</div></td><td><b>${$p(p.importe)}</b></td><td>${esc(p.medio||'—')}</td><td>${p.adjunto?`<a href="${esc(p.adjunto)}" target="_blank" rel="noopener">${esc(p.comprobante||'ver')}</a>`:esc(p.comprobante||'—')}</td><td>${esc(p.factura||'—')}</td><td>${p.tipo==='Pago'?'Pago':'<span class="help">'+esc(p.tipo)+'</span>'}</td><td>${p.tipo==='Pago'?`<button class="btn sm" data-tcon="${esc(p.socio_id)}" data-orden="${p.orden}">Recibo</button>`:''}</td></tr>`).join('')||'<tr><td colspan="8" class="help">Sin pagos.</td></tr>'}</tbody></table></div>`}
- else{const rs=T.gastos.filter(g=>!q||(g.concepto+' '+(g.categoria||'')+' '+(g.proveedor||'')).toLowerCase().includes(q));
-  body=`<div class="tablebox"><table class="tbl-g"><thead><tr><th>Fecha</th><th>Concepto</th><th>Categoría</th><th>Proveedor</th><th>Importe</th><th>Sale de</th><th>Comprobante</th></tr></thead><tbody>
+ else{const rs=T.gastos.filter(g=>!TKG[tk]||TKG[tk][1](g)).filter(g=>!q||(g.concepto+' '+(g.categoria||'')+' '+(g.proveedor||'')).toLowerCase().includes(q));
+  body=(TKG[tk]?tfil(rs.length)+`<p class="help">Total: <b>${$p(rs.reduce((a,g)=>a+ +g.importe,0))}</b></p>`:'')+`<div class="tablebox"><table class="tbl-g"><thead><tr><th>Fecha</th><th>Concepto</th><th>Categoría</th><th>Proveedor</th><th>Importe</th><th>Sale de</th><th>Comprobante</th></tr></thead><tbody>
   ${rs.map(g=>`<tr><td>${fD(g.fecha)}</td><td>${esc(g.concepto)}</td><td>${esc(g.categoria||'—')}</td><td>${esc(g.proveedor||'—')}</td><td><b>${$p(g.importe)}</b></td><td>${esc(g.sale_de||'—')}</td><td>${g.adjunto?`<a href="${esc(g.adjunto)}" target="_blank" rel="noopener">${esc((g.comprobante||'')+' '+(g.vale||g.nro||''))||'ver'}</a>`:esc(((g.comprobante||'')+' '+(g.vale||g.nro||'')).trim()||'—')}</td></tr>`).join('')||'<tr><td colspan="7" class="help">Sin gastos.</td></tr>'}</tbody></table></div>`}
  return`<div class="card"><div class="tabs" style="justify-content:space-between;align-items:center"><h2 style="margin:0">Tesorería</h2>${T.band?'<span style="display:flex;gap:6px;flex-wrap:wrap"><button class="btn sm primary" data-tcar="pago">+ Cargar pago</button><button class="btn sm primary" data-tcar="gasto">+ Cargar gasto</button></span>':''}<span class="help">${sync?'Datos de la planilla de tesorería · actualizados hace '+(min<60?min+' min':Math.round(min/60)+' h'):'Todavía no se sincronizó con la planilla'} · <button class="btn sm" data-trel="1">Actualizar</button></span></div>
   <div class="okline ${dif.length?'no':'ok'}">${dif.length?`⚠ El sistema y la planilla no coinciden en ${dif.length} socio${dif.length>1?'s':''}: ${dif.slice(0,6).map(d=>esc(d.socio)+' (sistema '+$p(d.sistema)+' · planilla '+$p(d.planilla)+')').join(' · ')}`:`✔ El cálculo del sistema coincide con la planilla en los ${r.socios||0} socios.`}</div>
-  <div class="tk">${K('Deuda total',$p(r.deuda_total),'var(--crit)')}${K('Deuda antigua y meses anteriores',$p(r.deuda_antigua))}${K('Cuotas vencidas impagas',$p(r.cuotas_vencidas))}${K('A cobrar este mes (no vencido)',$p(r.a_pagar),'var(--warn)')}
-   ${K('Cobrado este mes · efectivo',$p(r.cobrado_mes_efectivo),'var(--good)')}${K('Cobrado este mes · banco',$p(r.cobrado_mes_banco),'var(--good)')}${K('Gastos del mes',$p(r.gastos_mes),'var(--crit)')}${K('Saldo caja / banco',$p(r.saldo_efectivo)+' / '+$p(r.saldo_banco))}
-   ${K('Pagaron o adelantaron',E['Al día']||0,'var(--good)')}${K('A pagar (vence el '+(r.vencimiento_dia||10)+')',E['A pagar']||0,'var(--warn)')}${K('Deben',(E['Debe']||0)+' + '+(E['Deuda antigua']||0)+' con deuda antigua','var(--crit)')}</div>
+  <div class="tk">${K('Deuda total',$p(r.deuda_total),'var(--crit)','total')}${K('Deuda antigua y meses anteriores',$p(r.deuda_antigua),'','ant')}${K('Cuotas vencidas impagas',$p(r.cuotas_vencidas),'','venc')}${K('A cobrar este mes (no vencido)',$p(r.a_pagar),'var(--warn)','apagar')}
+   ${K('Cobrado este mes · efectivo',$p(r.cobrado_mes_efectivo),'var(--good)','efe')}${K('Cobrado este mes · banco',$p(r.cobrado_mes_banco),'var(--good)','ban')}${K('Gastos del mes',$p(r.gastos_mes),'var(--crit)','gmes')}${K('Saldo caja / banco',$p(r.saldo_efectivo)+' / '+$p(r.saldo_banco),'','mov')}
+   ${K('Pagaron o adelantaron',E['Al día']||0,'var(--good)','aldia')}${K('A pagar (vence el '+(r.vencimiento_dia||10)+')',E['A pagar']||0,'var(--warn)','apag')}${K('Deben',(E['Debe']||0)+' + '+(E['Deuda antigua']||0)+' con deuda antigua','var(--crit)','deben')}</div>
   ${r.pagos_sin_medio?`<p class="note">${r.pagos_sin_medio} pago(s) sin medio de pago cargado: no entran en los saldos de caja ni banco.</p>`:''}</div>${vBand(T)}
   <div class="card"><div class="tabs" style="justify-content:space-between;align-items:center"><span style="display:flex;gap:6px"><button type="button" data-tsub="cc" aria-pressed="${sub==='cc'}">Cuenta corriente</button><button type="button" data-tsub="pagos" aria-pressed="${sub==='pagos'}">Pagos (${T.pagos.length})</button><button type="button" data-tsub="gastos" aria-pressed="${sub==='gastos'}">Gastos (${T.gastos.length})</button></span>
   <input type="search" id="tq" placeholder="Buscar socio, lote, comprobante…" value="${esc(S.tq||'')}" style="flex:1 1 220px;max-width:340px"></div>
@@ -339,7 +350,7 @@ function tProveedores(){const T=S.tes,c={};T.gastos.map(g=>g.proveedor).concat((
  .filter(Boolean).forEach(x=>{const k=nrm(x);if(!k)return;c[k]=c[k]||{};c[k][x]=(c[k][x]||0)+1});
  return Object.values(c).map(m=>Object.keys(m).sort((a,b)=>m[b]-m[a])[0]).sort((a,b)=>a.localeCompare(b,'es'))}
 const CATS_DEF=['Limpieza','Mantenimiento y reparaciones','Sueldos y cargas sociales','Seguridad y guardia','Luz, agua e internet','Honorarios','Impuestos y tasas','Gastos bancarios','Insumos y herramientas','Obras','Combustible','Otros'];
-function tForm(tipo){const T=S.tes,hoy=hoyAR(),pago=tipo==='pago';
+function tForm(tipo,socio){const T=S.tes,hoy=hoyAR(),pago=tipo==='pago';
  const cats=T.cats||CATS_DEF;
  const opt=a=>a.map(x=>`<option>${esc(x)}</option>`).join('');
  let box=$('#tfm');if(!box){box=document.createElement('div');box.id='tfm';document.body.appendChild(box)}
@@ -360,7 +371,8 @@ function tForm(tipo){const T=S.tes,hoy=hoyAR(),pago=tipo==='pago';
  <p class="note" style="grid-column:1/-1;margin:0">Esto pasa a la planilla de tesorería sola. <b>No lo cargues también a mano en la planilla</b>, porque quedaría duplicado.</p>
  <div class="err" id="tf_e" style="grid-column:1/-1"></div>
  <div class="gacts" style="grid-column:1/-1"><button class="btn primary" id="tf_b">Guardar</button><button type="button" class="btn" data-tfx>Cancelar</button></div></form></div>`;
- box.dataset.tipo=tipo;box.dataset.prok='';if(!pago)$('#tf_c').focus()}
+ box.dataset.tipo=tipo;box.dataset.prok='';document.body.appendChild(box);if(!pago)$('#tf_c').focus();
+ if(pago&&socio){const x=T.cc.find(y=>y.socio_id===socio);if(x){$('#tf_s').value=x.socio+' · '+x.socio_id;const deb=(x.cuotas_vencidas||0)+(x.a_pagar||0)+(x.tipo_deuda==='Reciente'?(x.deuda_antigua||0):0);$('#tf_i').placeholder=deb>0?'Debe hoy '+$p(deb).replace('$ ','$'):'Importe recibido';$('#tf_i').focus()}}}
 async function tFoto(f){if(!/^image\/(jpeg|png|webp|heic|heif)/.test(f.type)||!window.createImageBitmap)return f;
  try{const im=await createImageBitmap(f),k=Math.min(1,1600/Math.max(im.width,im.height)),c=document.createElement('canvas');c.width=Math.round(im.width*k);c.height=Math.round(im.height*k);
   c.getContext('2d').drawImage(im,0,0,c.width,c.height);const b=await new Promise(r=>c.toBlob(r,'image/jpeg',.82));return b&&b.size<f.size?new File([b],'comprobante.jpg',{type:'image/jpeg'}):f}catch(_){return f}}
@@ -383,8 +395,25 @@ async function tGuardar(){const tipo=$('#tfm').dataset.tipo,pago=tipo==='pago',E
    const up=await sb.storage.from('comprobantes').upload(path,f,{contentType:f.type,upsert:false});if(up.error)throw new Error('No se pudo subir el comprobante: '+up.error.message);
    const su=await sb.storage.from('comprobantes').createSignedUrl(path,60*60*24*365*10);if(su.error)throw new Error(su.error.message);adj=su.data.signedUrl}
   const r=await sb.rpc('tes_bandeja_cargar',{p_tipo:tipo,p,p_adjunto:adj});if(r.error)throw new Error(r.error.message);
-  $('#tfm').innerHTML='';S.tes=null;render()}
+  $('#tfm').innerHTML='';S.tes=null;render();if(S.som&&S.som.id)tSocio(S.som.id)}
  catch(err){E.textContent=err.message;B.disabled=false;B.textContent='Guardar'}}
+// ---------- Buscador general de propietarios ----------
+async function gsLoad(){const r=await sb.from('tes_socios').select('socio_id,socio,documento,lotes,cant_lotes');S.gso=r.error?[]:(r.data||[])}
+function gsBuscar(q){const w=nrm(q).split(' ').filter(Boolean);if(!w.length)return[];
+ const lm=String(q).toUpperCase().match(/^\s*S\s*([12])\s*[- ]?\s*([A-Z])\s*[- ]?\s*(\d{1,2})\s*$/),lot=lm?`S${lm[1]}-${lm[2]}-${lm[3].padStart(2,'0')}`:null;
+ const src=(S.gso&&S.gso.length?S.gso.map(x=>({id:x.socio_id,n:x.socio,d:x.documento,l:x.lotes})):(S.padron||[]).map(x=>({id:x.id,n:x.nombre,d:x.documento,l:x.lotes_plano})));
+ if(lot)return src.filter(x=>String(x.l||'').toUpperCase().includes(lot)).slice(0,12);
+ return src.filter(x=>{const h=nrm([x.n,x.id,x.d,x.l,String(x.l||'').replace(/-/g,' ')].join(' '));return w.every(k=>h.includes(k))}).slice(0,12)}
+function gsShow(){const q=$('#gq').value,L=$('#gq_l'),rs=gsBuscar(q);if(!q.trim()){L.hidden=true;return}
+ const cc={};((S.tes&&S.tes.cc)||[]).forEach(x=>cc[x.socio_id]=x);
+ L.innerHTML=rs.map((x,k)=>{const c=cc[x.id];return`<div data-gso="${esc(x.id)}"${k===0?' class="on"':''}><b>${esc(x.n)}</b> <span class="help">· ${esc(x.id)}</span><small>${esc([x.d?'DNI '+x.d:'',x.l].filter(Boolean).join(' · '))}${c?` · <span style="color:${c.total>0?'var(--crit)':'var(--good)'}">${esc(c.estado)}${c.total>0?' '+$p(c.total):''}</span>`:''}</small></div>`}).join('')||'<div class="cb-n">No encontré a nadie con eso.</div>';L.hidden=false}
+document.addEventListener('input',e=>{if(e.target.id==='gq')gsShow()});
+document.addEventListener('mousedown',e=>{const o=e.target.closest('[data-gso]');if(o){e.preventDefault();$('#gq_l').hidden=true;$('#gq').blur();tSocio(o.dataset.gso);return}
+ if(!e.target.closest('#gsr')){const L=$('#gq_l');if(L)L.hidden=true}});
+document.addEventListener('keydown',e=>{if(e.target.id!=='gq')return;const L=$('#gq_l'),os=[...L.querySelectorAll('[data-gso]')],k=os.findIndex(x=>x.classList.contains('on'));
+ if(e.key==='ArrowDown'||e.key==='ArrowUp'){e.preventDefault();const n=Math.max(0,Math.min(os.length-1,k+(e.key==='ArrowDown'?1:-1)));os.forEach((x,j)=>x.classList.toggle('on',j===n))}
+ else if(e.key==='Enter'&&os[k]){e.preventDefault();L.hidden=true;tSocio(os[k].dataset.gso)}else if(e.key==='Escape'){L.hidden=true}});
+document.addEventListener('focusin',e=>{if(e.target.id==='gq'&&e.target.value.trim())gsShow()});
 // ---------- Ficha del socio en tesorería (datos, plano, cuenta mes a mes, pagos y recibos) ----------
 function miniMap(ids){const sel=new Set(ids),ls=MAPA.lots.filter(l=>sel.has(l[0]));let vb='-12 -14 314 320';
  if(ls.length){let x0=Math.min(...ls.map(l=>l[1])),y0=Math.min(...ls.map(l=>l[2])),x1=Math.max(...ls.map(l=>l[1]+l[3])),y1=Math.max(...ls.map(l=>l[2]+l[4]));
@@ -427,18 +456,20 @@ function vSocio(){const o=S.som;let box=$('#som');if(!box){box=document.createEl
  box.innerHTML=shell(`<header class="som-h"><div style="display:flex;gap:14px;align-items:center;min-width:0"><img src="${LOGO_AG}" alt="" style="height:52px;border-radius:8px"><div style="min-width:0"><div class="help">Ficha del socio · ${esc(so.socio_id)}</div><h2>${esc(so.socio)}</h2>
    <div class="help">DNI/CUIT <span class="mono">${esc(so.documento||'—')}</span> · ${so.cant_lotes} lote${so.cant_lotes>1?'s':''} · Ficha ${esc(so.ficha||'—')}</div></div></div>
    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><span class="chip ${ec}" style="font-size:14px;padding:5px 12px">${esc(est)}</span>
-   ${wa?`<a class="btn sm" href="${wa}" target="_blank" rel="noopener">WhatsApp</a>`:''}${fi?`<button class="btn sm" data-sofi="${fi.id}">Ver ficha completa</button>`:''}<button type="button" class="x" data-somx aria-label="Cerrar">×</button></div></header>
+   <button class="btn sm primary" data-socar="${esc(so.socio_id)}">+ Cargar pago</button>${wa?`<a class="btn sm" href="${wa}" target="_blank" rel="noopener">WhatsApp</a>`:''}${fi?`<button class="btn sm" data-sofi="${fi.id}">Ver ficha completa</button>`:''}<button type="button" class="x" data-somx aria-label="Cerrar">×</button></div></header>
   <div class="som-b"><aside class="som-side">${miniMap(ids)}
    <div>${ids.length?ids.map(id=>{const i=lotInfo(id);return`<div style="margin-bottom:6px"><b>${esc(i.nom)}</b><div class="help mono">${esc(i.partida)}${i.sup!=null?' · '+i.sup.toLocaleString('es-AR')+' m²':''}</div></div>`}).join(''):`<p class="help">Lote: ${esc(so.lotes||'sin dato')}</p>`}</div>
    <div><h3>Contacto</h3><div class="help">Celular</div><div class="mono">${esc(tel(cel)||'—')}</div><div class="help" style="margin-top:6px">Email</div><div>${esc(mail||'—')}</div></div>
   </aside><div class="som-main">
    <div class="som-kpi">${K('Total pendiente',cc.total<0?'a favor '+$p(-cc.total):$p(cc.total),cc.total>0?'var(--crit)':'var(--good)')}${K(cc.tipo_deuda==='Antigua'?'Deuda anterior (en revisión)':'Meses anteriores',$p(cc.deuda_antigua))}${K('Cuotas vencidas',$p(cc.cuotas_vencidas))}${K('A pagar este mes',$p(cc.a_pagar))}${K('Cuota mensual',$p(cuotaMes))}${K('Último pago',cc.ultimo_pago?fD(cc.ultimo_pago):'—')}</div>
+   ${(S.tes&&S.tes.band||[]).filter(b=>b.tipo==='pago'&&b.estado==='pendiente'&&(b.datos||{}).socio_id===so.socio_id).map(b=>`<p class="note" style="margin:0">⏳ Pago de ${$p(b.datos.importe)} del ${fD(b.datos.fecha)} cargado en el sistema: está pasando a la planilla (1 o 2 minutos). Después tocá Actualizar.</p>`).join('')}
    <section><h3>Cuenta corriente mes a mes</h3><div class="mrow hd"><span>Mes</span><span class="cu">Cuota</span><span>Estado</span><span>Pagado con</span><span></span></div>${mrows||'<p class="help">Sin meses para mostrar.</p>'}
     ${cc.tipo_deuda==='Antigua'&&cc.deuda_antigua>0?`<p class="note" style="margin-top:8px">Además tiene <b>${$p(cc.deuda_antigua)}</b> de deuda anterior a noviembre 2026 (en revisión, se regulariza con plan de pagos).</p>`:''}</section>
    <section><h3>Pagos (${pagos.length})</h3><div class="tablebox"><table class="sot" style="min-width:640px"><tbody><tr class="help"><td>Fecha</td><td>Importe</td><td>Medio</td><td>Factura</td><td>Se aplicó a</td><td>Comprob.</td><td></td></tr>${prows||'<tr><td colspan="7" class="help">Todavía no tiene pagos cargados en la planilla.</td></tr>'}</tbody></table></div></section>
    <section><h3>Recibos emitidos (${rec.length})</h3>${rec.length?`<div class="tablebox"><table class="sot" style="min-width:520px"><tbody>${rec.map(r=>{const p=pagos.find(x=>x.huella===r.huella);return`<tr><td><b>${cNum(r.numero)}</b></td><td>Pago del ${fD(r.fecha)}</td><td>${$p(r.importe)}</td><td>${r.factura?'F '+esc(r.factura):'—'}</td><td class="help">emitido ${fdt(r.emitida)}${r.veces>1?' · '+r.veces+' veces':''}</td><td style="text-align:right">${p?btnR(p):'<span class="help">el pago ya no está en la planilla</span>'}</td></tr>`}).join('')}</tbody></table></div>`:'<p class="help">Todavía no se emitió ningún recibo.</p>'}</section>
   </div></div>`)}
-document.addEventListener('click',e=>{const t=e.target.closest('[data-tso],[data-somx],[data-sofi]');if(!t)return;
+document.addEventListener('click',async e=>{const t=e.target.closest('[data-tso],[data-somx],[data-sofi],[data-socar]');if(!t)return;
+ if(t.dataset.socar){t.disabled=true;if(!S.tes)await loadTes();t.disabled=false;if(!S.tes||!S.tes.band){alert('Para cargar pagos desde el sistema hace falta el script 15 en Supabase.');return}tForm('pago',t.dataset.socar);return}
  if(t.dataset.tso){e.preventDefault();tSocio(t.dataset.tso);return}
  if(t.dataset.somx!==undefined){S.som=null;vSocio();return}
  if(t.dataset.sofi){S.som=null;vSocio();S.open={ficha:+t.dataset.sofi};render()}});
@@ -521,8 +552,9 @@ document.addEventListener('click',async e=>{const t=e.target.closest('[data-tcar
  if(d.tcar){tForm(d.tcar);return}
  if(d.tfx!==undefined){$('#tfm').innerHTML='';return}
  if(d.tanu){if(!confirm('¿Anular esta carga? No va a pasar a la planilla.'))return;t.disabled=true;const r=await sb.rpc('tes_bandeja_anular',{p_id:+d.tanu});if(r.error){alert(r.error.message);t.disabled=false;return}S.tes=null;render()}});
-document.addEventListener('click',e=>{const t=e.target.closest('[data-tsub],[data-tfe],[data-trel]');if(!t)return;const d=t.dataset;
- if(d.tsub){S.tsub=d.tsub;render()}if(d.tfe){S.tfe=d.tfe;render()}if(d.trel){S.tes=null;render()}});
+document.addEventListener('click',e=>{const t=e.target.closest('[data-tsub],[data-tfe],[data-trel],[data-tk]');if(!t)return;const d=t.dataset;
+ if(d.tk!==undefined){const k=d.tk;S.tk=S.tk===k?'':k;S.tq='';if(k&&S.tk)S.tsub=['efe','ban','mov'].includes(k)?'pagos':k==='gmes'?'gastos':'cc';render();if(S.tk){const z=$('#tq');z&&z.closest('.card').scrollIntoView({behavior:'smooth',block:'start'})}return}
+ if(d.tsub){S.tsub=d.tsub;S.tk='';render()}if(d.tfe){S.tfe=d.tfe;S.tk='';render()}if(d.trel){S.tes=null;render()}});
 document.addEventListener('input',e=>{if(e.target.id!=='tq')return;S.tq=e.target.value;const p=e.target.selectionStart;render();const q=$('#tq');q.focus();q.setSelectionRange(p,p)});
 
 
@@ -818,7 +850,7 @@ document.addEventListener('click',async e=>{const t=e.target;
  if(t.id==='reload'){await loadData();return}
  const pf=t.closest('[data-pf]');if(pf){S.pf=pf.dataset.pf;render();return}
  if(t.id==='backup'){backup();return}
- if(t.id==='out'){await sb.auth.signOut();S.miembro=null;S.user=null;S.open=null;vLogin();return}
+ if(t.id==='out'){$('#gsr').hidden=true;await sb.auth.signOut();S.miembro=null;S.user=null;S.open=null;vLogin();return}
  const rs=t.closest('[data-reset]');if(rs){const id=+rs.dataset.reset,f=S.fichas.find(x=>x.id===id),box=$('#rst-'+id);
   if(rs.dataset.confirm!=='1'){rs.dataset.confirm='1';rs.textContent='Confirmar: generar contraseña nueva';box.innerHTML='<p class="help">La contraseña actual deja de funcionar y se cierran sus sesiones abiertas.</p>';return}
   rs.disabled=true;const {data:pw,error}=await sb.rpc('resetear_pass_socio',{p_ficha_id:id});rs.disabled=false;rs.dataset.confirm='';rs.textContent='Resetear contraseña de la app';
