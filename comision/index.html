@@ -130,7 +130,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 </head>
 <body>
 <div class="wrap">
-<header><div><div class="eyebrow">Asociación Civil Aguará Guazú Country · Comisión Directiva</div><h1>Panel de la comisión<span class="agver" aria-label="Versión del sistema" style="font:500 12px/1.2 system-ui,sans-serif;color:var(--muted,#5d6862);margin-left:10px;white-space:nowrap;vertical-align:middle;letter-spacing:0">v1.37 · 04/11/26 09:49</span></h1></div><div class="who" id="who"></div></header>
+<header><div><div class="eyebrow">Asociación Civil Aguará Guazú Country · Comisión Directiva</div><h1>Panel de la comisión<span class="agver" aria-label="Versión del sistema" style="font:500 12px/1.2 system-ui,sans-serif;color:var(--muted,#5d6862);margin-left:10px;white-space:nowrap;vertical-align:middle;letter-spacing:0">v1.38 · 04/11/26 10:19</span></h1></div><div class="who" id="who"></div></header>
 <main id="main"><div class="empty">Cargando…</div></main>
 </div>
 <div id="tip" hidden></div><div id="dr"></div>
@@ -301,7 +301,7 @@ function vBand(T){if(!T.band)return'';const nom={};T.cc.forEach(x=>nom[x.socio_i
   <td><span class="gst ${e[1]==='ok'?'on':e[1]==='fu'?'off':''}" ${e[1]==='wa'?'style="color:var(--warn);background:var(--warn-bg)"':''}>${e[0]}</span>${b.estado==='en_planilla'&&b.fila?`<div class="help">${b.tipo==='pago'?'Pagos':'Gastos'}, fila ${b.fila}</div>`:''}</td>
   <td>${b.estado==='pendiente'?`<button class="btn sm" data-tanu="${b.id}">Anular</button>`:''}</td></tr>`}).join('');
  return`<div class="card"><h2 style="margin:0 0 6px">Cargas hechas desde el sistema</h2>
-  <p class="help">Cada carga pasa sola a la planilla (pestaña Pagos o Gastos, al final, con la marca [Sistema #n]) en hasta 15 minutos, o al instante desde la planilla con el menú Aguará Guazú → Traer pagos y gastos cargados en el sistema. Mientras espera se puede anular; una vez en la planilla, se corrige en la planilla.</p>
+  <p class="help">Cada carga pasa sola a la planilla (pestaña Pagos o Gastos, al final, con la marca [Sistema #n]) en 1 o 2 minutos. Mientras espera se puede anular; una vez en la planilla, se corrige en la planilla.</p>
   <div class="tablebox"><table class="tbl-g"><thead><tr><th>Cargado</th><th>Tipo</th><th>Socio / concepto</th><th>Fecha</th><th>Importe</th><th>Comprobante</th><th>Estado</th><th></th></tr></thead><tbody>${rows||'<tr><td colspan="8" class="help">Todavía no se cargó nada desde el sistema.</td></tr>'}</tbody></table></div></div>`}
 // Selector con flecha y búsqueda (sirve en celular y en Safari, donde las listas comunes no muestran flecha)
 const CB={},nrm=x=>String(x||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9ñ ]/g,' ').replace(/\s+/g,' ').trim();
