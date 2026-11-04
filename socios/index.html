@@ -48,7 +48,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
 </head>
 <body>
 <div class="wrap">
-<header><div class="eyebrow">Aguará Guazú Country</div><h1>App de socios<span class="agver" aria-label="Versión del sistema" style="font:500 12px/1.2 system-ui,sans-serif;color:var(--muted,#5d6862);margin-left:10px;white-space:nowrap;vertical-align:middle;letter-spacing:0">v1.60 · 04/11/26 19:12</span></h1></header>
+<header><div class="eyebrow">Aguará Guazú Country</div><h1>App de socios<span class="agver" aria-label="Versión del sistema" style="font:500 12px/1.2 system-ui,sans-serif;color:var(--muted,#5d6862);margin-left:10px;white-space:nowrap;vertical-align:middle;letter-spacing:0">v1.61 · 04/11/26 19:39</span></h1></header>
 <main id="main"><p class="help">Cargando…</p></main>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.3/dist/umd/supabase.js"></script>
@@ -183,11 +183,15 @@ async function cPDF(c){const J=await cLib(),d=new J({unit:'mm',format:'a4'}),{L,
 const facN=t=>{const m=String(t||'').match(/(\d+)\D*$/);return m?(m[1].replace(/^0+/,'')||null):null};
 const facDe=(id,num)=>{const n=facN(num);return n?(S.fac||[]).find(x=>x.socio_id===id&&x.n===n)||null:null};
 async function miRecibo(socio,fecha,importe,n,btn){const t0=btn.textContent;btn.disabled=true;btn.textContent='Preparando…';
+ // iPhone/iPad: se abre el PDF para verlo (desde ahí se guarda o comparte). La ventana se abre ya, en el toque, para que Safari no la bloquee.
+ const ios=/iPhone|iPad|iPod/i.test(navigator.userAgent)||(/Macintosh/.test(navigator.userAgent)&&navigator.maxTouchPoints>1);
+ let w=null;if(ios){try{w=window.open('','_blank');if(w)w.document.write('<p style="font:18px -apple-system,sans-serif;padding:24px">Generando el recibo…</p>')}catch(_){w=null}}
  try{const r=await sb.rpc('socio_recibo',{p_token:S.tok,p_socio:socio,p_fecha:fecha,p_importe:importe,p_n:n});if(r.error)throw new Error(/function|schema cache/i.test(r.error.message)?'Todavía no está habilitado. Probá más tarde.':r.error.message);
   const f=await cPDF(r.data);
-  if(navigator.canShare&&navigator.canShare({files:[f]})&&/Android|iPhone|iPad/i.test(navigator.userAgent)){try{await navigator.share({files:[f],title:'Recibo '+cNum(r.data.numero)})}catch(e){if(e.name!=='AbortError')throw e}}
-  else{const a=document.createElement('a');a.href=URL.createObjectURL(f);a.download=f.name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},4000)}}
- catch(e){alert(e.message)}finally{btn.disabled=false;btn.textContent=t0}}
+  const u=URL.createObjectURL(f);
+  if(w&&!w.closed){w.location.href=u;setTimeout(()=>URL.revokeObjectURL(u),120000)}
+  else{const a=document.createElement('a');a.href=u;a.download=f.name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(u);a.remove()},60000)}}
+ catch(e){if(w&&!w.closed)w.close();alert(e.message)}finally{btn.disabled=false;btn.textContent=t0}}
 document.addEventListener('click',e=>{const b=e.target.closest('[data-rec]');if(!b)return;const d=b.dataset;miRecibo(d.rec,d.f,+d.i,+d.n||1,b)});
 function vLogin(msg){$('#main').innerHTML=`<div class="card"><h2>¿Primera vez?</h2><p class="help">Si todavía no cargaste tu ficha de propietario, empezá acá. Al final elegís tu contraseña.</p><a class="btn" style="display:block;text-align:center;text-decoration:none" href="../ficha/">Completar mi ficha</a></div>
  <form class="card" id="lf"><h2>Ya tengo cuenta</h2>
