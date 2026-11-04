@@ -189,7 +189,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 </head>
 <body>
 <div class="wrap">
-<header><div><div class="eyebrow">Asociación Civil Aguará Guazú Country · Comisión Directiva</div><h1>Panel de la comisión<span class="agver" aria-label="Versión del sistema" style="font:500 12px/1.2 system-ui,sans-serif;color:var(--muted,#5d6862);margin-left:10px;white-space:nowrap;vertical-align:middle;letter-spacing:0">v1.58 · 04/11/26 18:59</span></h1></div><div class="who" id="who"></div></header>
+<header><div><div class="eyebrow">Asociación Civil Aguará Guazú Country · Comisión Directiva</div><h1>Panel de la comisión<span class="agver" aria-label="Versión del sistema" style="font:500 12px/1.2 system-ui,sans-serif;color:var(--muted,#5d6862);margin-left:10px;white-space:nowrap;vertical-align:middle;letter-spacing:0">v1.59 · 04/11/26 19:10</span></h1></div><div class="who" id="who"></div></header>
 <div id="gsr" class="gsr" hidden><div class="cb" style="max-width:560px"><input id="gq" type="search" autocomplete="off" placeholder="Buscar propietario: nombre, DNI, N° de socio o lote (ej. S2-M-06)…" aria-label="Buscar propietario"><div class="cb-l" id="gq_l" hidden></div></div></div>
 <main id="main"><div class="empty">Cargando…</div></main>
 </div>
@@ -977,7 +977,8 @@ window.repExcel=repExcel;
 document.addEventListener('click',e=>{const t=e.target.closest('[data-rep],[data-xls]');if(!t)return;if(t.dataset.rep)abrirReporte(t);else repExcel()});
 // ---------- N° de factura: falta / cargar / corregir desde el sistema ----------
 function fpend(){const m={};((S.tes&&S.tes.band)||[]).filter(b=>b.tipo==='factura'&&b.estado==='pendiente').forEach(b=>m[b.datos.socio_id+'|'+b.datos.fila]=b.datos.factura);return m}
-function facCell(p){if(p.tipo!=='Pago')return esc(p.factura||'—');const pe=fpend()[p.socio_id+'|'+p.orden];
+function facCell(p){return facCell0(p)+(p.tipo==='Pago'&&S.tes&&S.tes.fpdf?(facPdf(p)?` <a href="${esc(facPdf(p).url)}" target="_blank" rel="noopener" title="Ver el PDF de la factura">📄 PDF</a>`:` <button class="btn sm" style="padding:2px 8px;font-size:12px" data-fpdf="${esc(p.socio_id)}" data-orden="${p.orden}" title="Subir el PDF de la factura">📄 Subir PDF</button>`):'')}
+function facCell0(p){if(p.tipo!=='Pago')return esc(p.factura||'—');const pe=fpend()[p.socio_id+'|'+p.orden];
  if(pe)return`${esc(p.factura||'')}<span class="fpen">⏳ ${esc(pe)} pasando a la planilla</span>`;
  return p.factura?`${esc(p.factura)} <button class="btn sm" style="padding:2px 8px;font-size:12px" data-fac="${esc(p.socio_id)}" data-orden="${p.orden}" data-act="${esc(p.factura)}" title="Corregir el N° de factura">✎</button>`
   :`<span class="falta">Falta factura</span><button class="btn sm" data-fac="${esc(p.socio_id)}" data-orden="${p.orden}" data-act="">Cargar N°</button>`}
