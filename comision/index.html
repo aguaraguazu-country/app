@@ -189,7 +189,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 </head>
 <body>
 <div class="wrap">
-<header><div><div class="eyebrow">Asociación Civil Aguará Guazú Country · Comisión Directiva</div><h1>Panel de la comisión<span class="agver" aria-label="Versión del sistema" style="font:500 12px/1.2 system-ui,sans-serif;color:var(--muted,#5d6862);margin-left:10px;white-space:nowrap;vertical-align:middle;letter-spacing:0">v1.57 · 04/11/26 18:53</span></h1></div><div class="who" id="who"></div></header>
+<header><div><div class="eyebrow">Asociación Civil Aguará Guazú Country · Comisión Directiva</div><h1>Panel de la comisión<span class="agver" aria-label="Versión del sistema" style="font:500 12px/1.2 system-ui,sans-serif;color:var(--muted,#5d6862);margin-left:10px;white-space:nowrap;vertical-align:middle;letter-spacing:0">v1.58 · 04/11/26 18:59</span></h1></div><div class="who" id="who"></div></header>
 <div id="gsr" class="gsr" hidden><div class="cb" style="max-width:560px"><input id="gq" type="search" autocomplete="off" placeholder="Buscar propietario: nombre, DNI, N° de socio o lote (ej. S2-M-06)…" aria-label="Buscar propietario"><div class="cb-l" id="gq_l" hidden></div></div></div>
 <main id="main"><div class="empty">Cargando…</div></main>
 </div>
@@ -1147,13 +1147,17 @@ document.addEventListener('click',async e=>{const t=e.target.closest('[data-tcon
    try{await navigator.share({files,text:msg})}catch(err){if(err.name!=='AbortError')throw err}
    E.style.color='var(--fg)';E.textContent='Si el mensaje no apareció en WhatsApp, mantené apretado en el chat y tocá Pegar: quedó copiado.'}
   else if(d.cshare){
-   bajar(f);if(fac){try{const bl=await (await fetch(fac.url)).blob();bajar(new File([bl],'Factura_'+String(c.pago.factura).replace(/[^\w-]/g,'')+'.pdf',{type:'application/pdf'}))}catch(_){}}
-   const g=(cWa($('#cn_cel').value)||'').replace('https://wa.me/',''),txt=encodeURIComponent(msg);
-   const web='https://web.whatsapp.com/send?'+(g?'phone='+g+'&':'')+'text='+txt;location.href='whatsapp://send?'+(g?'phone='+g+'&':'')+'text='+txt;
-   E.style.color='var(--fg)';E.innerHTML=`${g?'':'<b>No hay un celular válido:</b> elegí el chat en WhatsApp. '}✔ Se abrió WhatsApp con el mensaje y se guardó ${fac?'el recibo y la factura':'el recibo'} en <b>Descargas</b>. En el chat tocá <b>+ → Documento</b> y elegí ${fac?'los PDF':'el PDF'} (o arrastralo), después <b>Enviar</b>. ¿No se abrió WhatsApp? <a href="${web}" target="_blank" rel="noopener"><b>Abrir en WhatsApp Web</b></a>`}
+   // primero se guardan los PDF y después se abre WhatsApp (si se abre enseguida, el navegador cancela la descarga)
+   const asc=x=>String(x||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^A-Za-z0-9]+/g,'_').replace(/^_|_$/g,'');
+   bajar(f);let fx=null;if(fac){try{const bl=await (await fetch(fac.url)).blob();fx=new File([bl],'Factura_'+asc(c.pago.factura)+'_'+asc(c.socio.nombre)+'.pdf',{type:'application/pdf'});await new Promise(r=>setTimeout(r,700));bajar(fx)}catch(_){}}
+   S.cbaj=[f,fx].filter(Boolean);
+   const g=(cWa($('#cn_cel').value)||'').replace('https://wa.me/',''),txt=encodeURIComponent(msg),app='whatsapp://send?'+(g?'phone='+g+'&':'')+'text='+txt;
+   const web='https://web.whatsapp.com/send?'+(g?'phone='+g+'&':'')+'text='+txt;await new Promise(r=>setTimeout(r,1500));location.href=app;
+   E.style.color='var(--fg)';E.innerHTML=`${g?'':'<b>No hay un celular válido:</b> elegí el chat en WhatsApp. '}✔ Se guardó en <b>Descargas</b>: <b>${esc(S.cbaj.map(x=>x.name).join(' y '))}</b>. Se abrió WhatsApp con el mensaje: en el chat tocá el clip o <b>+ → Documento</b>, elegí ${S.cbaj.length>1?'los PDF':'el PDF'} (o arrastralo) y <b>Enviar</b>.<br>¿No se descargó? <a href="#" data-crebaj="1"><b>Descargar de nuevo</b></a> · ¿No se abrió WhatsApp? <a href="${app}"><b>Abrir la app</b></a> o <a href="${web}" target="_blank" rel="noopener"><b>WhatsApp Web</b></a>`}
   else bajar(f)}
  catch(err){E.style.color='';E.textContent=err.message}finally{t.disabled=false;if(d.cshare)t.textContent='Enviar por WhatsApp'}});
 document.addEventListener('submit',e=>{if(e.target.id!=='tf')return;e.preventDefault();tGuardar()});
+document.addEventListener('click',e=>{const a=e.target.closest('[data-crebaj]');if(!a)return;e.preventDefault();(S.cbaj||[]).forEach((x,i)=>setTimeout(()=>{const l=document.createElement('a');l.href=URL.createObjectURL(x);l.download=x.name;document.body.appendChild(l);l.click();setTimeout(()=>{URL.revokeObjectURL(l.href);l.remove()},4000)},i*700))});
 document.addEventListener('click',async e=>{const t=e.target.closest('[data-tcar],[data-tfx],[data-tanu],[data-tpru],[data-tprn]');if(!t)return;const d=t.dataset;
  if(d.tpru!==undefined){$('#tf_pr').value=d.tpru;$('#tf_e').textContent='';tGuardar();return}
  if(d.tprn!==undefined){$('#tfm').dataset.prok=d.tprn;$('#tf_e').textContent='';tGuardar();return}
