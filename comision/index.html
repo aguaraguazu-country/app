@@ -189,7 +189,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 </head>
 <body>
 <div class="wrap">
-<header><div><div class="eyebrow">Asociación Civil Aguará Guazú Country · Comisión Directiva</div><h1>Panel de la comisión<span class="agver" aria-label="Versión del sistema" style="font:500 12px/1.2 system-ui,sans-serif;color:var(--muted,#5d6862);margin-left:10px;white-space:nowrap;vertical-align:middle;letter-spacing:0">v1.53 · 04/11/26 18:32</span></h1></div><div class="who" id="who"></div></header>
+<header><div><div class="eyebrow">Asociación Civil Aguará Guazú Country · Comisión Directiva</div><h1>Panel de la comisión<span class="agver" aria-label="Versión del sistema" style="font:500 12px/1.2 system-ui,sans-serif;color:var(--muted,#5d6862);margin-left:10px;white-space:nowrap;vertical-align:middle;letter-spacing:0">v1.54 · 04/11/26 18:40</span></h1></div><div class="who" id="who"></div></header>
 <div id="gsr" class="gsr" hidden><div class="cb" style="max-width:560px"><input id="gq" type="search" autocomplete="off" placeholder="Buscar propietario: nombre, DNI, N° de socio o lote (ej. S2-M-06)…" aria-label="Buscar propietario"><div class="cb-l" id="gq_l" hidden></div></div></div>
 <main id="main"><div class="empty">Cargando…</div></main>
 </div>
@@ -1077,15 +1077,18 @@ async function cPDF(c){const J=await cLib(),d=new J({unit:'mm',format:'a4'}),{L,
  t('Este recibo detalla a qué se aplicó el pago. No reemplaza a la factura'+(c.pago.factura?' N° '+c.pago.factura:'')+'.',X,y);y+=5;
  t('Emitida el '+new Date().toLocaleString('es-AR',{dateStyle:'short',timeStyle:'short'})+(c.emitida_por?' por '+c.emitida_por:'')+' · Tesorería: WhatsApp '+AG.wa,X,y);
  return new File([d.output('blob')],'Recibo_'+cNum(c.numero)+'_'+so.nombre.normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^A-Za-z0-9]+/g,'_').replace(/^_|_$/g,'')+'.pdf',{type:'application/pdf'})}
-function cTexto(c){const tot=c.saldo.total;return`Hola ${c.socio.nombre.split(/[ ,]/)[0]}, te enviamos el recibo de tu pago de ${$p(c.pago.importe)} del ${fD(c.pago.fecha)}${c.pago.factura?' (factura N° '+c.pago.factura+')':''}. `+(tot>0?`Saldo pendiente al ${fD(c.saldo.al)}: ${$p(tot)}.`:tot<0?`Te quedó un saldo a favor de ${$p(-tot)}.`:'No tenés deuda pendiente. ¡Gracias!')+` Comisión Directiva Aguará Guazú Country.`}
+function cTexto(c){const tot=c.saldo.total;return`Hola, te enviamos el recibo de tu pago de ${$p(c.pago.importe)} del ${fD(c.pago.fecha)}${c.pago.factura?' (factura N° '+c.pago.factura+')':''}. `+(tot>0?`Saldo pendiente al ${fD(c.saldo.al)}: ${$p(tot)}.`:tot<0?`Te quedó un saldo a favor de ${$p(-tot)}.`:'No tenés deuda pendiente. ¡Gracias!')+` También podés ver y descargar tus recibos en la app de socios: https://aguaraguazu-country.github.io/app/socios/ · Comisión Directiva Aguará Guazú Country.`}
 function cWa(n){let g=String(n||'').replace(/\D/g,'');if(g.startsWith('549')&&g.length===13)g=g.slice(3);else if(g.startsWith('54')&&g.length===12)g=g.slice(2);g=g.replace(/^0/,'');return g.length===10?'https://wa.me/549'+g:null}
 document.addEventListener('click',async e=>{const t=e.target.closest('[data-tcon],[data-cshare],[data-cpdf]');if(!t)return;const d=t.dataset;
  if(d.tcon){tConst(d.tcon,+d.orden,t);return}
- const c=S.cons,E=$('#cn_e');if(!c)return;E.textContent='';t.disabled=true;
+ const c=S.cons,E=$('#cn_e');if(!c)return;E.textContent='';E.style.color='';t.disabled=true;
  try{const f=await cPDF(c);
-  if(d.cshare&&navigator.canShare&&navigator.canShare({files:[f]})){try{await navigator.share({files:[f],text:cTexto(c)})}catch(err){if(err.name!=='AbortError')throw err}}
+  const movil=/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)||(/Macintosh/.test(navigator.userAgent)&&navigator.maxTouchPoints>1);
+  // En computadora el menú "Compartir" del sistema no suele traer WhatsApp: se descarga el PDF y se abre WhatsApp con el mensaje
+  if(d.cshare&&movil&&navigator.canShare&&navigator.canShare({files:[f]})){try{await navigator.share({files:[f],text:cTexto(c)})}catch(err){if(err.name!=='AbortError')throw err}}
   else{const a=document.createElement('a');a.href=URL.createObjectURL(f);a.download=f.name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},4000);
-   if(d.cshare){const w=cWa($('#cn_cel').value);if(!w){E.textContent='Cargá un celular válido para abrir WhatsApp (el PDF ya se descargó).'}else window.open(w+'?text='+encodeURIComponent(cTexto(c)),'_blank','noopener')}}}
+   if(d.cshare){const w=cWa($('#cn_cel').value);window.open((w||'https://wa.me/')+'?text='+encodeURIComponent(cTexto(c)),'_blank','noopener');
+    E.style.color='var(--good)';E.textContent=(w?'':'No hay un celular válido: elegí el chat en WhatsApp. ')+'✔ El PDF se descargó (carpeta Descargas). En el chat de WhatsApp que se abrió, tocá el clip 📎 o arrastrá el PDF y envialo.'}}}
  catch(err){E.textContent=err.message}finally{t.disabled=false}});
 document.addEventListener('submit',e=>{if(e.target.id!=='tf')return;e.preventDefault();tGuardar()});
 document.addEventListener('click',async e=>{const t=e.target.closest('[data-tcar],[data-tfx],[data-tanu],[data-tpru],[data-tprn]');if(!t)return;const d=t.dataset;
