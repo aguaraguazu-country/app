@@ -135,6 +135,17 @@ tr.tcomp td{background:#f1f6fc}@media (prefers-color-scheme:dark){.gtag.comp{bac
 .cj-w{background:var(--warn-bg);color:var(--fg);border-radius:10px;padding:10px 12px;margin:0 0 10px;font-size:14px;display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap}
 .cj-r{width:100%;min-width:0!important;border-collapse:collapse;font-variant-numeric:tabular-nums;font-size:13.5px}.cj-r td,.cj-r th{padding:7px 8px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}.cj-r td:first-child,.cj-r th:first-child{text-align:left;white-space:normal}.cj-r th{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.03em}.cj-r tr.t td{font-weight:700;border-top:1.5px solid var(--fg)}
 .mas{color:var(--good)}.men{color:var(--crit)}.arq{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px}
+.th-hi{display:flex;justify-content:space-between;gap:16px;align-items:flex-end;flex-wrap:wrap;margin:4px 0 14px}.th-hi h2{font-size:26px;margin:0}.th-hi .help{font-size:15px}
+.th-nums{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin-bottom:16px}.th-nums div{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px}.th-nums small{display:block;color:var(--muted);font-size:13px}.th-nums b{font-size:22px;font-variant-numeric:tabular-nums}
+.th-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px}
+.th-t{all:unset;box-sizing:border-box;cursor:pointer;background:var(--card);border:1.5px solid var(--line);border-radius:18px;padding:18px 16px;display:grid;grid-template-columns:64px 1fr;gap:14px;align-items:center;min-height:104px;position:relative;transition:transform .12s,box-shadow .12s,border-color .12s}
+.th-t:hover,.th-t:focus-visible{border-color:var(--accent,#2f6b4f);box-shadow:0 8px 24px rgba(0,0,0,.08);transform:translateY(-2px)}.th-t:focus-visible{outline:3px solid #2f6b4f;outline-offset:2px}
+.th-ic{width:64px;height:64px;border-radius:16px;display:grid;place-items:center}.th-ic svg{width:34px;height:34px;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.th-t{color:var(--fg)}.th-t b{display:block;font-size:17px;line-height:1.2;color:var(--fg)}.th-t .th-badge{color:#fff;margin:0}.th-t span{display:block;color:var(--muted);font-size:13.5px;margin-top:3px}.th-badge{position:absolute;top:10px;right:12px;background:var(--crit);color:#fff;border-radius:999px;font-size:12.5px;font-weight:700;padding:2px 9px}
+.th-back{display:flex;gap:10px;align-items:center;margin:0 0 12px;flex-wrap:wrap}.th-back .btn{font-size:15px;padding:10px 16px}.th-back h2{margin:0;font-size:22px}
+.th-banner{background:#e3edf8;color:#1d4f86;border-radius:12px;padding:10px 14px;margin-bottom:12px;display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap}
+.th-menu{display:grid;gap:10px}.th-menu .th-t{min-height:76px}
+@media (prefers-color-scheme:dark){.th-banner{background:#1b2a3b;color:#9cc3ef}}
 .tso{cursor:pointer}.tso:hover td{background:var(--bg)}
 .som{width:min(1120px,100vw)!important;max-height:94vh}.som-h{display:flex;gap:16px;align-items:flex-start;justify-content:space-between;padding:20px 22px 14px;border-bottom:1px solid var(--line);flex-wrap:wrap}
 .som-h h2{margin:2px 0 4px;font-size:24px}.som-b{display:grid;grid-template-columns:minmax(0,360px) minmax(0,1fr);gap:0}.som-side{padding:18px 20px;border-right:1px solid var(--line);display:grid;gap:14px;align-content:start}
@@ -157,7 +168,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 </head>
 <body>
 <div class="wrap">
-<header><div><div class="eyebrow">Asociación Civil Aguará Guazú Country · Comisión Directiva</div><h1>Panel de la comisión<span class="agver" aria-label="Versión del sistema" style="font:500 12px/1.2 system-ui,sans-serif;color:var(--muted,#5d6862);margin-left:10px;white-space:nowrap;vertical-align:middle;letter-spacing:0">v1.50 · 04/11/26 18:03</span></h1></div><div class="who" id="who"></div></header>
+<header><div><div class="eyebrow">Asociación Civil Aguará Guazú Country · Comisión Directiva</div><h1>Panel de la comisión<span class="agver" aria-label="Versión del sistema" style="font:500 12px/1.2 system-ui,sans-serif;color:var(--muted,#5d6862);margin-left:10px;white-space:nowrap;vertical-align:middle;letter-spacing:0">v1.51 · 04/11/26 18:09</span></h1></div><div class="who" id="who"></div></header>
 <div id="gsr" class="gsr" hidden><div class="cb" style="max-width:560px"><input id="gq" type="search" autocomplete="off" placeholder="Buscar propietario: nombre, DNI, N° de socio o lote (ej. S2-M-06)…" aria-label="Buscar propietario"><div class="cb-l" id="gq_l" hidden></div></div></div>
 <main id="main"><div class="empty">Cargando…</div></main>
 </div>
@@ -182,7 +193,8 @@ async function start(){if(!sb){$('#main').innerHTML='<div class="card">No se pud
  const {data:{session}}=await sb.auth.getSession();if(!session)return vLogin();S.user=session.user;await loadApp()}
 async function loadApp(){const {data:m,error}=await sb.from('miembros').select('nombre,rol').eq('user_id',S.user.id).maybeSingle();
  if(error||!m||!['admin','comision','tesorero'].includes(m.rol)){await sb.auth.signOut();return vLogin('Tu usuario no tiene acceso al panel. Pedile a la comisión que te habilite.')}
- S.miembro=m;$('#gsr').hidden=false;gsLoad();$('#who').innerHTML=`<span>${esc(m.nombre)} · ${esc(m.rol)}</span><button class="btn sm" data-mipass="1">Mi contraseña</button><button class="btn sm" id="out">Salir</button>`;await loadData()}
+ S.miembro=m;$('#gsr').hidden=false;gsLoad();whoBar();await loadData()}
+function whoBar(){const m=S.miembro;$('#who').innerHTML=`<span>${esc(m.nombre)} · ${esc(m.rol==='tesorero'?'tesorería':m.rol)}</span>${m.rol==='tesorero'?`<button class="btn sm" data-vtes="${S.tesFull?'0':'1'}">${S.tesFull?'Mi pantalla de tesorería':'Panel completo'}</button>`:`<button class="btn sm" data-vtes="${S.verTes?'0':'1'}">${S.verTes?'Volver a la vista completa':'Ver como tesorera'}</button>`}<button class="btn sm" data-mipass="1">Mi contraseña</button><button class="btn sm" id="out">Salir</button>`}
 async function loadData(){$('#main').innerHTML='<div class="empty">Cargando fichas…</div>';
  const {data,error}=await sb.from('fichas').select('id,tramite,creado,estado,es_prueba,titular_nombre,titular_documento,email,celular,cantidad_lotes,lote_sin_identificar,datos,nota_comision,revisado_en,ficha_lotes(lote_id,reclamo)').order('creado',{ascending:false});
  if(error){$('#main').innerHTML=`<div class="card">No se pudieron leer las fichas: ${esc(error.message)}</div>`;return}
@@ -288,7 +300,7 @@ async function loadTes(){const [r,c,p,g]=await Promise.all([sb.rpc('tes_resumen'
  const cb=await sb.rpc('tes_cobranza');const cob={};(cb.error?[]:(cb.data||[])).forEach(x=>cob[x.socio_id]=x);
  const cv=await sb.rpc('tes_convenios_estado',{p_socio:null});const conv={};(cv.error?[]:(cv.data||[])).forEach(x=>conv[x.socio_id]=x);
  const b=await sb.from('tes_bandeja').select('id,tipo,datos,adjunto,estado,fila,cargado_nombre,creado,procesado').order('id',{ascending:false}).limit(40);
- const err=r.error||c.error||p.error||g.error;S.tes={err:err?err.message:null,r:r.data,cc:c.data||[],pagos:p.data||[],gastos:g.data||[],band:b.error?null:(b.data||[]),cats:(!lc.error&&lc.data&&lc.data.listas&&lc.data.listas.categorias)||null,cob:cb.error?null:cob,conv:cv.error?null:conv};if(S.v==='tesoreria')render()}
+ const err=r.error||c.error||p.error||g.error;S.tes={err:err?err.message:null,r:r.data,cc:c.data||[],pagos:p.data||[],gastos:g.data||[],band:b.error?null:(b.data||[]),cats:(!lc.error&&lc.data&&lc.data.listas&&lc.data.listas.categorias)||null,cob:cb.error?null:cob,conv:cv.error?null:conv};if(S.v==='tesoreria'||modoTes())render()}
 const $p=n=>(n<0?'− ':'')+'$ '+Math.abs(Math.round(+n||0)).toLocaleString('es-AR');
 function vTes(){const T=S.tes;if(!T){loadTes();return'<div class="card"><div class="empty">Cargando tesorería…</div></div>'}
  if(T.err)return`<div class="card">${/function|does not exist|schema cache|relation/i.test(T.err)?'Para ver la tesorería en el sistema, ejecutá el script <b>12_tesoreria.sql</b> en Supabase y después actualizá la planilla (menú Aguará Guazú → Actualizar socios).':'No se pudo cargar: '+esc(T.err)}</div>`;
@@ -322,7 +334,7 @@ function vTes(){const T=S.tes;if(!T){loadTes();return'<div class="card"><div cla
   const FP=fpend(),sinF=p=>p.tipo==='Pago'&&!p.factura&&!FP[p.socio_id+'|'+p.orden],nSin=T.pagos.filter(sinF).length,pf=S.tpf||'todos';
   const rs=T.pagos.filter(p=>!TKP[tk]||TKP[tk][1](p)).filter(p=>pf!=='sinf'||sinF(p)).filter(p=>!q||((nom[p.socio_id]||'')+' '+p.socio_id+' '+(p.comprobante||'')+' '+(p.factura||'')).toLowerCase().includes(q));
   {const r2=ordenar('pagos',rs,{fecha:p=>p.fecha+String(p.orden).padStart(5,'0'),socio:p=>nom[p.socio_id]||p.socio_id,importe:p=>+p.importe,medio:p=>p.medio||'',factura:p=>p.factura||''});rs.length=0;rs.push(...r2)}
-  body=(TKP[tk]?tfil(rs.length)+`<p class="help">Total: <b>${$p(rs.reduce((a,p)=>a+ +p.importe,0))}</b></p>`:'')+`<div class="tabs"><button type="button" data-tpf="todos" aria-pressed="${pf==='todos'}">Todos</button><button type="button" data-tpf="sinf" aria-pressed="${pf==='sinf'}" ${nSin?'style="color:var(--crit)"':''}>Sin factura (${nSin})</button></div>`+`<div class="tablebox"><table class="tbl-g"><thead><tr>${thS('pagos','Fecha','fecha')}${thS('pagos','Socio','socio')}${thS('pagos','Importe','importe')}${thS('pagos','Medio','medio')}<th>Comprobante</th>${thS('pagos','Factura','factura')}<th>Tipo</th><th></th></tr></thead><tbody>
+  body=(TKP[tk]?tfil(rs.length)+`<p class="help">Total: <b>${$p(rs.reduce((a,p)=>a+ +p.importe,0))}</b></p>`:'')+`<div class="tabs"><button type="button" data-tpf="todos" aria-pressed="${pf==='todos'}">Todos</button><button type="button" data-tpf="sinf" aria-pressed="${pf==='sinf'}" ${nSin&&pf!=='sinf'?'style="color:var(--crit)"':''}>Sin factura (${nSin})</button></div>`+`<div class="tablebox"><table class="tbl-g"><thead><tr>${thS('pagos','Fecha','fecha')}${thS('pagos','Socio','socio')}${thS('pagos','Importe','importe')}${thS('pagos','Medio','medio')}<th>Comprobante</th>${thS('pagos','Factura','factura')}<th>Tipo</th><th></th></tr></thead><tbody>
   ${rs.map(p=>`<tr><td>${fD(p.fecha)}</td><td><a href="#" data-tso="${esc(p.socio_id)}">${esc(nom[p.socio_id]||p.socio_id)}</a><div class="help">${esc(p.socio_id)}</div></td><td><b>${$p(p.importe)}</b></td><td>${esc(p.medio||'—')}</td><td>${p.adjunto?`<a href="${esc(p.adjunto)}" target="_blank" rel="noopener">${esc(p.comprobante||'ver')}</a>`:esc(p.comprobante||'—')}</td><td>${facCell(p)}</td><td>${p.tipo==='Pago'?'Pago':'<span class="help">'+esc(p.tipo)+'</span>'}</td><td>${p.tipo==='Pago'?`<button class="btn sm" data-tcon="${esc(p.socio_id)}" data-orden="${p.orden}">Recibo</button>`:''}</td></tr>`).join('')||'<tr><td colspan="8" class="help">Sin pagos.</td></tr>'}</tbody></table></div>`}
  else if(sub==='reg'){body=regHTML(q)}
  else if(sub==='caja'){body=cajaHTML()}
@@ -336,7 +348,7 @@ function vTes(){const T=S.tes;if(!T){loadTes();return'<div class="card"><div cla
    ${K('Cobrado este mes · efectivo',$p(r.cobrado_mes_efectivo),'var(--good)','efe')}${K('Cobrado este mes · banco',$p(r.cobrado_mes_banco),'var(--good)','ban')}${K('Gastos del mes',$p(r.gastos_mes),'var(--crit)','gmes')}${K('Saldo caja / banco',$p(r.saldo_efectivo)+' / '+$p(r.saldo_banco),'','mov')}
    ${K('Al día (pagaron o adelantaron)',E['Al día']||0,'var(--good)','aldia')}${K('Solo deben la cuota del mes (vence el '+(r.vencimiento_dia||10)+')',E['A pagar']||0,'var(--warn)','apag')}${K('Atrasados + con deuda antigua',(E['Debe']||0)+' + '+(E['Deuda antigua']||0),'var(--crit)','deben')}</div>
   ${r.pagos_sin_medio?`<p class="note">${r.pagos_sin_medio} pago(s) sin medio de pago cargado: no entran en los saldos de caja ni banco.</p>`:''}</div>${vBand(T)}
-  <div class="card"><div class="tabs" style="justify-content:space-between;align-items:center"><span style="display:flex;gap:6px;flex-wrap:wrap"><button type="button" data-tsub="caja" aria-pressed="${sub==='caja'}">Caja</button><button type="button" data-tsub="cc" aria-pressed="${sub==='cc'}">Cuenta corriente</button><button type="button" data-tsub="pagos" aria-pressed="${sub==='pagos'}">Pagos (${T.pagos.length})</button><button type="button" data-tsub="gastos" aria-pressed="${sub==='gastos'}">Gastos (${T.gastos.length})</button><button type="button" data-tsub="reg" aria-pressed="${sub==='reg'}">Registro de cambios</button></span>
+  <!--TESDATA--><div class="card"><div class="tabs" style="justify-content:space-between;align-items:center"><span style="display:flex;gap:6px;flex-wrap:wrap"><button type="button" data-tsub="caja" aria-pressed="${sub==='caja'}">Caja</button><button type="button" data-tsub="cc" aria-pressed="${sub==='cc'}">Cuenta corriente</button><button type="button" data-tsub="pagos" aria-pressed="${sub==='pagos'}">Pagos (${T.pagos.length})</button><button type="button" data-tsub="gastos" aria-pressed="${sub==='gastos'}">Gastos (${T.gastos.length})</button><button type="button" data-tsub="reg" aria-pressed="${sub==='reg'}">Registro de cambios</button></span>
   <input type="search" id="tq" placeholder="Buscar socio, lote, comprobante…" value="${esc(S.tq||'')}" style="flex:1 1 220px;max-width:340px"></div>
   <p class="help">Tocá un socio para ver su ficha, su cuenta mes a mes y sus recibos. Estos datos vienen de la planilla de tesorería, que es la que cuenta. Lo que se carga con "+ Cargar pago / gasto" pasa primero a la planilla y recién ahí aparece acá.</p>${body}</div>`}
 // ---------- Carga de pagos y gastos desde el panel (bandeja → planilla) ----------
@@ -528,11 +540,69 @@ function ordenar(t,rs,get){const o=ORD[t],g=get[o.k];if(!g)return rs;return rs.s
  const c=(typeof x==='number'&&typeof y==='number')?x-y:String(x??'').localeCompare(String(y??''),'es',{numeric:true,sensitivity:'base'});return c*o.d})}
 document.addEventListener('click',e=>{const t=e.target.closest('[data-ord]');if(!t)return;const [tb,k]=t.dataset.ord.split('|'),o=ORD[tb];
  if(o.k===k)o.d=-o.d;else{o.k=k;o.d=['socio','concepto','categoria','proveedor','medio','estado'].includes(k)?1:-1}render()});
+// ---------- PANTALLA DE TESORERÍA (simple, con íconos grandes) ----------
+const modoTes=()=>!!S.miembro&&((S.miembro.rol==='tesorero'&&!S.tesFull)||(S.miembro.rol!=='tesorero'&&S.verTes));
+const ICO={
+ cobrar:'<svg viewBox="0 0 24 24"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2.6"/><path d="M6 10v4M18 10v4"/></svg>',
+ gasto:'<svg viewBox="0 0 24 24"><path d="M5 3h14v18l-3-2-2 2-2-2-2 2-2-2-3 2z"/><path d="M9 8h6M9 12h6M9 16h3"/></svg>',
+ socio:'<svg viewBox="0 0 24 24"><circle cx="10" cy="8" r="4"/><path d="M3 21c0-4 3-7 7-7"/><circle cx="17" cy="17" r="3"/><path d="m21 21-1.8-1.8"/></svg>',
+ caja:'<svg viewBox="0 0 24 24"><path d="M3 10h18v10H3z"/><path d="M6 10V6a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v4"/><path d="M8 14h2M14 14h2M8 17h8"/></svg>',
+ arqueo:'<svg viewBox="0 0 24 24"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M8 6h8M8 11h.01M12 11h.01M16 11h.01M8 15h.01M12 15h.01M16 15v3M8 18h4"/></svg>',
+ factura:'<svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M12 12v4M12 19h.01"/></svg>',
+ cuentas:'<svg viewBox="0 0 24 24"><path d="M3 5h18M3 12h18M3 19h18"/><circle cx="7" cy="5" r="0.5"/><path d="M7 9v6M14 9v6"/></svg>',
+ cobranza:'<svg viewBox="0 0 24 24"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.8 2z"/></svg>',
+ convenio:'<svg viewBox="0 0 24 24"><path d="M11 17l2 2a1.4 1.4 0 0 0 2-2"/><path d="m14 14 2.5 2.5a1.4 1.4 0 0 0 2-2l-3.9-3.9a2.8 2.8 0 0 0-4 0l-.9.9a1.4 1.4 0 0 1-2-2l2.8-2.8a5 5 0 0 1 5.2-1.2l.5.2a3.6 3.6 0 0 0 2.3.1L21 5"/><path d="m3 4 1 11h2M3 4h8M21 5l-1 10h-2"/></svg>',
+ mover:'<svg viewBox="0 0 24 24"><path d="M7 7h13l-3-3M17 17H4l3 3"/></svg>',
+ reportes:'<svg viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-6"/></svg>',
+ recibo:'<svg viewBox="0 0 24 24"><path d="M6 2h12v20l-3-2-3 2-3-2-3 2z"/><path d="m9 11 2 2 4-4"/></svg>'};
+const ICC={cobrar:['#e3f1e7','#2f7d4f'],gasto:['#fbe4e2','#b42318'],socio:['#e3edf8','#1d4f86'],caja:['#efe7f8','#5b3a8c'],arqueo:['#fbf0d9','#9a6400'],factura:['#fbe4e2','#b42318'],cuentas:['#e3edf8','#1d4f86'],cobranza:['#fbf0d9','#9a6400'],convenio:['#efe7f8','#5b3a8c'],mover:['#e6f2f1','#1c6b66'],reportes:['#e3f1e7','#2f7d4f'],recibo:['#e3f1e7','#2f7d4f']};
+const tile=(k,ic,t,sub,badge)=>`<button type="button" class="th-t" data-th="${k}"><span class="th-ic" style="background:${ICC[ic][0]};color:${ICC[ic][1]}">${ICO[ic]}</span><span><b>${t}</b><span>${sub||''}</span></span>${badge?`<span class="th-badge">${badge}</span>`:''}</button>`;
+const TV={caja:['Caja','caja'],sinf:['Pagos sin factura','pagos'],pagos:['Pagos','pagos'],cc:['Cuentas de los socios','cc'],cobranza:['Cobranza: socios que deben','cc'],convenios:['Convenios de pago','cc'],gastos:['Gastos','gastos'],reg:['Registro de cambios','reg']};
+function vTesorera(){const ban=S.miembro.rol!=='tesorero'?`<div class="th-banner"><span>👁 Estás viendo la pantalla de la tesorera. Así la ve ${'Rosa'} cuando entra.</span><button class="btn sm" data-vtes="0">Volver a la vista completa</button></div>`:'';
+ const tv=S.tv||'inicio';
+ if(tv!=='inicio'){const [tit,sub]=TV[tv]||['',''];S.v='tesoreria';S.tsub=sub;const full=vTes(),i=full.indexOf('<!--TESDATA-->');
+  return ban+`<div class="th-back"><button class="btn" data-th="inicio">← Volver al inicio</button><h2>${esc(tit)}</h2></div>`+(i>=0?full.slice(i):full)}
+ const T=S.tes,C=S.caja;if(!T)loadTes();if(!C)loadCaja();
+ const r=(C&&C.r)||(T&&T.r)||{},hoy=hoyAR(),nom=(S.miembro.nombre||'').split(' ')[0];
+ const FPn=T?fpend():{},sinF=T?T.pagos.filter(p=>p.tipo==='Pago'&&!p.factura&&!FPn[p.socio_id+'|'+p.orden]).length:0,cobHoy=T?T.pagos.filter(p=>p.tipo==='Pago'&&p.fecha===hoy).reduce((a,p)=>a+ +p.importe,0):0;
+ const cob=(T&&T.cob)||{},venc=Object.values(cob).filter(c=>c.compromiso&&c.compromiso.fecha<hoy).length,conv=Object.keys((T&&T.conv)||{}).length;
+ const sing=T?T.cc.filter(x=>(x.estado==='Debe'||x.estado==='Deuda antigua')&&!((T.conv||{})[x.socio_id])&&!(cob[x.socio_id]&&(cob[x.socio_id].responsable||cob[x.socio_id].compromiso))).length:0;
+ const pend=((T&&T.band)||[]).filter(b=>b.estado==='pendiente').length,h=new Date().getHours();
+ return ban+`<div class="th-hi"><div><h2>${h<13?'Buen día':h<20?'Buenas tardes':'Buenas noches'}, ${esc(nom)}</h2><div class="help">${new Date().toLocaleDateString('es-AR',{weekday:'long',day:'numeric',month:'long'})} · ¿Qué querés hacer?</div></div>${pend?`<span class="help">⏳ ${pend} carga(s) pasando a la planilla</span>`:''}</div>
+ <div class="th-nums"><div><small>En la caja</small><b style="color:${r.saldo_efectivo<0?'var(--crit)':'var(--fg)'}">${T||C?$p(r.saldo_efectivo):'…'}</b></div><div><small>En el banco</small><b>${T||C?$p(r.saldo_banco):'…'}</b></div><div><small>Cobrado hoy</small><b style="color:var(--good)">${$p(cobHoy)}</b></div><div><small>Cobrado este mes</small><b style="color:var(--good)">${$p((+r.cobrado_mes_efectivo||0)+(+r.cobrado_mes_banco||0))}</b></div></div>
+ <div class="th-grid">
+  ${tile('cobrar','cobrar','Cobrar una cuota','Registrar el pago de un socio')}
+  ${tile('gasto','gasto','Cargar un gasto','Con foto del ticket o factura')}
+  ${tile('buscar','socio','Buscar un socio','Ver su cuenta, recibos y pagos')}
+  ${tile('caja','caja','Caja','Saldos y movimientos de caja y banco')}
+  ${tile('arqueo','arqueo','Arqueo de caja','Contar la plata y comparar')}
+  ${tile('sinf','factura','Facturas pendientes',sinF?sinF+' pago(s) sin N° de factura':'Todo facturado ✔',sinF||'')}
+  ${tile('mover','mover','Mover plata','Depositar, extraer u otro ingreso')}
+  ${tile('cobranza','cobranza','Cobranza',sing+' deben y nadie los gestiona'+(venc?' · '+venc+' compromiso(s) vencidos':''),venc||'')}
+  ${tile('convenios','convenio','Convenios',conv?conv+' convenio(s) activos':'Planes de pago de deuda vieja')}
+  ${tile('cc','cuentas','Cuentas de los socios','Quién está al día y quién debe')}
+  ${tile('reportes','reportes','Reportes','Imprimir o bajar a Excel')}
+ </div>`}
+function thMenu(tit,items){cjModal(`<b style="font-size:18px">${tit}</b><div class="th-menu">${items.map(([k,ic,t,sub])=>tile(k,ic,t,sub)).join('')}</div><div class="gacts"><button type="button" class="btn" data-tfx>Cerrar</button></div>`,tit)}
+document.addEventListener('click',async e=>{const t=e.target.closest('[data-th],[data-vtes]');if(!t)return;
+ if(t.dataset.vtes!==undefined){if(S.miembro.rol==='tesorero')S.tesFull=t.dataset.vtes==='1';else S.verTes=t.dataset.vtes==='1';S.tv='inicio';whoBar();if(!modoTes()){S.v='plano';S.zoom=null}render();scrollTo(0,0);return}
+ const k=t.dataset.th,tf=$('#tfm');if(tf&&tf.contains(t))tf.innerHTML='';
+ const ensure=async()=>{if(!S.tes)await loadTes();if(!S.caja)await loadCaja()};
+ if(k==='inicio'){S.tv='inicio';S.tk='';render();scrollTo(0,0);return}
+ if(k==='cobrar'){await ensure();tForm('pago');return}
+ if(k==='gasto'){await ensure();tForm('gasto');return}
+ if(k==='buscar'){const q=$('#gq');q.scrollIntoView({block:'center'});q.focus();q.placeholder='Escribí el apellido, el DNI o el lote del socio…';return}
+ if(k==='arqueo'){await ensure();cjArq();return}
+ if(k==='mover'){thMenu('Mover plata',[['m_dep','mover','Depositar efectivo en el banco','Sale de la caja y entra al banco'],['m_ext','mover','Extraer del banco a la caja','Sale del banco y entra a la caja'],['m_ing','cobrar','Otro ingreso','Alquiler del SUM, donación, etc.']]);return}
+ if(k==='m_dep'){cjMov('Depósito de caja en el banco');return}if(k==='m_ext'){cjMov('Extracción del banco a caja');return}if(k==='m_ing'){cjMov('Otro ingreso');return}
+ if(k==='reportes'){thMenu('Reportes',[['r_gen','reportes','Reporte general','Deudas, cobranza, convenios y todo el detalle (PDF)'],['r_caja','caja','Reporte de caja del mes','Libro de caja y arqueos (PDF)'],['r_xls','cuentas','Excel completo','Cuentas, pagos, gastos, convenios y sin factura'],['r_xcaja','caja','Excel de caja','Libro de caja y arqueos'],['reg','socio','Registro de cambios','Quién cambió qué y cuándo']]);return}
+ if(k==='r_gen'){await ensure();abrirReporte();return}if(k==='r_caja'){await ensure();cjReporte();return}if(k==='r_xls'){await ensure();repExcel();return}if(k==='r_xcaja'){await ensure();cjExcel();return}
+ if(TV[k]){S.tv=k;S.tk='';S.tq='';if(k==='sinf')S.tpf='sinf';if(k==='pagos')S.tpf='todos';if(k==='cobranza')S.tfe='singest';if(k==='convenios')S.tfe='conv';if(k==='cc')S.tfe='todos';render();scrollTo(0,0)}});
 // ---------- CAJA: saldos, libro de caja, movimientos, arqueos, saldo inicial ----------
 async function loadCaja(){const [pg,gs,mv,aq,rs]=await Promise.all([sb.from('tes_pagos').select('orden,socio_id,fecha,importe,medio,comprobante,factura,tipo,adjunto'),
  sb.from('tes_gastos').select('orden,fecha,concepto,categoria,proveedor,importe,sale_de,comprobante,nro,vale,adjunto'),sb.from('tes_movimientos').select('*'),
  sb.from('tes_arqueos').select('*').order('en',{ascending:false}).limit(30),sb.rpc('tes_resumen')]);
- const err=mv.error||aq.error;S.caja={err:err?err.message:null,pagos:pg.data||[],gastos:gs.data||[],mov:mv.data||[],arq:aq.data||[],r:rs.data||(S.tes&&S.tes.r)||{}};if(S.v==='tesoreria'&&S.tsub==='caja')render()}
+ const err=mv.error||aq.error;S.caja={err:err?err.message:null,pagos:pg.data||[],gastos:gs.data||[],mov:mv.data||[],arq:aq.data||[],r:rs.data||(S.tes&&S.tes.r)||{}};if((S.v==='tesoreria'&&S.tsub==='caja')||modoTes())render()}
 function cajaLibro(C){const nom={};((S.tes&&S.tes.cc)||[]).forEach(x=>nom[x.socio_id]=x.socio);const L=[];
  C.pagos.filter(p=>p.tipo==='Pago'&&p.medio).forEach(p=>{const ef=p.medio==='Efectivo';L.push({fecha:p.fecha,ord:1,tipo:'Cobro de cuota',det:(nom[p.socio_id]||p.socio_id)+(p.factura?' · F '+p.factura:'')+(p.comprobante?' · op. '+p.comprobante:''),ef:ef?+p.importe:0,ba:ef?0:+p.importe,adj:p.adjunto,cat:'Cuotas'})});
  C.gastos.forEach(g=>{const ef=g.sale_de==='Efectivo';if(!g.sale_de)return;L.push({fecha:g.fecha,ord:3,tipo:'Gasto',det:g.concepto+(g.proveedor?' · a '+g.proveedor:'')+(g.categoria?' ('+g.categoria+')':'')+((g.vale||g.nro)?' · '+(g.comprobante||'')+' '+(g.vale||g.nro):''),ef:ef?-g.importe:0,ba:ef?0:-g.importe,adj:g.adjunto,cat:g.categoria||'Sin categoría'})});
@@ -1005,7 +1075,7 @@ function vLista(){const q=S.q.trim().toLowerCase();let rs=S.fichas.filter(f=>S.f
  <td class="mono">${(f.ficha_lotes||[]).map(x=>esc(x.lote_id)+(x.reclamo?'<span class="chip">reclamo</span>':'')).join('<br>')||'<span class="help">A identificar</span>'} <span class="help">(${f.cantidad_lotes} decl.)</span></td>
  <td>${esc(f.email||'—')}<br><span class="mono">${esc(tel(f.celular))}</span></td><td><span class="st ${f.estado}">${f.estado}</span></td></tr>`).join(''):`<tr><td colspan="6" class="empty">Todavía no hay fichas${S.f!=='todas'?' con ese filtro':''}.</td></tr>`}
  </tbody></table></div></div>`}
-function render(){if(!S.miembro)return;const mb=$('#mapbox'),sc=mb?[mb.scrollLeft,mb.scrollTop]:null;
+function render(){if(!S.miembro)return;if(modoTes()){$('#main').innerHTML=vTesorera();$('#dr').innerHTML=drawer();return}const mb=$('#mapbox'),sc=mb?[mb.scrollLeft,mb.scrollTop]:null;
  $('#main').innerHTML=vResumen()+(S.v==='plano'?vPlano():S.v==='faltan'?vFaltan():S.v==='deuda'?vDeuda():S.v==='guardia'?vGuardia():S.v==='accesos'?vAccesos():S.v==='tesoreria'?vTes():S.v==='usuarios'?vUsr():vLista());sizeMap();const nb=$('#mapbox');if(nb&&sc){nb.scrollLeft=sc[0];nb.scrollTop=sc[1]}$('#dr').innerHTML=drawer()}
 // ---------- tarjeta ----------
 // ---------- cruce de una ficha con el padrón ----------
