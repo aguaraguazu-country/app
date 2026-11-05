@@ -164,6 +164,8 @@ tr.tcomp td{background:#f1f6fc}@media (prefers-color-scheme:dark){.gtag.comp{bac
 .th-acts{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}.th-acts .btn{font-size:15px;padding:10px 14px}
 .th-st{font-size:13px;font-weight:700;border-radius:999px;padding:3px 10px}.th-st.ok{background:var(--good-bg,#e3f1e7);color:var(--good)}.th-st.wa{background:var(--warn-bg);color:var(--warn)}.th-st.no{background:#fbe4e2;color:var(--crit)}
 .th-big .btn{font-size:15px;padding:10px 14px}.ftag{display:inline-block;font-size:12px;font-weight:700;border-radius:6px;padding:2px 7px;margin:3px 4px 0 0;white-space:nowrap}.ftag.ok{background:var(--good-bg,#e4f2e9);color:var(--good)}.ftag.pe{background:var(--warn-bg);color:var(--warn)}.ftag.no{background:#fbe4e2;color:var(--crit)}@media (prefers-color-scheme:dark){.ftag.no{background:#3a1f1d}}
+@media (max-width:600px){.th-grid{grid-template-columns:1fr 1fr;gap:10px}.th-t{grid-template-columns:1fr;gap:10px;padding:14px;min-height:0;align-content:start}.th-ic{width:46px;height:46px;border-radius:12px}.th-ic svg{width:26px;height:26px}.th-t b{font-size:15.5px}.th-t span span{font-size:12.5px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}.th-nums{grid-template-columns:1fr 1fr}.th-nums b{font-size:19px}.th-hi h2{font-size:22px}#who{display:flex;flex-wrap:wrap;gap:6px;width:100%}#who>span{width:100%}#who .btn{flex:1 1 auto;padding:8px 6px;font-size:13px;white-space:nowrap}}
+.th-g{font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:26px 2px 10px;font-weight:700}.th-g:first-child{margin-top:4px}.th-back .sp{flex:1}
 .th-empty{background:var(--card);border:1.5px dashed var(--line);border-radius:16px;padding:22px;text-align:center;color:var(--muted);font-size:16px}
 .th-head .th-ic{flex:none}@media (max-width:700px){.th-row{grid-template-columns:1fr}.th-amt{text-align:left}.th-acts{grid-column:1/-1;justify-content:stretch}.th-acts .btn{flex:1;text-align:center}.th-head h2{font-size:22px}.th-head .th-ic{width:52px;height:52px}}
 @media (prefers-color-scheme:dark){.th-st.no{background:#3a1f1d}}.th-menu .th-t{min-height:76px}
@@ -192,7 +194,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 </head>
 <body>
 <div class="wrap">
-<header><div><div class="eyebrow">Asociación Civil Aguará Guazú Country · Comisión Directiva</div><h1>Panel de la comisión<span class="agver" aria-label="Versión del sistema" style="font:500 12px/1.2 system-ui,sans-serif;color:var(--muted,#5d6862);margin-left:10px;white-space:nowrap;vertical-align:middle;letter-spacing:0">v1.63 · 05/11/26 18:39</span></h1></div><div class="who" id="who"></div></header>
+<header><div><div class="eyebrow">Asociación Civil Aguará Guazú Country · Comisión Directiva</div><h1>Panel de la comisión<span class="agver" aria-label="Versión del sistema" style="font:500 12px/1.2 system-ui,sans-serif;color:var(--muted,#5d6862);margin-left:10px;white-space:nowrap;vertical-align:middle;letter-spacing:0">v1.64 · 05/11/26 19:22</span></h1></div><div class="who" id="who"></div></header>
 <div id="gsr" class="gsr" hidden><div class="cb" style="max-width:560px"><input id="gq" type="search" autocomplete="off" placeholder="Buscar propietario: nombre, DNI, N° de socio o lote (ej. S2-M-06)…" aria-label="Buscar propietario"><div class="cb-l" id="gq_l" hidden></div></div></div>
 <main id="main"><div class="empty">Cargando…</div></main>
 </div>
@@ -217,8 +219,8 @@ async function start(){if(!sb){$('#main').innerHTML='<div class="card">No se pud
  const {data:{session}}=await sb.auth.getSession();if(!session)return vLogin();S.user=session.user;await loadApp()}
 async function loadApp(){const {data:m,error}=await sb.from('miembros').select('nombre,rol').eq('user_id',S.user.id).maybeSingle();
  if(error||!m||!['admin','comision','tesorero'].includes(m.rol)){await sb.auth.signOut();return vLogin('Tu usuario no tiene acceso al panel. Pedile a la comisión que te habilite.')}
- S.miembro=m;$('#gsr').hidden=false;gsLoad();whoBar();sb.from('tes_socios').select('socio_id,documento').then(r=>{if(!r.error)S.tsoc=r.data||[]});await loadData()}
-function whoBar(){const m=S.miembro;$('#who').innerHTML=`<span>${esc(m.nombre)} · ${esc(m.rol==='tesorero'?'tesorería':m.rol)}</span>${m.rol==='tesorero'?`<button class="btn sm" data-vtes="${S.tesFull?'0':'1'}">${S.tesFull?'Mi pantalla de tesorería':'Panel completo'}</button>`:`<button class="btn sm" data-vtes="${S.verTes?'0':'1'}">${S.verTes?'Volver a la vista completa':'Ver como tesorera'}</button>`}<button class="btn sm" data-mipass="1">Mi contraseña</button><button class="btn sm" id="out">Salir</button>`}
+ S.miembro=m;try{S.clasico=localStorage.getItem('ag_clasico')==='1'}catch(_){}$('#gsr').hidden=false;gsLoad();whoBar();sb.from('tes_socios').select('socio_id,documento').then(r=>{if(!r.error)S.tsoc=r.data||[]});await loadData()}
+function whoBar(){const m=S.miembro;$('#who').innerHTML=`<span>${esc(m.nombre)} · ${esc(m.rol==='tesorero'?'tesorería':m.rol)}</span>${S.clasico?'<button class="btn sm" data-vcla="0">Vista nueva</button>':(m.rol!=='tesorero'?`<button class="btn sm" data-vtes="${S.verTes?'0':'1'}">${S.verTes?'Salir de la vista de tesorera':'Ver como tesorera'}</button>`:'')+'<button class="btn sm" data-vcla="1" title="El panel anterior, con pestañas">Vista clásica</button>'}<button class="btn sm" data-mipass="1">Mi contraseña</button><button class="btn sm" id="out">Salir</button>`}
 async function loadData(){$('#main').innerHTML='<div class="empty">Cargando fichas…</div>';
  const {data,error}=await sb.from('fichas').select('id,tramite,creado,estado,es_prueba,titular_nombre,titular_documento,email,celular,cantidad_lotes,lote_sin_identificar,datos,nota_comision,revisado_en,ficha_lotes(lote_id,reclamo)').order('creado',{ascending:false});
  if(error){$('#main').innerHTML=`<div class="card">No se pudieron leer las fichas: ${esc(error.message)}</div>`;return}
@@ -585,7 +587,8 @@ function ordenar(t,rs,get){const o=ORD[t],g=get[o.k];if(!g)return rs;return rs.s
 document.addEventListener('click',e=>{const t=e.target.closest('[data-ord]');if(!t)return;const [tb,k]=t.dataset.ord.split('|'),o=ORD[tb];
  if(o.k===k)o.d=-o.d;else{o.k=k;o.d=['socio','concepto','categoria','proveedor','medio','estado'].includes(k)?1:-1}render()});
 // ---------- PANTALLA DE TESORERÍA (simple, con íconos grandes) ----------
-const modoTes=()=>!!S.miembro&&((S.miembro.rol==='tesorero'&&!S.tesFull)||(S.miembro.rol!=='tesorero'&&S.verTes));
+const modoTes=()=>!!S.miembro&&!S.clasico;
+const soloTes=()=>!!S.miembro&&(S.miembro.rol==='tesorero'||!!S.verTes);
 const ICO={
  cobrar:'<svg viewBox="0 0 24 24"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2.6"/><path d="M6 10v4M18 10v4"/></svg>',
  gasto:'<svg viewBox="0 0 24 24"><path d="M5 3h14v18l-3-2-2 2-2-2-2 2-2-2-3 2z"/><path d="M9 8h6M9 12h6M9 16h3"/></svg>',
@@ -648,8 +651,9 @@ function thVista(tv){const [tit,sub,ic,expl]=TV[tv]||['','','socio',''];S.v='tes
    <div class="th-det">${est(x)}${ficTag(x.socio_id)} ${x.ultimo_pago?'Último pago '+fD(x.ultimo_pago):'Sin pagos registrados'}</div><div>${info(x)}</div></div>
    <div class="th-amt">${x.total>0?$p(x.total):x.total<0?'<span style="color:var(--good)">a favor '+$p(-x.total)+'</span>':'<span style="color:var(--good)">$ 0</span>'}<small>${x.total>0?(x.deuda_antigua>0?'incluye '+$p(x.deuda_antigua)+' de deuda vieja':'debe'):'no debe'}</small></div>
    <div class="th-acts"><button class="btn primary" data-thcob="${esc(x.socio_id)}">Cobrar</button><button class="btn" data-tso="${esc(x.socio_id)}">Ver cuenta</button></div></div>`).join('')||vacio(tv==='cobranza'&&fe==='singest'?'✔ Todos los que deben ya tienen a alguien que los gestiona.':'No hay socios en esta lista.')}</div>`+mas(rs.length)}
-function vTesorera(){const ban=S.miembro.rol!=='tesorero'?`<div class="th-banner"><span>👁 Estás viendo la pantalla de la tesorera. Así la ve ${'Rosa'} cuando entra.</span><button class="btn sm" data-vtes="0">Volver a la vista completa</button></div>`:'';
+function vTesorera(){const ban=S.miembro.rol!=='tesorero'&&S.verTes?`<div class="th-banner"><span>👁 Estás viendo la pantalla de la tesorera. Así la ve ${'Rosa'} cuando entra.</span><button class="btn sm" data-vtes="0">Salir de la vista de tesorera</button></div>`:'';
  const tv=S.tv||'inicio';
+ if(tv.startsWith('v:'))return ban+vPanel(tv.slice(2));
  if(tv!=='inicio')return ban+thVista(tv);
  const T=S.tes,C=S.caja;if(!T)loadTes();if(!C)loadCaja();
  const r=(C&&C.r)||(T&&T.r)||{},hoy=hoyAR(),nom=(S.miembro.nombre||'').split(' ')[0];
@@ -662,7 +666,7 @@ function vTesorera(){const ban=S.miembro.rol!=='tesorero'?`<div class="th-banner
  const pend=((T&&T.band)||[]).filter(b=>b.estado==='pendiente').length,h=new Date().getHours();
  return ban+`<div class="th-hi"><div><h2>${h<13?'Buen día':h<20?'Buenas tardes':'Buenas noches'}, ${esc(nom)}</h2><div class="help">${new Date().toLocaleDateString('es-AR',{weekday:'long',day:'numeric',month:'long'})} · ¿Qué querés hacer?</div></div>${pend?`<span class="help">⏳ ${pend} carga(s) pasando a la planilla</span>`:''}</div>
  <div class="th-nums">${numT('caja','En la caja',T||C?$p(r.saldo_efectivo):'…',r.saldo_efectivo<0?'var(--crit)':'','Ver la caja')}${numT('caja','En el banco',T||C?$p(r.saldo_banco):'…','','Ver la caja')}${numT('hoy','Cobrado hoy',$p(cobHoy),'var(--good)',nHoy+' pago'+(nHoy===1?'':'s')+' · ver detalle')}${numT('cobros','Cobrado este mes',$p(cobMes),'var(--good)','Ver análisis y reporte')}${numT('gmes','Gastado este mes',$p(gasMes),'var(--crit)','Ver análisis y reporte')}</div>
- <div class="th-grid">
+ ${soloTes()?'':'<h3 class="th-g">Tesorería</h3>'}<div class="th-grid">
   ${tile('cobrar','cobrar','Cobrar una cuota','Registrar el pago de un socio')}
   ${tile('gasto','gasto','Cargar un gasto','Con foto del ticket o factura')}
   ${tile('buscar','socio','Buscar un socio','Ver su cuenta, recibos y pagos')}
@@ -676,7 +680,7 @@ function vTesorera(){const ban=S.miembro.rol!=='tesorero'?`<div class="th-banner
   ${tile('pagos','recibo','Pagos cobrados','Ver cobros y mandar recibos')}
   ${tile('gastos','gasto','Gastos cargados',sinFoto?sinFoto+' sin foto del comprobante':'Todos con comprobante ✔',sinFoto||'')}
   ${tile('reportes','reportes','Reportes','Imprimir o bajar a Excel')}
- </div>`}
+ </div>`+(soloTes()?'':adminInicio())}
 function thToast(m){let d=$('#thtoast');if(!d){d=document.createElement('div');d.id='thtoast';d.setAttribute('role','status');d.style.cssText='position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#1f5a3d;color:#fff;padding:12px 18px;border-radius:12px;font-size:15px;z-index:9999;box-shadow:0 8px 24px rgba(0,0,0,.2);max-width:90vw';document.body.appendChild(d)}d.textContent=m;d.hidden=false;clearTimeout(d._t);d._t=setTimeout(()=>d.hidden=true,4500)}
 const numT=(k,l,v,c,sub)=>`<button type="button" class="th-n" data-th="${k}" title="${esc(sub)}"><small>${l}</small><b ${c?`style="color:${c}"`:''}>${v}</b><em>${esc(sub)} ›</em></button>`;
 // fotos de comprobante pendientes de pasar a la planilla: clave hoja|socio|fila
@@ -799,14 +803,56 @@ document.addEventListener('click',async e=>{const b=e.target.closest('#fm_b');if
  for(const x of L){b.textContent=`Subiendo ${ok+errs.length+1} de ${L.length}…`;try{await fpSubir(x.p.socio_id,x.p.factura,x.f);ok++}catch(err){errs.push(x.f.name+': '+err.message);if(/27_facturas/.test(err.message))break}}
  await fpRecargar();if(errs.length){$('#fm_e').textContent=errs.join(' · ');b.textContent='Listo: '+ok+' subida(s)';render();return}
  $('#tfm').innerHTML='';render();thToast('✔ '+ok+' factura'+(ok===1?'':'s')+' subida'+(ok===1?'':'s')+'. Los socios ya las pueden descargar.')});
+
+// ---------- Inicio y pantallas de la comisión (mismo diseño que tesorería) ----------
+Object.assign(ICO,{
+ plano:'<svg viewBox="0 0 24 24"><path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2z"/><path d="M9 4v14M15 6v14"/></svg>',
+ fichas:'<svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="11" r="2.5"/><path d="M5.5 17c.6-2 2-3 3.5-3s2.9 1 3.5 3M14 9h4M14 13h4"/></svg>',
+ padron:'<svg viewBox="0 0 24 24"><path d="M9 5h11M9 12h11M9 19h11"/><path d="m3 5 1.5 1.5L7 4M3 12l1.5 1.5L7 11"/><circle cx="5" cy="19" r="1.5"/></svg>',
+ deuda:'<svg viewBox="0 0 24 24"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/></svg>',
+ visitas:'<svg viewBox="0 0 24 24"><circle cx="8" cy="15" r="4"/><path d="m10.8 12.2 8.2-8.2M17 6l2 2M15 8l2 2"/></svg>',
+ guardia:'<svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg>',
+ usuarios:'<svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.5 3.4-5.5 6.5-5.5s5.7 2 6.5 5.5"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7M18.5 14.8c1.6.8 2.6 2.6 3 5.2"/></svg>',
+ copia:'<svg viewBox="0 0 24 24"><path d="M12 3v12M7 10l5 5 5-5"/><path d="M4 17v3h16v-3"/></svg>',
+ tabla:'<svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M3 15h18M9 4v16"/></svg>'});
+Object.assign(ICC,{plano:['#e6f2f1','#1c6b66'],fichas:['#e3edf8','#1d4f86'],padron:['#efe7f8','#5b3a8c'],deuda:['#fbe4e2','#b42318'],visitas:['#fbf0d9','#9a6400'],guardia:['#e3f1e7','#2f7d4f'],usuarios:['#e3edf8','#1d4f86'],copia:['#eef0ee','#4a564f'],tabla:['#eef0ee','#4a564f']});
+function adminInicio(){const act=S.fichas.filter(f=>f.estado!=='rechazada'),pend=act.filter(f=>f.estado==='pendiente').length,conf=Object.keys(S.byLot).filter(id=>lotClass(id)==='conf').length,lotes=Object.keys(S.byLot).length;
+ const c=cruce(),cargo=c?c.filter(x=>x.est==='verif'||x.est==='pend').length:null,T=S.tes,sinFi=T&&T.fic?T.cc.filter(x=>ficE(x.socio_id)==='no').length:null;
+ return`<h3 class="th-g">Propietarios y fichas</h3>
+ <div class="th-nums">${numT('v:lista|todas','Fichas recibidas',act.length,'',lotes+' de 202 lotes con ficha')}${numT('v:lista|pendiente','Para revisar',pend,pend?'var(--warn)':'',pend?'Verificar o rechazar':'Nada pendiente')}${numT('v:lista|conflicto','Lotes en conflicto',conf,conf?'var(--crit)':'','Dos fichas en el mismo lote')}${c?numT('v:faltan|falta','Del padrón ya cargaron',cargo+' de '+c.length,'',(c.length-cargo)+' todavía no'):''}${sinFi!=null?numT('ccsf','Socios sin ficha',sinFi,sinFi?'var(--crit)':'','Pedirles que la completen'):''}</div>
+ <div class="th-grid">
+  ${tile('v:plano','plano','Plano del barrio','Lotes y quién cargó cada uno')}
+  ${tile('v:lista|todas','fichas','Fichas de propietarios',pend?pend+' para revisar':'Todas revisadas ✔',pend||'')}
+  ${tile('v:faltan|falta','padron','Padrón','Quiénes faltan cargar la ficha')}
+  ${tile('v:deuda','deuda','Deuda en el plano','Ver en el mapa quién debe')}
+ </div>
+ <h3 class="th-g">Accesos</h3><div class="th-grid">
+  ${tile('v:accesos','visitas','Visitas e inquilinos','Autorizaciones de los propietarios')}
+  ${tile('v:guardia','guardia','Guardia','Lo que ve la guardia en la entrada')}
+ </div>
+ <h3 class="th-g">Administración</h3><div class="th-grid">
+  ${tile('v:tesoreria|caja','tabla','Tesorería en tablas','Todas las planillas, para revisar en detalle')}
+  ${S.miembro.rol==='admin'?tile('v:usuarios','usuarios','Usuarios','Quién entra al panel y con qué permisos'):''}
+  ${tile('backup','copia','Descargar copia','Excel con fichas y padrón')}
+  ${tile('reg','socio','Registro de cambios','Quién cambió qué y cuándo')}
+ </div>`}
+const VP={plano:['Plano del barrio','plano','Tocá un lote para ver quién lo cargó.'],lista:['Fichas de propietarios','fichas','Las fichas que cargaron los propietarios. Verificalas o rechazalas.'],faltan:['Padrón','padron','El padrón cruzado con las fichas: quién ya cargó y quién falta.'],deuda:['Deuda en el plano','deuda','Cada lote pintado según lo que debe su propietario.'],accesos:['Visitas e inquilinos','visitas','Autorizaciones que cargan los propietarios.'],guardia:['Guardia','guardia','Lo que ve la guardia en la entrada.'],usuarios:['Usuarios','usuarios','Quién entra al panel y con qué permisos.'],tesoreria:['Tesorería en tablas','tabla','Las planillas completas para revisar en detalle.']};
+function vPanel(v){const [tit,ic,ex]=VP[v]||['','fichas',''];S.v=v;
+ const head=`<div class="th-back"><button class="btn" data-th="inicio">← Volver al inicio</button><span class="sp"></span><button type="button" class="btn sm" id="reload">Actualizar</button></div><div class="th-head"><span class="th-ic" style="background:${ICC[ic][0]};color:${ICC[ic][1]}">${ICO[ic]}</span><div><h2>${esc(tit)}</h2><p>${esc(ex)}</p></div></div>`;
+ const fil='';
+ return head+fil+(v==='plano'?vPlano():v==='faltan'?vFaltan():v==='deuda'?vDeuda():v==='guardia'?vGuardia():v==='accesos'?vAccesos():v==='tesoreria'?vTes():v==='usuarios'?vUsr():vLista())}
 function thMenu(tit,items){cjModal(`<b style="font-size:18px">${tit}</b><div class="th-menu">${items.map(([k,ic,t,sub])=>tile(k,ic,t,sub)).join('')}</div><div class="gacts"><button type="button" class="btn" data-tfx>Cerrar</button></div>`,tit)}
 document.addEventListener('click',async e=>{const f=e.target.closest('[data-thf],[data-thcob]');if(!f)return;
  if(f.dataset.thf){S.tfe=f.dataset.thf;render();return}if(!S.tes)await loadTes();tForm('pago',f.dataset.thcob)});
-document.addEventListener('click',async e=>{const t=e.target.closest('[data-th],[data-vtes]');if(!t)return;
- if(t.dataset.vtes!==undefined){if(S.miembro.rol==='tesorero')S.tesFull=t.dataset.vtes==='1';else S.verTes=t.dataset.vtes==='1';S.tv='inicio';whoBar();if(!modoTes()){S.v='plano';S.zoom=null}render();scrollTo(0,0);return}
+document.addEventListener('click',async e=>{const t=e.target.closest('[data-th],[data-vtes],[data-vcla]');if(!t)return;
+ if(t.dataset.vcla!==undefined){S.clasico=t.dataset.vcla==='1';try{localStorage.setItem('ag_clasico',S.clasico?'1':'')}catch(_){}S.tv='inicio';if(S.clasico){S.v='plano';S.zoom=null}whoBar();render();scrollTo(0,0);return}
+ if(t.dataset.vtes!==undefined){S.verTes=t.dataset.vtes==='1';S.tv='inicio';whoBar();render();scrollTo(0,0);return}
  const k=t.dataset.th,tf=$('#tfm');if(tf&&tf.contains(t))tf.innerHTML='';
  const ensure=async()=>{if(!S.tes)await loadTes();if(!S.caja)await loadCaja()};
+ if(k==='backup'){backup();return}
+ if(k==='ccsf'){S.tv='cc';S.tq='';S.tfe='sinficha';render();scrollTo(0,0);return}
  if(k==='inicio'){S.tv='inicio';S.tk='';render();scrollTo(0,0);return}
+ if(k.startsWith('v:')){const [v,x]=k.slice(2).split('|');S.tv='v:'+v;S.v=v;S.q='';if(v==='lista')S.f=x||'todas';if(v==='faltan')S.pf=x||'falta';if(v==='plano')S.zoom=null;if(v==='tesoreria'){S.tsub=x||'caja'}render();scrollTo(0,0);return}
  if(k==='cobrar'){await ensure();tForm('pago');return}
  if(k==='gasto'){await ensure();tForm('gasto');return}
  if(k==='buscar'){const q=$('#gq');q.scrollIntoView({block:'center'});q.focus();q.placeholder='Escribí el apellido, el DNI o el lote del socio…';return}
@@ -1326,7 +1372,7 @@ function vLista(){const q=S.q.trim().toLowerCase();let rs=S.fichas.filter(f=>S.f
  <td class="mono">${(f.ficha_lotes||[]).map(x=>esc(x.lote_id)+(x.reclamo?'<span class="chip">reclamo</span>':'')).join('<br>')||'<span class="help">A identificar</span>'} <span class="help">(${f.cantidad_lotes} decl.)</span></td>
  <td>${esc(f.email||'—')}<br><span class="mono">${esc(tel(f.celular))}</span></td><td><span class="st ${f.estado}">${f.estado}</span></td></tr>`).join(''):`<tr><td colspan="6" class="empty">Todavía no hay fichas${S.f!=='todas'?' con ese filtro':''}.</td></tr>`}
  </tbody></table></div></div>`}
-function render(){if(!S.miembro)return;if(modoTes()){$('#main').innerHTML=vTesorera();$('#dr').innerHTML=drawer();return}const mb=$('#mapbox'),sc=mb?[mb.scrollLeft,mb.scrollTop]:null;
+function render(){if(!S.miembro)return;if(modoTes()){const mb=$('#mapbox'),sc=mb?[mb.scrollLeft,mb.scrollTop]:null;$('#main').innerHTML=vTesorera();if($('#mapbox')){sizeMap();const nb=$('#mapbox');if(nb&&sc){nb.scrollLeft=sc[0];nb.scrollTop=sc[1]}}$('#dr').innerHTML=drawer();return}const mb=$('#mapbox'),sc=mb?[mb.scrollLeft,mb.scrollTop]:null;
  $('#main').innerHTML=vResumen()+(S.v==='plano'?vPlano():S.v==='faltan'?vFaltan():S.v==='deuda'?vDeuda():S.v==='guardia'?vGuardia():S.v==='accesos'?vAccesos():S.v==='tesoreria'?vTes():S.v==='usuarios'?vUsr():vLista());sizeMap();const nb=$('#mapbox');if(nb&&sc){nb.scrollLeft=sc[0];nb.scrollTop=sc[1]}$('#dr').innerHTML=drawer()}
 // ---------- tarjeta ----------
 // ---------- cruce de una ficha con el padrón ----------
@@ -1488,8 +1534,8 @@ document.addEventListener('click',async e=>{const t=e.target;
  const sp=t.closest('[data-savepad]');if(sp){const id=sp.dataset.savepad,v=$('#pnota').value;sp.disabled=true;const {error}=await sb.rpc('guardar_nota_padron',{p_id:id,p_nota:v});sp.disabled=false;
   if(error){$('#pmsg').innerHTML=`<span class="err">No se pudo guardar: ${esc(error.message)}</span>`;return}const x=S.padron.find(y=>y.id===id);if(x){x.nota=v.trim()||null;x.nota_en=new Date().toISOString()}render();return}
  if(t.closest('[data-close]')){S.open=null;S.edit=null;render();return}
- const kp=t.closest('[data-kpi]');if(kp){const [v,x]=kp.dataset.kpi.split('|');S.v=v;S.q='';if(v==='lista')S.f=x;if(v==='faltan')S.pf=x;if(v==='plano')S.zoom=null;render();const tb=$('#main .tabs');if(tb)tb.scrollIntoView({behavior:'smooth',block:'start'});return}
- const v=t.closest('[data-v]');if(v){S.v=v.dataset.v;render();return}
+ const kp=t.closest('[data-kpi]');if(kp){const [v,x]=kp.dataset.kpi.split('|');S.v=v;if(modoTes())S.tv='v:'+v;S.q='';if(v==='lista')S.f=x;if(v==='faltan')S.pf=x;if(v==='plano')S.zoom=null;render();const tb=$('#main .tabs');if(tb)tb.scrollIntoView({behavior:'smooth',block:'start'});return}
+ const v=t.closest('[data-v]');if(v){S.v=v.dataset.v;if(modoTes())S.tv='v:'+S.v;render();return}
  const f=t.closest('[data-f]');if(f){S.f=f.dataset.f;render();return}
  const z=t.closest('[data-zoom]');if(z){const d=+z.dataset.zoom;if(d===0){S.zoom=1;sizeMap();const mb=$('#mapbox');if(mb){mb.scrollLeft=0;mb.scrollTop=0}}else setZoom(S.zoom*(d>0?1.25:1/1.25));return}
  if(t.id==='reload'){await loadData();return}
