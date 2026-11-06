@@ -198,7 +198,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 </head>
 <body>
 <div class="wrap">
-<header><div><div class="eyebrow">Asociación Civil Aguará Guazú Country · Comisión Directiva</div><h1>Panel de la comisión<span class="agver" aria-label="Versión del sistema" style="font:500 12px/1.2 system-ui,sans-serif;color:var(--muted,#5d6862);margin-left:10px;white-space:nowrap;vertical-align:middle;letter-spacing:0">v1.66 · 05/11/26 19:49</span></h1></div><div class="who" id="who"></div></header>
+<header><div><div class="eyebrow">Asociación Civil Aguará Guazú Country · Comisión Directiva</div><h1>Panel de la comisión<span class="agver" aria-label="Versión del sistema" style="font:500 12px/1.2 system-ui,sans-serif;color:var(--muted,#5d6862);margin-left:10px;white-space:nowrap;vertical-align:middle;letter-spacing:0">v1.67 · 06/11/26 18:06</span></h1></div><div class="who" id="who"></div></header>
 <div id="gsr" class="gsr" hidden><div class="cb" style="max-width:560px"><input id="gq" type="search" autocomplete="off" placeholder="Buscar propietario: nombre, DNI, N° de socio o lote (ej. S2-M-06)…" aria-label="Buscar propietario"><div class="cb-l" id="gq_l" hidden></div></div></div>
 <main id="main"><div class="empty">Cargando…</div></main>
 </div>
@@ -512,10 +512,13 @@ function vSocio(){const o=S.som;let box=$('#som');if(!box){box=document.createEl
  const shell=b=>`<div class="scrim" data-somx></div><div class="modal som" role="dialog" aria-label="Ficha del socio">${b}</div>`;
  if(o.cargando){box.innerHTML=shell('<div style="padding:28px" class="empty">Cargando ficha del socio…</div>');return}
  if(o.err){box.innerHTML=shell(`<div style="padding:24px">${/function|schema cache/i.test(o.err)?'Falta ejecutar el script <b>17_ficha_socio_tesoreria.sql</b> en Supabase.':'No se pudo cargar: '+esc(o.err)}<div class="gacts" style="margin-top:12px"><button class="btn" data-somx>Cerrar</button></div></div>`);return}
- const so=o.socio,cc=o.cc||{},pagos=o.pagos||[],rec=o.recibos||[],ids=[...new Set(lotIds(so.lotes))];
+ const so=o.socio,cc=o.cc||{},pagos=o.pagos||[],rec=o.recibos||[];let ids=[...new Set(lotIds(so.lotes))];
  const pad=(S.padron||[]).find(x=>x.id===so.socio_id)||{},dk=docKey(so.documento);
  const fid=/^F(\d+)$/.test(so.socio_id)?+so.socio_id.slice(1):null,FF=(S.fichas||[]).filter(f=>f.estado!=='rechazada'&&(f.id===fid||(dk&&docKey(f.titular_documento)===dk))).sort((a,b)=>(a.estado==='verificada'?0:1)-(b.estado==='verificada'?0:1)||String(b.creado).localeCompare(String(a.creado)));
  const fi=FF.find(f=>f.estado==='verificada')||null,fpe=fi?null:FF[0]||null;
+ // si la planilla no tiene el lote, se toma el de la ficha del propietario
+ const fL=f=>f?[...new Set([...(f.ficha_lotes||[]).map(x=>x.lote_id),...((f.datos&&f.datos.lotes)||[]).map(x=>x.lote_id)].filter(Boolean))]:[];
+ const lotFicha=fL(fi||fpe).filter(x=>!ids.includes(x));if(!ids.length)ids=lotFicha;
  const cel=(fi&&fi.celular)||pad.celular||'',mail=(fi&&fi.email)||pad.email||'',wa=cWa(cel);
  const recPor={};rec.forEach(r=>recPor[r.huella]=r);
  // qué pago cubrió cada mes
@@ -544,7 +547,7 @@ function vSocio(){const o=S.som;let box=$('#som');if(!box){box=document.createEl
    <div class="help">DNI/CUIT <span class="mono">${esc(so.documento||'—')}</span> · ${so.cant_lotes} lote${so.cant_lotes>1?'s':''}</div><div style="margin-top:4px"><span class="chip ${ec}">${esc(estN(est))}</span> ${fTag}</div></div></div>
    <div class="som-acts"><button class="btn primary" data-socar="${esc(so.socio_id)}">+ Cargar pago</button>${wa?`<a class="btn" href="${wa}" target="_blank" rel="noopener">WhatsApp</a>`:''}${cel?`<a class="btn" href="tel:${esc(String(cel).replace(/[^\d+]/g,''))}">Llamar</a>`:''}<a class="btn" href="#som-datos" data-somgo="som-datos">Datos y ficha</a></div></header>
   <div class="som-b"><aside class="som-side">${miniMap(ids)}
-   <div>${ids.length?ids.map(id=>{const i=lotInfo(id);return`<div style="margin-bottom:6px"><b>${esc(i.nom)}</b><div class="help mono">${esc(i.partida)}${i.sup!=null?' · '+i.sup.toLocaleString('es-AR')+' m²':''}</div></div>`}).join(''):`<p class="help">Lote: ${esc(so.lotes||'sin dato')}</p>`}</div>
+   <div>${ids.length?ids.map(id=>{const i=lotInfo(id);return`<div style="margin-bottom:6px"><b>${esc(i.nom)}</b><div class="help mono">${esc(i.partida)}${i.sup!=null?' · '+i.sup.toLocaleString('es-AR')+' m²':''}</div></div>`}).join(''):`<p class="help">Lote: ${esc(so.lotes||'sin dato')}</p>`}${lotFicha.length&&!lotIds(so.lotes).length?`<p class="help" style="margin-top:2px">📍 Lote tomado de la ficha del propietario: en la planilla de tesorería este socio no tiene lote cargado.</p>`:lotFicha.length?`<p class="help" style="margin-top:2px;color:var(--warn)">⚠ La ficha además declara ${lotFicha.map(x=>esc(lotInfo(x).nom)).join(', ')}, que no figura en la planilla.</p>`:''}</div>
    <div><h3>Contacto</h3><div class="help">Celular</div><div class="mono">${esc(tel(cel)||'—')}</div><div class="help" style="margin-top:6px">Email</div><div>${esc(mail||'—')}</div></div>
   </aside><div class="som-main">
    <div class="som-kpi">${K('Total pendiente',cc.total<0?'a favor '+$p(-cc.total):$p(cc.total),cc.total>0?'var(--crit)':'var(--good)')}${K(cc.tipo_deuda==='Antigua'?'Deuda anterior (en revisión)':'Meses anteriores',$p(cc.deuda_antigua))}${K('Cuotas vencidas',$p(cc.cuotas_vencidas))}${K('A pagar este mes',$p(cc.a_pagar))}${K('Cuota mensual',$p(cuotaMes))}${K('Último pago',cc.ultimo_pago?fD(cc.ultimo_pago):'—')}</div>
