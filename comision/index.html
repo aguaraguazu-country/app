@@ -180,7 +180,9 @@ tr.tcomp td{background:#f1f6fc}@media (prefers-color-scheme:dark){.gtag.comp{bac
 .som-h h2{margin:2px 0 4px;font-size:24px}.som-b{display:grid;grid-template-columns:minmax(0,360px) minmax(0,1fr);gap:0}.som-side{padding:18px 20px;border-right:1px solid var(--line);display:grid;gap:14px;align-content:start}
 .som-main{padding:18px 22px;display:grid;grid-template-columns:minmax(0,1fr);gap:18px;align-content:start;min-width:0}.som h3{margin:0 0 8px;font-size:15px}.som-kpi{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px}
 .som-kpi div{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:8px 10px}.som-kpi small{display:block;color:var(--muted);font-size:12px}.som-kpi b{font-size:17px}
-.som-map{border:1px solid var(--line);border-radius:12px;background:var(--bg);overflow:hidden}.som-map svg{display:block;width:100%;height:auto}
+.som-map{border:1px solid var(--line);border-radius:12px;background:var(--bg);overflow:hidden;position:relative}.som-map svg{cursor:grab;touch-action:pan-y;user-select:none;-webkit-user-select:none;display:block}.som-map svg.drag{cursor:grabbing}
+.som-map .mn{display:none;font-size:3.2px;fill:currentColor;opacity:.55;text-anchor:middle;dominant-baseline:central;pointer-events:none}.som-map svg.zin .mn{display:block}
+.mm-ctl{position:absolute;right:8px;top:8px;display:grid;gap:4px}.mm-ctl button{width:32px;height:32px;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--fg);font:600 17px/1 inherit;cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,.08)}.mm-ctl button:hover{border-color:#2f6b4f}.som-map svg{display:block;width:100%;height:auto}
 .som-map .ml{fill:var(--lot);stroke:var(--lotline);stroke-width:.35}.som-map .ms{fill:#d66224;stroke:#7a3210;stroke-width:.6}.som-map .mt{font:700 4.2px var(--body);fill:#fff;text-anchor:middle;dominant-baseline:middle}
 .mrow{display:grid;grid-template-columns:110px 90px 120px minmax(0,1fr) auto;gap:8px;align-items:center;padding:7px 4px;border-bottom:1px solid var(--line);font-variant-numeric:tabular-nums}
 .mrow.hd{font-size:12px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.03em}.mrow .pc{color:var(--muted);font-size:13px}
@@ -198,7 +200,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 </head>
 <body>
 <div class="wrap">
-<header><div><div class="eyebrow">Asociación Civil Aguará Guazú Country · Comisión Directiva</div><h1>Panel de la comisión<span class="agver" aria-label="Versión del sistema" style="font:500 12px/1.2 system-ui,sans-serif;color:var(--muted,#5d6862);margin-left:10px;white-space:nowrap;vertical-align:middle;letter-spacing:0">v1.67 · 06/11/26 18:06</span></h1></div><div class="who" id="who"></div></header>
+<header><div><div class="eyebrow">Asociación Civil Aguará Guazú Country · Comisión Directiva</div><h1>Panel de la comisión<span class="agver" aria-label="Versión del sistema" style="font:500 12px/1.2 system-ui,sans-serif;color:var(--muted,#5d6862);margin-left:10px;white-space:nowrap;vertical-align:middle;letter-spacing:0">v1.68 · 06/11/26 18:09</span></h1></div><div class="who" id="who"></div></header>
 <div id="gsr" class="gsr" hidden><div class="cb" style="max-width:560px"><input id="gq" type="search" autocomplete="off" placeholder="Buscar propietario: nombre, DNI, N° de socio o lote (ej. S2-M-06)…" aria-label="Buscar propietario"><div class="cb-l" id="gq_l" hidden></div></div></div>
 <main id="main"><div class="empty">Cargando…</div></main>
 </div>
@@ -497,8 +499,26 @@ document.addEventListener('focusin',e=>{if(e.target.id==='gq'&&e.target.value.tr
 function miniMap(ids){const sel=new Set(ids),ls=MAPA.lots.filter(l=>sel.has(l[0]));let vb='-12 -14 314 320';
  if(ls.length){let x0=Math.min(...ls.map(l=>l[1])),y0=Math.min(...ls.map(l=>l[2])),x1=Math.max(...ls.map(l=>l[1]+l[3])),y1=Math.max(...ls.map(l=>l[2]+l[4]));
   const cx=(x0+x1)/2,cy=(y0+y1)/2,w=Math.min(314,Math.max(110,(x1-x0)+70)),h=w*0.8;vb=`${Math.max(-12,Math.min(302-w,cx-w/2))} ${Math.max(-14,Math.min(306-h,cy-h/2))} ${w} ${h}`}
- let g=mapBase();for(const [id,x,y,w,h] of MAPA.lots){const on=sel.has(id);g+=`<rect class="${on?'ms':'ml'}" x="${x}" y="${y}" width="${w}" height="${h}"/>`;if(on)g+=`<text class="mt" x="${x+w/2}" y="${y+h/2}">${+id.split('-')[2]}</text>`}
- return`<div class="som-map"><svg viewBox="${vb}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Ubicación en el plano">${g}</svg></div>`}
+ let g=mapBase();for(const [id,x,y,w,h] of MAPA.lots){const on=sel.has(id);g+=`<rect class="${on?'ms':'ml'}" x="${x}" y="${y}" width="${w}" height="${h}"/>`;if(on)g+=`<text class="mt" x="${x+w/2}" y="${y+h/2}">${+id.split('-')[2]}</text>`;else g+=`<text class="mn" x="${x+w/2}" y="${y+h/2}">${+id.split('-')[2]}</text>`}
+ return`<div class="som-map"><svg viewBox="${vb}" data-vb0="${vb}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Ubicación en el plano. Arrastrá para mover, rueda o botones para acercar.">${g}</svg>
+ <div class="mm-ctl"><button type="button" data-mmz="0.7" aria-label="Acercar" title="Acercar">+</button><button type="button" data-mmz="1.4" aria-label="Alejar" title="Alejar">−</button><button type="button" data-mmz="lote" aria-label="Volver al lote" title="Volver al lote">◎</button><button type="button" data-mmz="todo" aria-label="Ver todo el barrio" title="Ver todo el barrio">⛶</button></div></div>`}
+// Mapita de la ficha: mover arrastrando y acercar/alejar (rueda, botones o dos dedos)
+const MMW={x0:-12,y0:-14,x1:302,y1:306};
+function mmSet(svg,x,y,w){const v=svg.viewBox.baseVal,ra=v.height/v.width||0.8;w=Math.max(36,Math.min(420,w));const h=w*ra;x=Math.max(MMW.x0-w*.25,Math.min(MMW.x1-w*.75,x));y=Math.max(MMW.y0-h*.25,Math.min(MMW.y1-h*.75,y));svg.setAttribute('viewBox',`${x} ${y} ${w} ${h}`);svg.classList.toggle('zin',w<150)}
+function mmZoom(svg,f,cx,cy){const v=svg.viewBox.baseVal;if(cx==null){cx=v.x+v.width/2;cy=v.y+v.height/2}const w=Math.max(36,Math.min(420,v.width*f)),k=w/v.width;mmSet(svg,cx-(cx-v.x)*k,cy-(cy-v.y)*k,w,v.height*k)}
+const mmPt=(svg,e)=>{const r=svg.getBoundingClientRect(),v=svg.viewBox.baseVal;return[v.x+(e.clientX-r.left)/r.width*v.width,v.y+(e.clientY-r.top)/r.height*v.height]};
+document.addEventListener('wheel',e=>{const svg=e.target.closest&&e.target.closest('.som-map svg');if(!svg)return;e.preventDefault();const [x,y]=mmPt(svg,e);mmZoom(svg,e.deltaY>0?1.15:0.87,x,y)},{passive:false});
+document.addEventListener('click',e=>{const b=e.target.closest('[data-mmz]');if(!b)return;const svg=b.closest('.som-map').querySelector('svg'),z=b.dataset.mmz;
+ if(z==='lote'){svg.setAttribute('viewBox',svg.dataset.vb0);svg.classList.toggle('zin',svg.viewBox.baseVal.width<150)}else if(z==='todo'){const v=svg.viewBox.baseVal,ra=v.height/v.width||0.8,w=Math.max(314,320/ra),h=w*ra;svg.setAttribute('viewBox',`${145-w/2} ${146-h/2} ${w} ${h}`);svg.classList.remove('zin')}else mmZoom(svg,+z)});
+{const P=new Map();let st=null;
+ document.addEventListener('pointerdown',e=>{const svg=e.target.closest&&e.target.closest('.som-map svg');if(!svg)return;P.set(e.pointerId,{x:e.clientX,y:e.clientY});
+  if(e.pointerType==='mouse'||P.size===2){try{svg.setPointerCapture(e.pointerId)}catch(_){}const v=svg.viewBox.baseVal;st={svg,v:{x:v.x,y:v.y,w:v.width,h:v.height},p:[...P.values()].map(q=>({...q}))};svg.classList.add('drag')}});
+ document.addEventListener('pointermove',e=>{if(!st||!P.has(e.pointerId))return;P.set(e.pointerId,{x:e.clientX,y:e.clientY});const svg=st.svg,r=svg.getBoundingClientRect(),sc=st.v.w/r.width,cur=[...P.values()];
+  if(st.p.length===1&&cur.length===1){mmSet(svg,st.v.x-(cur[0].x-st.p[0].x)*sc,st.v.y-(cur[0].y-st.p[0].y)*sc,st.v.w,st.v.h)}
+  else if(st.p.length===2&&cur.length===2){const d0=Math.hypot(st.p[0].x-st.p[1].x,st.p[0].y-st.p[1].y),d1=Math.hypot(cur[0].x-cur[1].x,cur[0].y-cur[1].y)||1,k=d0/d1;
+   const m0={x:(st.p[0].x+st.p[1].x)/2,y:(st.p[0].y+st.p[1].y)/2},m1={x:(cur[0].x+cur[1].x)/2,y:(cur[0].y+cur[1].y)/2};
+   const wx=st.v.x+(m0.x-r.left)*sc,wy=st.v.y+(m0.y-r.top)*sc,w=st.v.w*k,h=st.v.h*k,s2=w/r.width;mmSet(svg,wx-(m1.x-r.left)*s2,wy-(m1.y-r.top)*s2,w,h)}});
+ const fin=e=>{P.delete(e.pointerId);if(st&&P.size<(st.p.length===2?2:1)){st.svg.classList.remove('drag');st=null}};document.addEventListener('pointerup',fin);document.addEventListener('pointercancel',fin)}
 const mesC=m=>{const d=new Date(String(m).slice(0,10)+'T12:00:00');return d.toLocaleDateString('es-AR',{month:'short',year:'2-digit'}).replace('.','')};
 async function tSocio(id){if(!S.som||S.som.id!==id){S.som={id,cargando:true};vSocio()}if(!S.tes)loadTes().then(()=>{if(S.som&&S.som.id===id&&!S.som.cargando)vSocio()});
  const [r,g,rp,mi,au,cv]=await Promise.all([sb.rpc('tes_socio_detalle',{p_socio:id}),sb.from('tes_gestiones').select('*').eq('socio_id',id).order('creado',{ascending:false}).limit(60),
