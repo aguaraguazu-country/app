@@ -48,7 +48,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
 </head>
 <body>
 <div class="wrap">
-<header><div class="eyebrow">Aguará Guazú Country</div><h1>App de socios<span class="agver" aria-label="Versión del sistema" style="font:500 12px/1.2 system-ui,sans-serif;color:var(--muted,#5d6862);margin-left:10px;white-space:nowrap;vertical-align:middle;letter-spacing:0">v1.69 · 11/11/26 16:24</span></h1></header>
+<header><div class="eyebrow">Aguará Guazú Country</div><h1>App de socios<span class="agver" aria-label="Versión del sistema" style="font:500 12px/1.2 system-ui,sans-serif;color:var(--muted,#5d6862);margin-left:10px;white-space:nowrap;vertical-align:middle;letter-spacing:0">v1.70 · 11/11/26 16:31</span></h1></header>
 <main id="main"><p class="help">Cargando…</p></main>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.3/dist/umd/supabase.js"></script>
@@ -243,5 +243,5 @@ document.addEventListener('submit',async e=>{e.preventDefault();
   if(error){err.textContent=error.message;return}S.cp=false;S.yo.provisoria=false;vHome();$('#main').insertAdjacentHTML('afterbegin','<div class="card ok">Listo, guardamos tu contraseña nueva.</div>')}});
 start();
 </script>
-</body>
+<script>(()=>{const cur=n=>+((String(n).match(/v1\.(\d+)/)||[])[1]||0),mine=cur((document.querySelector(".agver")||{}).textContent);let shown=false;async function chk(){if(shown||document.hidden)return;try{const t=await (await fetch(location.pathname+"?v="+Date.now(),{cache:"no-store"})).text();const m=t.match(/class="agver"[^>]*>(v1\.\d+)/);if(m&&cur(m[1])>mine){shown=true;const d=document.createElement("button");d.type="button";d.textContent="Hay una versión nueva del sistema · Tocá para actualizar";d.style.cssText="position:fixed;left:50%;bottom:max(16px,env(safe-area-inset-bottom));transform:translateX(-50%);z-index:9999;background:#1f5a3d;color:#fff;border:0;border-radius:12px;padding:12px 18px;font:600 15px system-ui,sans-serif;box-shadow:0 8px 24px rgba(0,0,0,.25);max-width:92vw";d.onclick=()=>location.replace(location.pathname+"?v="+Date.now()+location.hash);document.body.appendChild(d)}}catch(e){}}setTimeout(chk,4000);setInterval(chk,300000);document.addEventListener("visibilitychange",()=>{if(!document.hidden)chk()})})();</script></body>
 </html>
