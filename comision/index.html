@@ -107,9 +107,12 @@ tbody tr{cursor:pointer}tbody tr:hover{background:var(--accent-soft)}
 .hist{list-style:none;margin:0;padding:0;display:grid;gap:10px}.hist li{border-left:3px solid var(--accent);padding-left:10px;display:grid;gap:2px}
 .edit{display:grid;gap:10px;padding:18px 28px 24px}.edit h3{margin:8px 0 0;font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}.g2{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}.vrow{display:grid;grid-template-columns:130px 140px 1fr auto;gap:8px}.chk{display:flex;gap:8px;align-items:center;font-weight:400}.chk input{width:auto}
 @media (max-width:760px){.pf-foot{position:static}.pf-head{flex-direction:column;position:relative}.pa{width:100%}.pa .x{position:absolute;top:14px;right:12px}.pf-body{grid-template-columns:1fr}.pf-side{border-left:0;border-top:1px solid var(--line)}.pf-head,.pf-facts,.pf-main,.pf-side,.pf-foot,.edit{padding-left:16px;padding-right:16px}.vrow{grid-template-columns:1fr 1fr}.modal{top:auto;bottom:0;transform:translateX(-50%);width:100vw;max-height:94vh;max-height:92dvh;border-radius:16px 16px 0 0}
-.modal.som{top:0;bottom:0;height:100vh;height:100dvh;max-height:100vh;max-height:100dvh;border-radius:0;transform:translateX(-50%)}
-.som .som-h{padding-top:max(14px,env(safe-area-inset-top))}
-.som .som-x{position:fixed;top:max(10px,env(safe-area-inset-top));right:10px;z-index:30;width:42px;height:42px;font-size:24px;background:var(--card);border:1px solid var(--line);border-radius:50%;box-shadow:0 4px 14px rgba(0,0,0,.15)}}
+body.som-open{overflow:auto!important}body.som-open>*:not(#som):not(#tfm):not(#tip):not(#thtoast):not(#mpdlg):not(script){display:none!important}.som .som-id{flex-basis:100%}
+body.som-open #som .scrim{display:none}
+.modal.som{position:static;transform:none;width:100%!important;height:auto;max-height:none;overflow:visible;border-radius:0;box-shadow:none;animation:none}
+.som .som-h{padding-top:12px}
+.som .som-x{position:static;order:-1;align-self:flex-start;width:auto;height:auto;font-size:16px;font-weight:600;border:1px solid var(--line);border-radius:10px;padding:9px 14px;margin:0 0 10px;background:var(--card)}
+.som .som-x::before{content:'← Volver'}.som .som-x{color:transparent;font-size:0}.som .som-x::before{color:var(--fg);font-size:16px}}
 @media (prefers-reduced-motion:no-preference){.modal{animation:pfin .18s ease-out}@keyframes pfin{from{opacity:0;transform:translate(-50%,-48%)}}}
 .fcard{border:1px solid var(--line);border-radius:10px;padding:14px;display:grid;gap:10px}
 dl{display:grid;grid-template-columns:minmax(120px,160px) 1fr;gap:5px 12px;margin:0;font-size:13.5px}
@@ -203,7 +206,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 </head>
 <body>
 <div class="wrap">
-<header><div><div class="eyebrow">Asociación Civil Aguará Guazú Country · Comisión Directiva</div><h1>Panel de la comisión<span class="agver" aria-label="Versión del sistema" style="font:500 12px/1.2 system-ui,sans-serif;color:var(--muted,#5d6862);margin-left:10px;white-space:nowrap;vertical-align:middle;letter-spacing:0">v1.70 · 11/11/26 16:31</span></h1></div><div class="who" id="who"></div></header>
+<header><div><div class="eyebrow">Asociación Civil Aguará Guazú Country · Comisión Directiva</div><h1>Panel de la comisión<span class="agver" aria-label="Versión del sistema" style="font:500 12px/1.2 system-ui,sans-serif;color:var(--muted,#5d6862);margin-left:10px;white-space:nowrap;vertical-align:middle;letter-spacing:0">v1.71 · 11/11/26 16:35</span></h1></div><div class="who" id="who"></div></header>
 <div id="gsr" class="gsr" hidden><div class="cb" style="max-width:560px"><input id="gq" type="search" autocomplete="off" placeholder="Buscar propietario: nombre, DNI, N° de socio o lote (ej. S2-M-06)…" aria-label="Buscar propietario"><div class="cb-l" id="gq_l" hidden></div></div></div>
 <main id="main"><div class="empty">Cargando…</div></main>
 </div>
@@ -528,10 +531,15 @@ async function tSocio(id){if(!S.som||S.som.id!==id){S.som={id,cargando:true};vSo
   sb.from('tes_responsables').select('user_id,nombre,desde').eq('socio_id',id).maybeSingle(),S.miem?Promise.resolve({data:S.miem}):sb.rpc('tes_miembros'),sb.rpc('tes_auditoria',{p_socio:id,p_limite:200}),sb.rpc('tes_convenios_estado',{p_socio:id})]);
  if(!mi.error)S.miem=mi.data||[];
  if(!S.som||S.som.id!==id)return;S.som=r.error?{id,err:r.error.message}:{id,...r.data,gest:g.error?null:(g.data||[]),resp:rp.error?null:rp.data,aud:au.error?null:(au.data||[]),conv:cv.error?null:(cv.data||[])};vSocio()}
+// en el celular, el gesto o botón "atrás" cierra la ficha en lugar de salir del panel
+addEventListener('popstate',()=>{if(S.som){S.som=null;vSocio()}});
 const somR=()=>{if(S.som&&!S.som.cargando&&!S.som.err)vSocio()};
 document.addEventListener('click',e=>{const g=e.target.closest('[data-somgo]');if(!g)return;e.preventDefault();const el=document.getElementById(g.dataset.somgo);if(el)el.scrollIntoView({behavior:'smooth',block:'start'})});
 function vSocio(){const o=S.som;let box=$('#som');if(!box){box=document.createElement('div');box.id='som';document.body.appendChild(box)}
- if(!o){box.innerHTML='';return}
+ // En el celular la ficha es una página más (no una ventana encima): así no la tapa la barra de Safari
+ const movil=matchMedia('(max-width:760px)').matches,ab=document.body.classList.contains('som-open');
+ if(!o){box.innerHTML='';if(ab){document.body.classList.remove('som-open');if(history.state&&history.state.som)history.back();if(movil)setTimeout(()=>scrollTo(0,S.somY||0),0)}return}
+ if(!ab){S.somY=scrollY;document.body.classList.add('som-open');if(movil){scrollTo(0,0);try{history.pushState({som:1},'')}catch(_){}}}
  const shell=b=>`<div class="scrim" data-somx></div><div class="modal som" role="dialog" aria-label="Ficha del socio">${b}</div>`;
  if(o.cargando){box.innerHTML=shell('<div style="padding:28px" class="empty">Cargando ficha del socio…</div>');return}
  if(o.err){box.innerHTML=shell(`<div style="padding:24px">${/function|schema cache/i.test(o.err)?'Falta ejecutar el script <b>17_ficha_socio_tesoreria.sql</b> en Supabase.':'No se pudo cargar: '+esc(o.err)}<div class="gacts" style="margin-top:12px"><button class="btn" data-somx>Cerrar</button></div></div>`);return}
