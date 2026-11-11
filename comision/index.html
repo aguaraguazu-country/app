@@ -211,7 +211,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 </head>
 <body>
 <div class="wrap">
-<header><div><div class="eyebrow">Asociación Civil Aguará Guazú Country · Comisión Directiva</div><h1>Panel de la comisión<span class="agver" aria-label="Versión del sistema" style="font:500 12px/1.2 system-ui,sans-serif;color:var(--muted,#5d6862);margin-left:10px;white-space:nowrap;vertical-align:middle;letter-spacing:0">v1.73 · 11/11/26 16:41</span></h1></div><div class="who" id="who"></div></header>
+<header><div><div class="eyebrow">Asociación Civil Aguará Guazú Country · Comisión Directiva</div><h1>Panel de la comisión<span class="agver" aria-label="Versión del sistema" style="font:500 12px/1.2 system-ui,sans-serif;color:var(--muted,#5d6862);margin-left:10px;white-space:nowrap;vertical-align:middle;letter-spacing:0">v1.74 · 11/11/26 16:46</span></h1></div><div class="who" id="who"></div></header>
 <div id="gsr" class="gsr" hidden><label for="gq" class="gsr-l">Buscar un propietario</label><div class="cb gsr-b"><svg class="gsr-i" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input id="gq" type="search" autocomplete="off" placeholder="Apellido, DNI, N° de socio o lote (ej. S2-M-06)" aria-label="Buscar propietario"><div class="cb-l" id="gq_l" hidden></div></div></div>
 <main id="main"><div class="empty">Cargando…</div></main>
 </div>
@@ -235,9 +235,9 @@ function vLogin(msg){$('#who').innerHTML='';$('#main').innerHTML=`<form class="c
 async function start(){if(!sb){$('#main').innerHTML='<div class="card">No se pudo cargar el sistema. Revisá tu conexión y recargá la página.</div>';return}
  const {data:{session}}=await sb.auth.getSession();if(!session)return vLogin();S.user=session.user;await loadApp()}
 async function loadApp(){const {data:m,error}=await sb.from('miembros').select('nombre,rol').eq('user_id',S.user.id).maybeSingle();
- if(error||!m||!['admin','comision','tesorero'].includes(m.rol)){await sb.auth.signOut();return vLogin('Tu usuario no tiene acceso al panel. Pedile a la comisión que te habilite.')}
- S.miembro=m;try{S.clasico=localStorage.getItem('ag_clasico')==='1'}catch(_){}$('#gsr').hidden=false;gsLoad();whoBar();sb.from('tes_socios').select('socio_id,documento').then(r=>{if(!r.error)S.tsoc=r.data||[]});await loadData()}
-function whoBar(){const m=S.miembro;$('#who').innerHTML=`<span>${esc(m.nombre)} · ${esc(m.rol==='tesorero'?'tesorería':m.rol)}</span>${S.clasico?'<button class="btn sm" data-vcla="0">Vista nueva</button>':(m.rol!=='tesorero'?`<button class="btn sm" data-vtes="${S.verTes?'0':'1'}">${S.verTes?'Salir de la vista de tesorera':'Ver como tesorera'}</button>`:'')+'<button class="btn sm" data-vcla="1" title="El panel anterior, con pestañas">Vista clásica</button>'}<button class="btn sm" data-mipass="1">Mi contraseña</button><button class="btn sm" id="out">Salir</button>`}
+ if(error||!m||!['admin','comision','tesorero','consulta'].includes(m.rol)){await sb.auth.signOut();return vLogin('Tu usuario no tiene acceso al panel. Pedile a la comisión que te habilite.')}
+ S.miembro=m;if(m.rol==='consulta')modoConsulta();try{S.clasico=localStorage.getItem('ag_clasico')==='1'}catch(_){}$('#gsr').hidden=false;gsLoad();whoBar();sb.from('tes_socios').select('socio_id,documento').then(r=>{if(!r.error)S.tsoc=r.data||[]});await loadData()}
+function whoBar(){const m=S.miembro;$('#who').innerHTML=`<span>${esc(m.nombre)} · ${esc(m.rol==='tesorero'?'tesorería':m.rol==='consulta'?'solo consulta':m.rol)}</span>${S.clasico?'<button class="btn sm" data-vcla="0">Vista nueva</button>':(m.rol!=='tesorero'?`<button class="btn sm" data-vtes="${S.verTes?'0':'1'}">${S.verTes?'Salir de la vista de tesorera':'Ver como tesorera'}</button>`:'')+'<button class="btn sm" data-vcla="1" title="El panel anterior, con pestañas">Vista clásica</button>'}<button class="btn sm" data-mipass="1">Mi contraseña</button><button class="btn sm" id="out">Salir</button>`}
 async function loadData(){$('#main').innerHTML='<div class="empty">Cargando fichas…</div>';
  const {data,error}=await sb.from('fichas').select('id,tramite,creado,estado,es_prueba,titular_nombre,titular_documento,email,celular,cantidad_lotes,lote_sin_identificar,datos,nota_comision,revisado_en,ficha_lotes(lote_id,reclamo)').order('creado',{ascending:false});
  if(error){$('#main').innerHTML=`<div class="card">No se pudieron leer las fichas: ${esc(error.message)}</div>`;return}
@@ -920,6 +920,17 @@ function thDonas(T,hoy){const mk=hoy.slice(0,7)+'-01',n=x=>String(x),C={ok:'#2f7
  <div class="th-dn"><h4>Deuda anterior a noviembre</h4><p>Cuánto se recuperó de lo que se debía</p><div class="dn-b">${dona([{l:'Cobrado',v:cob,c:C.ok,f:$p,go:'cobros',d:socD('pagado_antigua')+' socios pagaron parte de su deuda anterior'},{l:'Corregido por ajustes',v:aj,c:C.ne,f:$p,go:'reg',d:'Pagos de la comisión anterior que no estaban registrados'},{l:'Falta cobrar',v:pend,c:C.cr,f:$p,go:'ccf:Deuda antigua',d:socD('deuda_antigua')+' socios con deuda anterior · de '+$p(ini)+' iniciales'}],ini?Math.round(cob/ini*100)+'%':'—','recuperado')}</div></div>
  <div class="th-dn"><h4>Socios por estado</h4><p>Cómo está cada cuenta hoy</p><div class="dn-b">${dona([{l:'Al día',v:cnt('Al día'),c:C.ok,f:n,go:'ccf:Al día',d:'socios sin deuda'},{l:'Solo cuota del mes',v:cnt('A pagar'),c:C.wa,f:n,go:'ccf:A pagar',d:'socios · deben '+totE('A pagar')+' (todavía no vence)'},{l:'Atrasado',v:cnt('Debe'),c:C.se,f:n,go:'ccf:Debe',d:'socios · deben '+totE('Debe')},{l:'Deuda antigua',v:cnt('Deuda antigua'),c:C.cr,f:n,go:'ccf:Deuda antigua',d:'socios · deben '+totE('Deuda antigua')}],String(T.cc.length),'socios')}</div></div>
  </div>`}
+
+// ---------- Usuario de solo consulta (ej. presidente): ve todo, no cambia nada ----------
+// Las lecturas van por GET (Supabase las ejecuta en modo solo lectura); el servidor rechaza cualquier escritura.
+const RO_LEE=new Set(['tes_resumen','tes_cuenta_corriente','tes_socio_detalle','tes_cobranza','tes_auditoria','tes_miembros','tes_convenios_estado','comision_movimientos','comision_guardias']);
+const RO_SEL=['[data-socar]','[data-thcob]','[data-tcar]','[data-tcon]','[data-fac]','[data-fpdf]','[data-fmas]','[data-adj]','[data-edit]','[data-set]','[data-reset]','[data-savepad]','[data-gyo]','[data-gses]','[data-gest]','[data-cjmov]','[data-cjini]','[data-cjarq]','[data-tanu]','[data-cvx]','[data-deuda]','[data-gnew]','[data-gact]','[data-gpin]','[data-grel]','#g_resp','#gf2','#cvf','#pnota','.th-t[data-th="cobrar"]','.th-t[data-th="gasto"]','.th-t[data-th="arqueo"]','.th-t[data-th="mover"]','.th-t[data-th="backup"]'].join(',');
+function modoConsulta(){if(S.ro)return;S.ro=true;document.body.classList.add('ro');
+ const st=document.createElement('style');st.textContent=`body.ro :is(${RO_SEL}){display:none!important}body.ro details:has(#gf2){display:none!important}body.ro label:has(#g_resp){display:none!important}`;document.head.appendChild(st);
+ const r0=sb.rpc.bind(sb);sb.rpc=(fn,args,opt)=>{if(RO_LEE.has(fn)){const a={};Object.entries(args||{}).forEach(([k,v])=>{if(v!=null)a[k]=v});return r0(fn,a,{...(opt||{}),get:true})}
+  return Promise.resolve({data:null,error:{message:'Tu usuario es de solo consulta: no puede cambiar datos.'}})};
+ const f0=sb.from.bind(sb);sb.from=t=>{const q=f0(t);['insert','update','upsert','delete'].forEach(m=>{q[m]=()=>{const z={then:(r,j)=>Promise.resolve({data:null,error:{message:'Tu usuario es de solo consulta: no puede cambiar datos.'}}).then(r,j)};['eq','in','match','select','single','maybeSingle'].forEach(k=>z[k]=()=>z);return z}});return q};
+ document.addEventListener('click',e=>{const t=e.target.closest&&e.target.closest(RO_SEL);if(t){e.preventDefault();e.stopPropagation();thToast('Tu usuario es de solo consulta: podés ver todo, pero no cambiar datos.')}},true)}
 function thMenu(tit,items){cjModal(`<b style="font-size:18px">${tit}</b><div class="th-menu">${items.map(([k,ic,t,sub])=>tile(k,ic,t,sub)).join('')}</div><div class="gacts"><button type="button" class="btn" data-tfx>Cerrar</button></div>`,tit)}
 document.addEventListener('click',async e=>{const f=e.target.closest('[data-thf],[data-thcob]');if(!f)return;
  if(f.dataset.thf){S.tfe=f.dataset.thf;render();return}if(!S.tes)await loadTes();tForm('pago',f.dataset.thcob)});
@@ -1182,7 +1193,7 @@ function cobHTML(o){if(o.gest==null)return'';const yo=S.user&&S.user.id,rp=o.res
   <div style="display:flex;gap:8px;align-items:end;flex-wrap:wrap;margin:8px 0"><label style="flex:1 1 220px">Responsable de la cobranza<select id="g_resp"><option value="">Sin asignar</option>${opts}</select></label>
    ${rp&&rp.user_id===yo?'':'<button class="btn sm" data-gyo="1">Lo gestiono yo</button>'}</div>
   ${abiertos.length?'':''}
-  <details ${o.gest.length?'':'open'} style="margin:6px 0 10px"><summary class="btn sm" style="display:inline-block">+ Registrar contacto o compromiso</summary>
+  <details style="margin:6px 0 10px"><summary class="btn sm" style="display:inline-block">+ Registrar contacto o compromiso</summary>
   <form id="gf2" class="gform" style="margin-top:8px"><label>Tipo<select id="g_tipo"><option>Llamada</option><option>WhatsApp</option><option>Reunión</option><option>Mail</option><option>Nota</option><option>Compromiso de pago</option></select></label>
    <label class="gcomp" hidden>Se comprometió a pagar el<input id="g_fecha" type="date" min="${hoyD}"></label><label class="gcomp" hidden>Monto (opcional)<input id="g_monto" inputmode="decimal"></label>
    <label style="grid-column:1/-1">Qué se habló<input id="g_det" maxlength="500" placeholder="Ej.: dice que paga la semana que viene; pidió plan de pagos…"></label>
@@ -1316,7 +1327,7 @@ document.addEventListener('input',e=>{if(e.target.id!=='tq')return;S.tq=e.target
 
 // ---------- Usuarios del panel (solo administradores) + cambiar mi contraseña ----------
 const estN=e=>({'A pagar':'Solo cuota del mes','Debe':'Atrasado'})[e]||e;
-const ROLES={admin:'Administrador (todo + usuarios)',comision:'Comisión',tesorero:'Tesorería'};
+const ROLES={admin:'Administrador (todo + usuarios)',comision:'Comisión',tesorero:'Tesorería',consulta:'Solo consulta (ve todo, no cambia nada)'};
 async function loadUsr(){const r=await sb.rpc('admin_usuarios');S.us={err:r.error?r.error.message:null,lista:r.data||[]};if(S.v==='usuarios')render()}
 function vUsr(){const U=S.us;if(!U){loadUsr();return'<div class="card"><div class="empty">Cargando usuarios…</div></div>'}
  if(U.err)return`<div class="card">${/function|does not exist|schema cache/i.test(U.err)?'Para gestionar usuarios desde acá, ejecutá el script <b>14_usuarios_panel.sql</b> en Supabase.':'No se pudo cargar: '+esc(U.err)}</div>`;
