@@ -106,7 +106,10 @@ tbody tr{cursor:pointer}tbody tr:hover{background:var(--accent-soft)}
 .pf-btns{display:flex;flex-wrap:wrap;gap:8px;align-items:center}.pf-btns .sp{flex:1}.btn.danger{color:var(--crit);border-color:var(--crit-bg)}
 .hist{list-style:none;margin:0;padding:0;display:grid;gap:10px}.hist li{border-left:3px solid var(--accent);padding-left:10px;display:grid;gap:2px}
 .edit{display:grid;gap:10px;padding:18px 28px 24px}.edit h3{margin:8px 0 0;font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}.g2{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}.vrow{display:grid;grid-template-columns:130px 140px 1fr auto;gap:8px}.chk{display:flex;gap:8px;align-items:center;font-weight:400}.chk input{width:auto}
-@media (max-width:760px){.pf-foot{position:static}.pf-head{flex-direction:column;position:relative}.pa{width:100%}.pa .x{position:absolute;top:14px;right:12px}.pf-body{grid-template-columns:1fr}.pf-side{border-left:0;border-top:1px solid var(--line)}.pf-head,.pf-facts,.pf-main,.pf-side,.pf-foot,.edit{padding-left:16px;padding-right:16px}.vrow{grid-template-columns:1fr 1fr}.modal{top:auto;bottom:0;transform:translateX(-50%);width:100vw;max-height:94vh;border-radius:16px 16px 0 0}}
+@media (max-width:760px){.pf-foot{position:static}.pf-head{flex-direction:column;position:relative}.pa{width:100%}.pa .x{position:absolute;top:14px;right:12px}.pf-body{grid-template-columns:1fr}.pf-side{border-left:0;border-top:1px solid var(--line)}.pf-head,.pf-facts,.pf-main,.pf-side,.pf-foot,.edit{padding-left:16px;padding-right:16px}.vrow{grid-template-columns:1fr 1fr}.modal{top:auto;bottom:0;transform:translateX(-50%);width:100vw;max-height:94vh;max-height:92dvh;border-radius:16px 16px 0 0}
+.modal.som{top:0;bottom:0;height:100vh;height:100dvh;max-height:100vh;max-height:100dvh;border-radius:0;transform:translateX(-50%)}
+.som .som-h{padding-top:max(14px,env(safe-area-inset-top))}
+.som .som-x{position:fixed;top:max(10px,env(safe-area-inset-top));right:10px;z-index:30;width:42px;height:42px;font-size:24px;background:var(--card);border:1px solid var(--line);border-radius:50%;box-shadow:0 4px 14px rgba(0,0,0,.15)}}
 @media (prefers-reduced-motion:no-preference){.modal{animation:pfin .18s ease-out}@keyframes pfin{from{opacity:0;transform:translate(-50%,-48%)}}}
 .fcard{border:1px solid var(--line);border-radius:10px;padding:14px;display:grid;gap:10px}
 dl{display:grid;grid-template-columns:minmax(120px,160px) 1fr;gap:5px 12px;margin:0;font-size:13.5px}
@@ -200,7 +203,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 </head>
 <body>
 <div class="wrap">
-<header><div><div class="eyebrow">Asociación Civil Aguará Guazú Country · Comisión Directiva</div><h1>Panel de la comisión<span class="agver" aria-label="Versión del sistema" style="font:500 12px/1.2 system-ui,sans-serif;color:var(--muted,#5d6862);margin-left:10px;white-space:nowrap;vertical-align:middle;letter-spacing:0">v1.68 · 06/11/26 18:09</span></h1></div><div class="who" id="who"></div></header>
+<header><div><div class="eyebrow">Asociación Civil Aguará Guazú Country · Comisión Directiva</div><h1>Panel de la comisión<span class="agver" aria-label="Versión del sistema" style="font:500 12px/1.2 system-ui,sans-serif;color:var(--muted,#5d6862);margin-left:10px;white-space:nowrap;vertical-align:middle;letter-spacing:0">v1.69 · 11/11/26 16:24</span></h1></div><div class="who" id="who"></div></header>
 <div id="gsr" class="gsr" hidden><div class="cb" style="max-width:560px"><input id="gq" type="search" autocomplete="off" placeholder="Buscar propietario: nombre, DNI, N° de socio o lote (ej. S2-M-06)…" aria-label="Buscar propietario"><div class="cb-l" id="gq_l" hidden></div></div></div>
 <main id="main"><div class="empty">Cargando…</div></main>
 </div>
@@ -562,7 +565,7 @@ function vSocio(){const o=S.som;let box=$('#som');if(!box){box=document.createEl
  const est=cc.estado||'—',ec=est==='Al día'?'ok':est==='A pagar'?'wa':'no';
  const K=(t,v,c)=>`<div><small>${t}</small><b ${c?`style="color:${c}"`:''}>${v}</b></div>`;
  const fTag=fi?'<span class="ftag ok">✔ Ficha completa</span>':fpe?'<span class="ftag pe">⏳ Ficha sin verificar</span>':'<span class="ftag no">✘ Sin ficha</span>';
- const sc=box.querySelector('.modal'),top=sc?sc.scrollTop:0;
+ const sc=box.querySelector('.modal'),top=sc&&box.dataset.sid===so.socio_id?sc.scrollTop:0;box.dataset.sid=so.socio_id;
  box.innerHTML=shell(`<header class="som-h"><button type="button" class="x som-x" data-somx aria-label="Cerrar">×</button><div class="som-id"><img src="${LOGO_AG}" alt="" class="som-logo"><div style="min-width:0"><div class="help">Ficha del socio · ${esc(so.socio_id)}</div><h2>${esc(so.socio)}</h2>
    <div class="help">DNI/CUIT <span class="mono">${esc(so.documento||'—')}</span> · ${so.cant_lotes} lote${so.cant_lotes>1?'s':''}</div><div style="margin-top:4px"><span class="chip ${ec}">${esc(estN(est))}</span> ${fTag}</div></div></div>
    <div class="som-acts"><button class="btn primary" data-socar="${esc(so.socio_id)}">+ Cargar pago</button>${wa?`<a class="btn" href="${wa}" target="_blank" rel="noopener">WhatsApp</a>`:''}${cel?`<a class="btn" href="tel:${esc(String(cel).replace(/[^\d+]/g,''))}">Llamar</a>`:''}<a class="btn" href="#som-datos" data-somgo="som-datos">Datos y ficha</a></div></header>
