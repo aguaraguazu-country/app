@@ -211,7 +211,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 </head>
 <body>
 <div class="wrap">
-<header><div><div class="eyebrow">Asociación Civil Aguará Guazú Country · Comisión Directiva</div><h1>Panel de la comisión<span class="agver" aria-label="Versión del sistema" style="font:500 12px/1.2 system-ui,sans-serif;color:var(--muted,#5d6862);margin-left:10px;white-space:nowrap;vertical-align:middle;letter-spacing:0">v1.74 · 11/11/26 16:46</span></h1></div><div class="who" id="who"></div></header>
+<header><div><div class="eyebrow">Asociación Civil Aguará Guazú Country · Comisión Directiva</div><h1>Panel de la comisión<span class="agver" aria-label="Versión del sistema" style="font:500 12px/1.2 system-ui,sans-serif;color:var(--muted,#5d6862);margin-left:10px;white-space:nowrap;vertical-align:middle;letter-spacing:0">v1.75 · 12/11/26 19:18</span></h1></div><div class="who" id="who"></div></header>
 <div id="gsr" class="gsr" hidden><label for="gq" class="gsr-l">Buscar un propietario</label><div class="cb gsr-b"><svg class="gsr-i" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input id="gq" type="search" autocomplete="off" placeholder="Apellido, DNI, N° de socio o lote (ej. S2-M-06)" aria-label="Buscar propietario"><div class="cb-l" id="gq_l" hidden></div></div></div>
 <main id="main"><div class="empty">Cargando…</div></main>
 </div>
@@ -408,8 +408,8 @@ function vTes(){const T=S.tes;if(!T){loadTes();return'<div class="card"><div cla
 const BEST={pendiente:['Esperando pasar a la planilla','wa'],en_planilla:['En la planilla','ok'],anulado:['Anulada','fu']};
 function vBand(T){if(!T.band)return'';const nom={};T.cc.forEach(x=>nom[x.socio_id]=x.socio);
  const rows=T.band.map(b=>{const d=b.datos||{},e=BEST[b.estado]||[b.estado,''];
-  return`<tr><td>${fdt(b.creado)}<div class="help">${esc(b.cargado_nombre||'')}</div></td><td>${b.tipo==='pago'?'Pago':b.tipo==='ajuste'?'Ajuste (convenio)':b.tipo==='factura'?'N° de factura':b.tipo==='movimiento'?esc(d.tipo):b.tipo==='saldo_inicial'?'Saldo inicial':'Gasto'}</td>
-  <td>${b.tipo==='saldo_inicial'?'Caja '+$p(d.efectivo)+' · Banco '+$p(d.banco)+'<div class="help">'+esc(d.obs||'')+'</div>':b.tipo==='movimiento'?esc(d.concepto||'')+'<div class="help">'+esc([d.sale_de&&'sale de '+d.sale_de,d.entra_a&&'entra a '+d.entra_a].filter(Boolean).join(' · '))+'</div>':b.tipo==='factura'?esc(d.socio||nom[d.socio_id]||d.socio_id)+'<div class="help">Factura '+esc(d.factura)+(d.factura_anterior?' (antes '+esc(d.factura_anterior)+')':'')+'</div>':b.tipo==='ajuste'?esc(d.socio||nom[d.socio_id]||d.socio_id)+'<div class="help">'+esc(d.obs||'')+'</div>':b.tipo==='pago'?esc(d.socio||nom[d.socio_id]||d.socio_id)+'<div class="help">'+esc(d.socio_id||'')+' · '+esc(d.medio||'')+'</div>':esc(d.concepto||'')+'<div class="help">'+esc([d.categoria,d.sale_de].filter(Boolean).join(' · '))+'</div>'}</td>
+  return`<tr><td>${fdt(b.creado)}<div class="help">${esc(b.cargado_nombre||'')}</div></td><td>${b.tipo==='pago'?'Pago':b.tipo==='ajuste'?'Ajuste (convenio)':b.tipo==='factura'?'N° de factura':b.tipo==='movimiento'?esc(d.tipo):b.tipo==='saldo_inicial'?'Saldo inicial':b.tipo==='anular'?'<b style="color:var(--crit)">Anular pago</b>':b.tipo==='adjunto'?'Foto de comprobante':'Gasto'}</td>
+  <td>${b.tipo==='saldo_inicial'?'Caja '+$p(d.efectivo)+' · Banco '+$p(d.banco)+'<div class="help">'+esc(d.obs||'')+'</div>':b.tipo==='movimiento'?esc(d.concepto||'')+'<div class="help">'+esc([d.sale_de&&'sale de '+d.sale_de,d.entra_a&&'entra a '+d.entra_a].filter(Boolean).join(' · '))+'</div>':b.tipo==='factura'?esc(d.socio||nom[d.socio_id]||d.socio_id)+'<div class="help">Factura '+esc(d.factura)+(d.factura_anterior?' (antes '+esc(d.factura_anterior)+')':'')+'</div>':b.tipo==='anular'?esc(d.socio||nom[d.socio_id]||d.socio_id)+'<div class="help">Pago del '+fD(d.fecha)+' · fila '+esc(d.fila)+' · motivo: '+esc(d.motivo||'')+'</div>':b.tipo==='ajuste'?esc(d.socio||nom[d.socio_id]||d.socio_id)+'<div class="help">'+esc(d.obs||'')+'</div>':b.tipo==='pago'?esc(d.socio||nom[d.socio_id]||d.socio_id)+'<div class="help">'+esc(d.socio_id||'')+' · '+esc(d.medio||'')+'</div>':esc(d.concepto||'')+'<div class="help">'+esc([d.categoria,d.sale_de].filter(Boolean).join(' · '))+'</div>'}</td>
   <td>${fD(d.fecha)}</td><td><b>${$p(d.importe)}</b></td><td>${b.adjunto?`<a href="${esc(b.adjunto)}" target="_blank" rel="noopener">Ver</a>`:'—'}</td>
   <td><span class="gst ${e[1]==='ok'?'on':e[1]==='fu'?'off':''}" ${e[1]==='wa'?'style="color:var(--warn);background:var(--warn-bg)"':''}>${e[0]}</span>${b.estado==='en_planilla'&&b.fila?`<div class="help">${b.tipo==='pago'?'Pagos':'Gastos'}, fila ${b.fila}</div>`:''}</td>
   <td>${b.estado==='pendiente'&&b.tipo!=='ajuste'?`<button class="btn sm" data-tanu="${b.id}">Anular</button>`:''}</td></tr>`}).join('');
@@ -557,6 +557,10 @@ function vSocio(){const o=S.som;let box=$('#som');if(!box){box=document.createEl
  const lotFicha=fL(fi||fpe).filter(x=>!ids.includes(x));if(!ids.length)ids=lotFicha;
  const cel=(fi&&fi.celular)||pad.celular||'',mail=(fi&&fi.email)||pad.email||'',wa=cWa(cel);
  const recPor={};rec.forEach(r=>recPor[r.huella]=r);
+ // anulaciones de pagos pedidas desde el sistema que todavía no pasaron a la planilla
+ const anP={};((S.tes&&S.tes.band)||[]).filter(b=>b.tipo==='anular'&&b.estado==='pendiente'&&(b.datos||{}).socio_id===so.socio_id).forEach(b=>anP[b.datos.fila]=b);
+ const puedeAn=!S.ro&&!!S.miembro&&['admin','comision','tesorero'].includes(S.miembro.rol);
+ const btnA=p=>anP[p.orden]?'<span class="chip wa">Anulando…</span>':puedeAn?`<button class="btn sm" data-panu="${esc(so.socio_id)}" data-orden="${p.orden}" title="Borrar este pago de la planilla (queda registrado quién y por qué)">Anular</button>`:'';
  // qué pago cubrió cada mes
  const cub={};pagos.forEach(p=>[...(p.meses_anteriores||[]),...(p.meses||[])].forEach(m=>{(cub[m.mes]=cub[m.mes]||[]).push({p,importe:m.importe,completo:m.completo})}));
  const hoyM=hoyAR().slice(0,7)+'-01';
@@ -574,7 +578,7 @@ function vSocio(){const o=S.som;let box=$('#som');if(!box){box=document.createEl
   <span class="pc">${c.map(x=>`${fD(x.p.fecha)} · ${$p(x.importe)}${x.p.factura?' · F '+esc(x.p.factura):''}${x.completo?'':' (parcial)'}`).join('<br>')||'—'}</span>
   <span style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end">${[...new Set(c.map(x=>x.p))].map(btnR).join('')}</span></div>`}).join('');
  const apl=p=>[...(p.meses_anteriores||[]).map(m=>mesC(m.mes)),cc.tipo_deuda==='Antigua'&&+p.a_meses_anteriores>0?'deuda anterior '+$p(p.a_meses_anteriores):'',...(p.meses||[]).map(m=>mesC(m.mes)+(m.completo?'':' (parcial)'))].filter(Boolean).join(', ');
- const prows=pagos.slice().reverse().map(p=>`<tr><td>${fD(p.fecha)}</td><td><b>${$p(p.importe)}</b></td><td>${esc(p.medio||'—')}${p.comprobante?'<div class="help">op. '+esc(p.comprobante)+'</div>':''}</td><td>${facCell({...p,socio_id:so.socio_id})}</td><td>${esc(apl(p))}</td><td>${p.adjunto?`<a href="${esc(p.adjunto)}" target="_blank" rel="noopener">Ver</a>`:'—'}</td><td style="text-align:right">${btnR(p)}</td></tr>`).join('');
+ const prows=pagos.slice().reverse().map(p=>`<tr><td>${fD(p.fecha)}</td><td><b>${$p(p.importe)}</b></td><td>${esc(p.medio||'—')}${p.comprobante?'<div class="help">op. '+esc(p.comprobante)+'</div>':''}</td><td>${facCell({...p,socio_id:so.socio_id})}</td><td>${esc(apl(p))}</td><td>${p.adjunto?`<a href="${esc(p.adjunto)}" target="_blank" rel="noopener">Ver</a>`:'—'}</td><td style="text-align:right;white-space:nowrap">${btnR(p)} ${btnA(p)}</td></tr>`).join('');
  const est=cc.estado||'—',ec=est==='Al día'?'ok':est==='A pagar'?'wa':'no';
  const K=(t,v,c)=>`<div><small>${t}</small><b ${c?`style="color:${c}"`:''}>${v}</b></div>`;
  const fTag=fi?'<span class="ftag ok">✔ Ficha completa</span>':fpe?'<span class="ftag pe">⏳ Ficha sin verificar</span>':'<span class="ftag no">✘ Sin ficha</span>';
@@ -588,6 +592,7 @@ function vSocio(){const o=S.som;let box=$('#som');if(!box){box=document.createEl
   </aside><div class="som-main">
    <div class="som-kpi">${K('Total pendiente',cc.total<0?'a favor '+$p(-cc.total):$p(cc.total),cc.total>0?'var(--crit)':'var(--good)')}${K(cc.tipo_deuda==='Antigua'?'Deuda anterior (en revisión)':'Meses anteriores',$p(cc.deuda_antigua))}${K('Cuotas vencidas',$p(cc.cuotas_vencidas))}${K('A pagar este mes',$p(cc.a_pagar))}${K('Cuota mensual',$p(cuotaMes))}${K('Último pago',cc.ultimo_pago?fD(cc.ultimo_pago):'—')}</div>
    ${(S.tes&&S.tes.band||[]).filter(b=>b.tipo==='pago'&&b.estado==='pendiente'&&(b.datos||{}).socio_id===so.socio_id).map(b=>`<p class="note" style="margin:0">⏳ Pago de ${$p(b.datos.importe)} del ${fD(b.datos.fecha)} cargado en el sistema: está pasando a la planilla (1 o 2 minutos). Después tocá Actualizar.</p>`).join('')}
+   ${Object.values(anP).map(b=>`<p class="note" style="margin:0">⏳ Anulación del pago de ${$p(b.datos.importe)} del ${fD(b.datos.fecha)} pedida por ${esc(b.cargado_nombre||'la comisión')}: se borra de la planilla en 1 o 2 minutos. Si fue un error, se puede cancelar en Tesorería → Cargas del sistema.</p>`).join('')}
    ${convHTML(o)}
    ${cobHTML(o)}
    <section><h3>Cuenta corriente mes a mes</h3><div class="mrow hd"><span>Mes</span><span class="cu">Cuota</span><span>Estado</span><span>Pagado con</span><span></span></div>${mrows||'<p class="help">Sin meses para mostrar.</p>'}
@@ -924,7 +929,7 @@ function thDonas(T,hoy){const mk=hoy.slice(0,7)+'-01',n=x=>String(x),C={ok:'#2f7
 // ---------- Usuario de solo consulta (ej. presidente): ve todo, no cambia nada ----------
 // Las lecturas van por GET (Supabase las ejecuta en modo solo lectura); el servidor rechaza cualquier escritura.
 const RO_LEE=new Set(['tes_resumen','tes_cuenta_corriente','tes_socio_detalle','tes_cobranza','tes_auditoria','tes_miembros','tes_convenios_estado','comision_movimientos','comision_guardias']);
-const RO_SEL=['[data-socar]','[data-thcob]','[data-tcar]','[data-tcon]','[data-fac]','[data-fpdf]','[data-fmas]','[data-adj]','[data-edit]','[data-set]','[data-reset]','[data-savepad]','[data-gyo]','[data-gses]','[data-gest]','[data-cjmov]','[data-cjini]','[data-cjarq]','[data-tanu]','[data-cvx]','[data-deuda]','[data-gnew]','[data-gact]','[data-gpin]','[data-grel]','#g_resp','#gf2','#cvf','#pnota','.th-t[data-th="cobrar"]','.th-t[data-th="gasto"]','.th-t[data-th="arqueo"]','.th-t[data-th="mover"]','.th-t[data-th="backup"]'].join(',');
+const RO_SEL=['[data-socar]','[data-thcob]','[data-tcar]','[data-tcon]','[data-fac]','[data-fpdf]','[data-fmas]','[data-adj]','[data-edit]','[data-set]','[data-reset]','[data-savepad]','[data-gyo]','[data-gses]','[data-gest]','[data-cjmov]','[data-cjini]','[data-cjarq]','[data-tanu]','[data-panu]','[data-cvx]','[data-deuda]','[data-gnew]','[data-gact]','[data-gpin]','[data-grel]','#g_resp','#gf2','#cvf','#pnota','.th-t[data-th="cobrar"]','.th-t[data-th="gasto"]','.th-t[data-th="arqueo"]','.th-t[data-th="mover"]','.th-t[data-th="backup"]'].join(',');
 function modoConsulta(){if(S.ro)return;S.ro=true;document.body.classList.add('ro');
  const st=document.createElement('style');st.textContent=`body.ro :is(${RO_SEL}){display:none!important}body.ro details:has(#gf2){display:none!important}body.ro label:has(#g_resp){display:none!important}`;document.head.appendChild(st);
  const r0=sb.rpc.bind(sb);sb.rpc=(fn,args,opt)=>{if(RO_LEE.has(fn)){const a={};Object.entries(args||{}).forEach(([k,v])=>{if(v!=null)a[k]=v});return r0(fn,a,{...(opt||{}),get:true})}
@@ -1178,6 +1183,30 @@ document.addEventListener('submit',async e=>{if(e.target.id!=='cvf')return;e.pre
  if(r.error){E.textContent=/function|schema cache/i.test(r.error.message)?'Falta ejecutar el script 23_convenios.sql en Supabase.':r.error.message;return}S.cvopen=false;S.tes=null;render();tSocio(S.som.id)});
 document.addEventListener('click',async e=>{const t=e.target.closest('[data-cvx]');if(!t)return;const m=prompt('Motivo de la cancelación del convenio (queda registrado):');if(!m)return;
  const r=await sb.rpc('tes_convenio_cancelar',{p_id:+t.dataset.cvx,p_motivo:m});if(r.error){alert(r.error.message);return}cobRefresh()});
+// ---------- Anular un pago mal cargado (pasa a la planilla por la bandeja; queda registrado) ----------
+function pAnular(socio,orden){const o=S.som;if(!o||!o.pagos)return;const p=o.pagos.find(x=>x.orden===orden);if(!p)return;
+ const rec=(o.recibos||[]).find(r=>r.huella===p.huella),mismo=o.pagos.filter(x=>x!==p&&x.comprobante&&p.comprobante&&String(x.comprobante).trim()===String(p.comprobante).trim());
+ let box=$('#anm');if(!box){box=document.createElement('div');box.id='anm';document.body.appendChild(box)}
+ const MOT=['Se cargó dos veces','Era de otro socio','Importe o fecha equivocados (lo cargo de nuevo bien)','El pago no se hizo / la transferencia no entró','Otro'];
+ box.innerHTML=`<div class="scrim" data-anx></div><div class="modal" role="dialog" aria-label="Anular pago" style="width:min(560px,96vw)"><form id="anf" class="gform" style="padding:18px 20px;margin:0" novalidate>
+ <b style="grid-column:1/-1;font-size:17px">Anular un pago de ${esc(o.socio.socio)}</b>
+ <div style="grid-column:1/-1" class="note"><b>${$p(p.importe)}</b> del ${fD(p.fecha)} · ${esc(p.medio||'sin medio')}${p.comprobante?' · op. '+esc(p.comprobante):''}${p.factura?' · factura '+esc(p.factura):''} · ${esc(p.tipo)}<div class="help">Fila ${p.orden} de la pestaña Pagos${p.obs?' · '+esc(p.obs):''}</div></div>
+ ${mismo.length?`<p class="note" style="grid-column:1/-1;margin:0;border-color:var(--warn)">El mismo N° de operación está en otro pago de este socio (${mismo.map(x=>fD(x.fecha)+' · '+$p(x.importe)).join(', ')}): parece cargado dos veces. Anulá el que esté de más.</p>`:''}
+ <label style="grid-column:1/-1">Motivo<select id="an_m" required><option value="">Elegí…</option>${MOT.map(m=>`<option${mismo.length&&m===MOT[0]?' selected':''}>${m}</option>`).join('')}</select></label>
+ <label style="grid-column:1/-1">Detalle <span class="help" style="font-weight:400">(obligatorio: qué pasó, para la revisora de cuentas)</span><textarea id="an_d" rows="2" maxlength="300" placeholder="Ej.: Rosa lo cargó de nuevo el 12/11, ya estaba el del 06/11"></textarea></label>
+ <p class="help" style="grid-column:1/-1;margin:0">El pago se borra de la planilla en 1 o 2 minutos y la cuenta del socio se recalcula. No se pierde: queda una copia en la pestaña <b>Anulaciones</b> de la planilla, con quién lo anuló, cuándo y por qué.${rec?` <b>Ojo:</b> ya se emitió el recibo ${cNum(rec.numero)} por este pago; si se lo mandaron al socio, avisale que queda sin efecto.`:''}</p>
+ <div class="err" id="an_e" style="grid-column:1/-1"></div>
+ <div class="gacts" style="grid-column:1/-1"><button class="btn primary" id="an_b" style="background:var(--crit);border-color:var(--crit)">Anular pago</button><button type="button" class="btn" data-anx>Cancelar</button></div></form></div>`;
+ box.dataset.socio=socio;box.dataset.orden=orden}
+async function pAnularOk(){const box=$('#anm'),E=$('#an_e'),B=$('#an_b'),m=$('#an_m').value,dt=$('#an_d').value.trim();E.textContent='';
+ if(!m){E.textContent='Elegí el motivo.';return}if(dt.length<5){E.textContent='Escribí en el detalle qué pasó (queda registrado).';return}
+ B.disabled=true;B.textContent='Anulando…';const id=box.dataset.socio;
+ const r=await sb.rpc('tes_pago_anular',{p_socio:id,p_orden:+box.dataset.orden,p_motivo:m+': '+dt});
+ if(r.error){E.textContent=/function|schema cache/i.test(r.error.message)?'Falta ejecutar el script 29_anular_pago.sql en Supabase.':r.error.message;B.disabled=false;B.textContent='Anular pago';return}
+ box.innerHTML='';S.tes=null;await loadTes();if(S.som&&S.som.id===id)tSocio(id)}
+document.addEventListener('click',e=>{const t=e.target.closest('[data-panu],[data-anx]');if(!t)return;e.preventDefault();
+ if(t.dataset.anx!=null){$('#anm').innerHTML='';return}pAnular(t.dataset.panu,+t.dataset.orden)});
+document.addEventListener('submit',e=>{if(e.target.id==='anf'){e.preventDefault();pAnularOk()}});
 // ---------- Seguimiento de cobranza (dentro de la ficha del socio) ----------
 function cobHTML(o){if(o.gest==null)return'';const yo=S.user&&S.user.id,rp=o.resp,hoyD=hoyAR(),so=o.socio;
  const abiertos=o.gest.filter(g=>g.tipo==='Compromiso de pago'&&g.estado==='abierto');
