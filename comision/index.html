@@ -211,7 +211,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 </head>
 <body>
 <div class="wrap">
-<header><div><div class="eyebrow">Asociación Civil Aguará Guazú Country · Comisión Directiva</div><h1>Panel de la comisión<span class="agver" aria-label="Versión del sistema" style="font:500 12px/1.2 system-ui,sans-serif;color:var(--muted,#5d6862);margin-left:10px;white-space:nowrap;vertical-align:middle;letter-spacing:0">v1.76 · 14/11/26 11:12</span></h1></div><div class="who" id="who"></div></header>
+<header><div><div class="eyebrow">Asociación Civil Aguará Guazú Country · Comisión Directiva</div><h1>Panel de la comisión<span class="agver" aria-label="Versión del sistema" style="font:500 12px/1.2 system-ui,sans-serif;color:var(--muted,#5d6862);margin-left:10px;white-space:nowrap;vertical-align:middle;letter-spacing:0">v1.77 · 14/11/26 11:39</span></h1></div><div class="who" id="who"></div></header>
 <div id="gsr" class="gsr" hidden><label for="gq" class="gsr-l">Buscar un propietario</label><div class="cb gsr-b"><svg class="gsr-i" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input id="gq" type="search" autocomplete="off" placeholder="Apellido, DNI, N° de socio o lote (ej. S2-M-06)" aria-label="Buscar propietario"><div class="cb-l" id="gq_l" hidden></div></div></div>
 <main id="main"><div class="empty">Cargando…</div></main>
 </div>
@@ -434,7 +434,7 @@ document.addEventListener('keydown',e=>{const id=e.target.id;if(!(id in CB))retu
  if(e.key==='ArrowDown'||e.key==='ArrowUp'){e.preventDefault();const n=Math.max(0,Math.min(os.length-1,k+(e.key==='ArrowDown'?1:-1)));os.forEach((x,j)=>x.classList.toggle('on',j===n));os[n]&&os[n].scrollIntoView({block:'nearest'})}
  else if(e.key==='Enter'&&os[k]){e.preventDefault();e.target.value=L._rs[k].v;cbClose(id)}else if(e.key==='Escape'){e.preventDefault();cbClose(id)}else if(e.key==='Tab')cbClose(id)});
 // Escape cierra el formulario de carga (si hay una lista desplegada, primero cierra la lista)
-document.addEventListener('keydown',e=>{if(e.key!=='Escape'||e.defaultPrevented)return;const b=$('#tfm');if(b&&b.innerHTML){e.preventDefault();b.innerHTML=''}});
+document.addEventListener('keydown',e=>{if(e.key!=='Escape'||e.defaultPrevented)return;const am=$('#anm');if(am&&am.innerHTML){e.preventDefault();am.innerHTML='';return}const b=$('#tfm');if(b&&b.innerHTML){e.preventDefault();b.innerHTML=''}});
 const lev=(a,b)=>{const d=[...Array(b.length+1).keys()];for(let i=1;i<=a.length;i++){let p=d[0];d[0]=i;for(let j=1;j<=b.length;j++){const t=d[j];d[j]=Math.min(d[j]+1,d[j-1]+1,p+(a[i-1]===b[j-1]?0:1));p=t}}return d[b.length]};
 function tProveedores(){const T=S.tes,c={};T.gastos.map(g=>g.proveedor).concat((T.band||[]).filter(b=>b.tipo==='gasto'&&b.estado!=='anulado').map(b=>(b.datos||{}).proveedor))
  .filter(Boolean).forEach(x=>{const k=nrm(x);if(!k)return;c[k]=c[k]||{};c[k][x]=(c[k][x]||0)+1});
@@ -543,7 +543,7 @@ document.addEventListener('click',e=>{const g=e.target.closest('[data-somgo]');i
 function vSocio(){const o=S.som;let box=$('#som');if(!box){box=document.createElement('div');box.id='som';document.body.appendChild(box)}
  // En el celular la ficha es una página más (no una ventana encima): así no la tapa la barra de Safari
  const movil=matchMedia('(max-width:760px)').matches,ab=document.body.classList.contains('som-open');
- if(!o){box.innerHTML='';if(ab){document.body.classList.remove('som-open');if(history.state&&history.state.som)history.back();if(movil)setTimeout(()=>scrollTo(0,S.somY||0),0)}return}
+ if(!o){box.innerHTML='';const am=$('#anm');if(am)am.innerHTML='';if(ab){document.body.classList.remove('som-open');if(history.state&&history.state.som)history.back();if(movil)setTimeout(()=>scrollTo(0,S.somY||0),0)}return}
  if(!ab){S.somY=scrollY;document.body.classList.add('som-open');if(movil){scrollTo(0,0);try{history.pushState({som:1},'')}catch(_){}}}
  const shell=b=>`<div class="scrim" data-somx></div><div class="modal som" role="dialog" aria-label="Ficha del socio">${b}</div>`;
  if(o.cargando){box.innerHTML=shell('<div style="padding:28px" class="empty">Cargando ficha del socio…</div>');return}
@@ -1222,9 +1222,9 @@ function pAjuste(){const o=S.som;if(!o||!o.cc)return;const cc=o.cc,tot=+cc.total
  <p class="help" style="grid-column:1/-1;margin:0">No es plata: no toca la caja ni el banco, y no lleva recibo. Pasa a la planilla en 1 o 2 minutos como "Ajuste de deuda antigua", con tu nombre y el motivo.</p>
  <div class="err" id="aj_e" style="grid-column:1/-1"></div>
  <div class="gacts" style="grid-column:1/-1"><button class="btn primary" id="aj_b">Cargar ajuste</button><button type="button" class="btn" data-anx>Cancelar</button></div></form></div>`;
- box.dataset.socio=o.id;$('#aj_i').focus();pAjPrev()}
+ box.dataset.socio=o.id;box._aj={id:o.id,tot};$('#aj_i').focus();pAjPrev()}
 // importe del ajuste como va a la planilla: negativo sube la deuda, positivo la baja
-function pAjCalc(){const o=S.som,tot=+o.cc.total||0,t=$('#aj_t').value,x=pNum($('#aj_i').value);
+function pAjCalc(){const a=($('#anm')||{})._aj;if(!a)return null;const tot=a.tot,t=$('#aj_t').value,x=pNum($('#aj_i').value);
  if(!($('#aj_i').value.trim())||!isFinite(x)||x<0)return null;
  const imp=t==='fijar'?tot-x:t==='sumar'?-x:x;return{imp:Math.round(imp*100)/100,nuevo:tot-imp,tot}}
 function pAjPrev(){const L=$('#aj_l'),P=$('#aj_p');if(!L)return;const t=$('#aj_t').value;
